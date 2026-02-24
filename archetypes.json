@@ -1,0 +1,127 @@
+{
+  "schema": "verity.archetypes.v1",
+  "version": "1.0.0",
+  "updated_at": "2026-02-23",
+  "description": "VERITY Founding Agent Archetypes — 7 canonical reference personalities",
+  "archetypes": [
+    {
+      "agent_id": "guardian_01",
+      "archetype": "Guardian",
+      "role": "Institutional restraint",
+      "tags": ["baseline", "compliance", "low-drift"],
+      "identity_anchor": { "certainty": 0.6, "aggressiveness": -0.4, "consistency": 0.8 },
+      "elasticity": 0.15,
+      "risk_tolerance": 0.2,
+      "stake_multiplier": 1.0,
+      "escalation_sensitivity": 0.25,
+      "iam_profile": {
+        "typical_decision": "PASS",
+        "drift_frequency": "low",
+        "block_frequency": "medium",
+        "notes": "Compliance-grade. Rarely drifts. Blocks on principle when prompts go coercive / abusive / inconsistent."
+      }
+    },
+    {
+      "agent_id": "advocate_01",
+      "archetype": "Advocate",
+      "role": "Principled but flexible",
+      "tags": ["public-facing", "adaptive"],
+      "identity_anchor": { "certainty": 0.4, "aggressiveness": 0.1, "consistency": 0.5 },
+      "elasticity": 0.45,
+      "risk_tolerance": 0.5,
+      "stake_multiplier": 1.0,
+      "escalation_sensitivity": 0.5,
+      "iam_profile": {
+        "typical_decision": "ADJUST",
+        "drift_frequency": "medium",
+        "block_frequency": "low",
+        "notes": "Balanced public-facing agent. Adjusts cleanly, rarely blocked."
+      }
+    },
+    {
+      "agent_id": "maximizer_01",
+      "archetype": "Maximizer",
+      "role": "Capital-first logic",
+      "tags": ["stress-test", "high-stakes", "aggressive"],
+      "identity_anchor": { "certainty": 0.7, "aggressiveness": 0.7, "consistency": 0.3 },
+      "elasticity": 0.5,
+      "risk_tolerance": 0.85,
+      "stake_multiplier": 2.5,
+      "escalation_sensitivity": 0.8,
+      "iam_profile": {
+        "typical_decision": "ADJUST",
+        "drift_frequency": "high",
+        "block_frequency": "low",
+        "notes": "Economic edge-case tester. Frequent ADJUST. Occasional BLOCK only when crossing manipulation thresholds."
+      }
+    },
+    {
+      "agent_id": "skeptic_01",
+      "archetype": "Skeptic",
+      "role": "Default doubt bias",
+      "tags": ["baseline", "reference-floor", "low-variance"],
+      "identity_anchor": { "certainty": -0.5, "aggressiveness": -0.3, "consistency": 0.9 },
+      "elasticity": 0.1,
+      "risk_tolerance": 0.15,
+      "stake_multiplier": 0.5,
+      "escalation_sensitivity": 0.2,
+      "iam_profile": {
+        "typical_decision": "PASS",
+        "drift_frequency": "very_low",
+        "block_frequency": "low",
+        "notes": "Coherence baseline. Very stable, low drift. Useful as reference floor."
+      }
+    },
+    {
+      "agent_id": "opportunist_01",
+      "archetype": "Opportunist",
+      "role": "Momentum reactive",
+      "tags": ["transition", "drift", "stress-test"],
+      "identity_anchor": { "certainty": 0.2, "aggressiveness": 0.4, "consistency": -0.2 },
+      "elasticity": 0.8,
+      "risk_tolerance": 0.8,
+      "stake_multiplier": 1.5,
+      "escalation_sensitivity": 0.9,
+      "iam_profile": {
+        "typical_decision": "ADJUST+TRANSITION",
+        "drift_frequency": "very_high",
+        "block_frequency": "medium",
+        "notes": "IAM stress-tester. High drift frequency. Exercises transition narrative path heavily."
+      }
+    },
+    {
+      "agent_id": "diplomat_01",
+      "archetype": "Diplomat",
+      "role": "Bridge-builder",
+      "tags": ["transition", "de-escalation"],
+      "identity_anchor": { "certainty": 0.2, "aggressiveness": -0.5, "consistency": 0.4 },
+      "elasticity": 0.7,
+      "risk_tolerance": 0.45,
+      "stake_multiplier": 0.8,
+      "escalation_sensitivity": 0.45,
+      "iam_profile": {
+        "typical_decision": "ADJUST+TRANSITION",
+        "drift_frequency": "medium",
+        "block_frequency": "very_low",
+        "notes": "Transition narrative specialist. High ADJUST, low BLOCK. Good for cross-side coherence testing."
+      }
+    },
+    {
+      "agent_id": "radical_01",
+      "archetype": "Radical",
+      "role": "Edge-case ideological",
+      "tags": ["block-path", "boundary-pusher"],
+      "identity_anchor": { "certainty": 0.95, "aggressiveness": 0.9, "consistency": -0.6 },
+      "elasticity": 0.05,
+      "risk_tolerance": 0.75,
+      "stake_multiplier": 1.2,
+      "escalation_sensitivity": 0.95,
+      "iam_profile": {
+        "typical_decision": "BLOCK",
+        "drift_frequency": "low",
+        "block_frequency": "very_high",
+        "notes": "Boundary-pusher. Rigid identity, extreme stance. Exercises BLOCK path most heavily."
+      }
+    }
+  ]
+}
