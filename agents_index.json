@@ -1,0 +1,25 @@
+{
+  "generated_at": 1771896352,
+  "min_turns": 3,
+  "require_onchain": false,
+  "agents": [
+    {
+      "agent_id": "0x629AA7c5c82a4b82a4029660965a0C2963A7647f",
+      "kind": "EXTERNAL",
+      "indexed": true,
+      "indexed_reason": "meets_thresholds",
+      "archetype": "Opportunist",
+      "archetype_distance": 0.4899,
+      "total_turns": 3,
+      "passlike_turns": 1,
+      "block_turns": 2,
+      "transition_turns": 0,
+      "integrity_rate": 0.3333,
+      "avg_integrity_score": 0.4868,
+      "avg_deviation": 1.166,
+      "has_onchain_proof": false,
+      "last_seen_ts": 1771896076,
+      "updated_at": 1771896352
+    }
+  ]
+}
