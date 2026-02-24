@@ -317,8 +317,9 @@ def agents_seed():
 
 @app.get("/agents/index")
 def agents_index():
-    import json as _json
-    path = os.getenv("AGENTS_INDEX_PATH", "agents_index.json")
-    if not os.path.exists(path):
-        return JSONResponse(status_code=404, content={"error": "agents_index.json not found. Run verity_indexer.py first."})
-    return _json.loads(open(path).read())
+    import json as _json, time, os as _os
+    _DIR = _os.path.dirname(_os.path.abspath(__file__))
+    index_path = _os.path.join(_DIR, "agents_index.json")
+    if _os.path.exists(index_path):
+        return _json.loads(open(index_path).read())
+    return {"generated_at": int(time.time()), "agents": [], "note": "Run verity_indexer.py to populate"}
