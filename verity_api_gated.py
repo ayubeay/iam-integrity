@@ -289,7 +289,14 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "agents": len(AGENT_STORE)}
+    import json as _json, os as _os
+    _DIR = _os.path.dirname(_os.path.abspath(__file__))
+    try:
+        idx = _json.loads(open(_os.path.join(_DIR, "agents_index.json")).read())
+        indexed = len([a for a in idx["agents"] if a["indexed"]])
+    except:
+        indexed = 0
+    return {"status": "ok", "agents_active": len(AGENT_STORE), "agents_indexed": indexed, "seed_agents": 7}
 
 
 # ── Local test ────────────────────────────────────────────────────────────────
