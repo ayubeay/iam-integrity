@@ -302,10 +302,10 @@ if __name__ == "__main__":
 def agents_seed():
     import json as _json, time, os as _os
     _DIR = _os.path.dirname(_os.path.abspath(__file__))
-    seed_path = os.path.join(_DIR, "agents_seed.json")
+    seed_path = _os.path.join(_DIR, "agents_seed.json")
     if _os.path.exists(seed_path):
         return _json.loads(open(seed_path).read())
-    arch_path = os.path.join(_DIR, "archetypes.json")
+    arch_path = _os.path.join(_DIR, "archetypes.json")
     if not _os.path.exists(arch_path):
         return JSONResponse(status_code=404, content={"error": "archetypes.json not found"})
     archetypes = _json.loads(open(arch_path).read())["archetypes"]
