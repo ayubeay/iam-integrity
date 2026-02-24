@@ -300,11 +300,20 @@ if __name__ == "__main__":
 
 @app.get("/agents/seed")
 def agents_seed():
-    import json as _json
-    path = os.getenv("AGENTS_SEED_PATH", "agents_seed.json")
-    if not os.path.exists(path):
-        return JSONResponse(status_code=404, content={"error": "agents_seed.json not found. Run verity_indexer.py first."})
-    return _json.loads(open(path).read())
+    import json as _json, time
+    _DIR = os.path.dirname(os.path.abspath(__file__))
+    seed_path = os.path.join(_DIR, "agents_seed.json")
+    if os.path.exists(seed_path):
+        return _json.loads(open(seed_path).read())
+    arch_path = os.path.join(_DIR, "archetypes.json")
+    if not os.path.exists(arch_path):
+        return JSONResponse(status_code=404, content={"error": "archetypes.json not found"})
+    archetypes = _json.loads(open(arch_path).read())["archetypes"]
+    seeds = [{"agent_id": a["agent_id"], "kind": "SEED", "archetype": a["archetype"],
+              "role": a.get("role"), "identity_anchor": a["identity_anchor"],
+              "indexed": True, "indexed_reason": "founding_seed",
+              "updated_at": int(time.time())} for a in archetypes]
+    return {"generated_at": int(time.time()), "agents": seeds}
 
 @app.get("/agents/index")
 def agents_index():
