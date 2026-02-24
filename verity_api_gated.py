@@ -297,3 +297,19 @@ def health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+@app.get("/agents/seed")
+def agents_seed():
+    import json as _json
+    path = os.getenv("AGENTS_SEED_PATH", "agents_seed.json")
+    if not os.path.exists(path):
+        return JSONResponse(status_code=404, content={"error": "agents_seed.json not found. Run verity_indexer.py first."})
+    return _json.loads(open(path).read())
+
+@app.get("/agents/index")
+def agents_index():
+    import json as _json
+    path = os.getenv("AGENTS_INDEX_PATH", "agents_index.json")
+    if not os.path.exists(path):
+        return JSONResponse(status_code=404, content={"error": "agents_index.json not found. Run verity_indexer.py first."})
+    return _json.loads(open(path).read())
