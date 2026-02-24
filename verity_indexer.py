@@ -2,10 +2,12 @@ import os, json, time, math
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, List, Optional, Tuple
 
-ARCHETYPES_PATH = os.getenv("ARCHETYPES_PATH", "archetypes.json")
-TRAIL_PATH = os.getenv("TRAIL_PATH", "integrity_trail.jsonl")
-OUT_INDEX = os.getenv("OUT_INDEX", "agents_index.json")
-OUT_SEED = os.getenv("OUT_SEED", "agents_seed.json")
+import sys
+_DIR = os.path.dirname(os.path.abspath(__file__))
+ARCHETYPES_PATH = os.getenv("ARCHETYPES_PATH", os.path.join(_DIR, "archetypes.json"))
+TRAIL_PATH = os.getenv("TRAIL_PATH", os.path.join(_DIR, "integrity_trail.jsonl"))
+OUT_INDEX = os.getenv("OUT_INDEX", os.path.join(_DIR, "agents_index.json"))
+OUT_SEED = os.getenv("OUT_SEED", os.path.join(_DIR, "agents_seed.json"))
 MIN_TURNS = int(os.getenv("INDEX_MIN_TURNS", "3"))
 REQUIRE_ONCHAIN = os.getenv("INDEX_REQUIRE_ONCHAIN", "1") == "1"
 PASSLIKE = {"PASS", "ADJUST", "ADJUST+TRANSITION"}
