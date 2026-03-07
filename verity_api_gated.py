@@ -260,6 +260,28 @@ def score_integrity(req: IntegrityRequest):
         },
     }
 
+
+    # Write to integrity trail
+    import json as _json
+    trail_entry = {
+        "ts": round(time.time(), 3),
+        "agent_id": req.agent_id,
+        "debate_id": req.debate_id,
+        "turn": req.turn,
+        "decision": decision,
+        "deviation": round(deviation, 4),
+        "integrity_score": round(integrity, 4),
+        "requires_transition": requires_transition,
+        "proposed_stance": proposed_vec,
+        "identity_state": dict(core.identity_vector),
+    }
+    try:
+        trail_path = os.getenv("TRAIL_PATH", os.path.join(os.path.dirname(__file__), "integrity_trail.jsonl"))
+        with open(trail_path, "a") as _tf:
+            _tf.write(_json.dumps(trail_entry) + "\n")
+    except Exception as _e:
+        pass  # non-fatal
+
     return IntegrityResponse(
         agent_id=req.agent_id,
         debate_id=req.debate_id,
