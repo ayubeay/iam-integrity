@@ -330,3 +330,19 @@ def agents_index():
     if _os.path.exists(index_path):
         return _json.loads(open(index_path).read())
     return {"generated_at": int(time.time()), "agents": [], "note": "Run verity_indexer.py to populate"}
+
+@app.post("/agents/refresh")
+def refresh_agents_index():
+    """Manually trigger agent index rebuild from integrity trail."""
+    try:
+        import time as _time
+        from verity_indexer import load_json, parse_trail, build_seed_agents, build_index, write_json, now_ts, ARCHETYPES_PATH, TRAIL_PATH, OUT_SEED, OUT_INDEX, MIN_TURNS, REQUIRE_ONCHAIN
+        archetypes = load_json(ARCHETYPES_PATH)["archetypes"]
+        trail_rows = parse_trail(TRAIL_PATH)
+        seeds = build_seed_agents(archetypes)
+        index = build_index(trail_rows, archetypes)
+        write_json(OUT_SEED, {"generated_at": now_ts(), "agents": seeds})
+        write_json(OUT_INDEX, {"generated_at": now_ts(), "min_turns": MIN_TURNS, "require_onchain": REQUIRE_ONCHAIN, "agents": index})
+        return {"status": "ok", "refreshed_at": now_ts(), "seed_agents": len(seeds), "external_agents": len(index)}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
