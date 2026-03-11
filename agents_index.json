@@ -20,6 +20,21 @@
       "has_onchain_proof": false,
       "last_seen_ts": 1771896076,
       "updated_at": 1771896352
+    },
+    {
+      "agent_id": "agent_trusted_test",
+      "kind": "EXTERNAL",
+      "indexed": true,
+      "indexed_reason": "synthetic_test",
+      "archetype": "Guardian",
+      "archetype_distance": 0.15,
+      "total_turns": 20,
+      "passlike_turns": 18,
+      "block_turns": 0,
+      "transition_turns": 2,
+      "integrity_rate": 0.9,
+      "avg_integrity_score": 0.85,
+      "has_onchain_proof": false
     }
   ]
 }
