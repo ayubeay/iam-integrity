@@ -368,3 +368,167 @@ def refresh_agents_index():
         return {"status": "ok", "refreshed_at": now_ts(), "seed_agents": len(seeds), "external_agents": len(index)}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# OROS Pipeline Endpoints — free, no x402 gate
+# ---------------------------------------------------------------------------
+# These endpoints are called by OROS (execution-coordinator) during its
+# pipeline. They provide lightweight identity checks without requiring
+# payment. The paid /integrity/score endpoint remains unchanged.
+# ---------------------------------------------------------------------------
+
+class AuthorizeRequest(BaseModel):
+    agent_id: str
+    action_type: str
+    action_payload: Dict[str, Any] = Field(default_factory=dict)
+    environment: Dict[str, Any] = Field(default_factory=dict)
+
+
+class IntegrityCheckRequest(BaseModel):
+    agent_id: str
+    action_type: str = ""
+    environment: Dict[str, Any] = Field(default_factory=dict)
+
+
+@app.post("/authorize")
+def authorize(req: AuthorizeRequest):
+    """
+    Free IAM authorization gate for OROS pipeline.
+
+    Lightweight coherence-based decision:
+      - Known agent with good coherence → ALLOW
+      - Known agent with low coherence + sensitive action → DENY
+      - Known agent with low coherence → THROTTLE
+      - Unknown agent → ALLOW (default, no history)
+
+    Does NOT run the full NCE evaluation or archetype analysis.
+    """
+    import json as _json, os as _os
+
+    sensitive_actions = {
+        "payment_attempt", "transfer", "withdrawal",
+        "contract_deploy", "delegation", "permission_change",
+    }
+
+    # Check in-memory store first (agents that have been scored this session)
+    if req.agent_id in AGENT_STORE:
+        core = AGENT_STORE[req.agent_id]
+        coherence = core.coherence_score
+
+        if coherence < 0.2 and req.action_type in sensitive_actions:
+            return {
+                "decision": "DENY",
+                "reason": f"low_coherence:{coherence:.3f}:sensitive_action:{req.action_type}",
+                "policy_id": "iam_coherence_gate",
+                "integrity_score": round(coherence, 4),
+                "identity_state": dict(core.identity_vector),
+            }
+
+        if coherence < 0.35:
+            return {
+                "decision": "THROTTLE",
+                "reason": f"low_coherence:{coherence:.3f}:throttled",
+                "policy_id": "iam_coherence_gate",
+                "integrity_score": round(coherence, 4),
+                "identity_state": dict(core.identity_vector),
+            }
+
+        return {
+            "decision": "ALLOW",
+            "reason": f"coherence_ok:{coherence:.3f}",
+            "policy_id": "iam_coherence_gate",
+            "integrity_score": round(coherence, 4),
+            "identity_state": dict(core.identity_vector),
+        }
+
+    # Check indexed agents file
+    _DIR = _os.path.dirname(_os.path.abspath(__file__))
+    index_path = _os.path.join(_DIR, "agents_index.json")
+    try:
+        idx = _json.loads(open(index_path).read())
+        agent_id_lower = req.agent_id.lower()
+        for agent in idx.get("agents", []):
+            wallet = (agent.get("agent_id") or "").lower()
+            if wallet == agent_id_lower or agent_id_lower in wallet:
+                integrity = agent.get("integrity_rate", 0.5)
+                if integrity < 0.3 and req.action_type in sensitive_actions:
+                    return {
+                        "decision": "THROTTLE",
+                        "reason": f"indexed_low_integrity:{integrity:.3f}",
+                        "policy_id": "iam_index_gate",
+                        "integrity_score": round(integrity, 4),
+                    }
+                return {
+                    "decision": "ALLOW",
+                    "reason": f"indexed_agent:integrity={integrity:.3f}",
+                    "policy_id": "iam_index_gate",
+                    "integrity_score": round(integrity, 4),
+                    "archetype": agent.get("archetype"),
+                }
+    except Exception:
+        pass
+
+    # Unknown agent — allow with flag
+    return {
+        "decision": "ALLOW",
+        "reason": "unknown_agent:no_iam_history:default_allow",
+        "policy_id": "iam_default",
+        "integrity_score": None,
+    }
+
+
+@app.post("/integrity/check")
+def integrity_check(req: IntegrityCheckRequest):
+    """
+    Free lightweight integrity check for OROS pipeline.
+
+    Returns basic integrity data so OROS can make governance decisions
+    without requiring x402 payment on every pipeline event.
+    """
+    import json as _json, os as _os
+
+    # Check in-memory store
+    if req.agent_id in AGENT_STORE:
+        core = AGENT_STORE[req.agent_id]
+        return {
+            "agent_id": req.agent_id,
+            "integrity_score": round(core.coherence_score, 4),
+            "coherence": round(core.coherence_score, 4),
+            "decision": "PASS" if core.coherence_score > 0.5 else "ADJUST",
+            "identity_state": dict(core.identity_vector),
+            "reason": f"agent_known:coherence={core.coherence_score:.3f}",
+        }
+
+    # Check indexed agents
+    _DIR = _os.path.dirname(_os.path.abspath(__file__))
+    index_path = _os.path.join(_DIR, "agents_index.json")
+    try:
+        idx = _json.loads(open(index_path).read())
+        agent_id_lower = req.agent_id.lower()
+        for agent in idx.get("agents", []):
+            wallet = (agent.get("agent_id") or "").lower()
+            if wallet == agent_id_lower or agent_id_lower in wallet:
+                integrity = agent.get("integrity_rate", 0.5)
+                return {
+                    "agent_id": req.agent_id,
+                    "integrity_score": round(integrity, 4),
+                    "coherence": round(integrity, 4),
+                    "decision": "PASS" if integrity > 0.5 else "ADJUST",
+                    "identity_state": None,
+                    "reason": f"indexed_agent:integrity={integrity:.3f}",
+                    "archetype": agent.get("archetype"),
+                }
+    except Exception:
+        pass
+
+    # Unknown agent
+    return {
+        "agent_id": req.agent_id,
+        "integrity_score": None,
+        "coherence": None,
+        "decision": "UNKNOWN",
+        "identity_state": None,
+        "reason": "agent_not_found:no_integrity_history",
+    }
+
