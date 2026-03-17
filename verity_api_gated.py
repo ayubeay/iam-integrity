@@ -303,8 +303,7 @@ def score_integrity(req: IntegrityRequest):
 @app.get("/integrity/trail/{agent_id}")
 def get_integrity_trail(agent_id: str, limit: int = 20):
     """Return integrity trail entries for a specific agent."""
-    import json as _json
-    trail_path = os.getenv("TRAIL_PATH", os.path.join(os.path.dirname(__file__), "integrity_trail.jsonl"))
+    trail_path = os.getenv("TRAIL_PATH", "integrity_trail.jsonl")
     entries = []
     try:
         with open(trail_path, "r") as f:
@@ -313,7 +312,7 @@ def get_integrity_trail(agent_id: str, limit: int = 20):
                 if not line:
                     continue
                 try:
-                    entry = _json.loads(line)
+                    entry = json.loads(line)
                     if entry.get("agent_id") == agent_id:
                         entries.append(entry)
                 except Exception:
