@@ -299,6 +299,34 @@ def score_integrity(req: IntegrityRequest):
 
 # ── Health check ──────────────────────────────────────────────────────────────
 
+
+@app.get("/integrity/trail/{agent_id}")
+def get_integrity_trail(agent_id: str, limit: int = 20):
+    """Return integrity trail entries for a specific agent."""
+    import json as _json
+    trail_path = os.getenv("TRAIL_PATH", os.path.join(os.path.dirname(__file__), "integrity_trail.jsonl"))
+    entries = []
+    try:
+        with open(trail_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = _json.loads(line)
+                    if entry.get("agent_id") == agent_id:
+                        entries.append(entry)
+                except Exception:
+                    continue
+    except FileNotFoundError:
+        return {"agent_id": agent_id, "entries": [], "total": 0}
+    entries = sorted(entries, key=lambda x: x.get("turn", 0))
+    return {
+        "agent_id": agent_id,
+        "total": len(entries),
+        "entries": entries[-limit:]
+    }
+
 @app.get("/")
 def root():
     return {
