@@ -598,6 +598,17 @@ async def environment_status():
     }
 
 
+@app.get("/agents/zodiac")
+async def agents_zodiac():
+    """12 zodiac-aligned agent archetypes with debate pairings."""
+    import json
+    try:
+        with open("agents_zodiac.json") as f:
+            return json.load(f)
+    except Exception:
+        return {"agents": []}
+
+
 @app.get("/agents/summary")
 async def agents_summary():
     """Counts and health across all agent categories."""
@@ -615,11 +626,19 @@ async def agents_summary():
     except Exception:
         pass
 
+    zodiac_count = 0
+    try:
+        with open("agents_zodiac.json") as f:
+            zodiac_count = len(json.load(f).get("agents", []))
+    except Exception:
+        pass
+
     return {
         "seed_agents": seed_count,
+        "zodiac_agents": zodiac_count,
         "indexed_agents": indexed_count,
         "runtime_agents": len(AGENT_STORE),
-        "total": seed_count + indexed_count + len(AGENT_STORE),
+        "total": seed_count + zodiac_count + indexed_count + len(AGENT_STORE),
         "onchain_required": True,
     }
 
