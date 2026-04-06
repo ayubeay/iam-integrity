@@ -657,6 +657,16 @@ async def get_agent(agent_id: str):
     except Exception:
         pass
 
+    # Check zodiac agents
+    try:
+        with open("agents_zodiac.json") as f:
+            zodiac_data = json.load(f)
+        for agent in zodiac_data.get("agents", []):
+            if agent["agent_id"] == agent_id:
+                return {"source": "zodiac", **agent}
+    except Exception:
+        pass
+
     # Check indexed agents
     try:
         with open("agents_index.json") as f:
