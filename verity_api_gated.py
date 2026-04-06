@@ -598,6 +598,32 @@ async def environment_status():
     }
 
 
+@app.get("/agents/summary")
+async def agents_summary():
+    """Counts and health across all agent categories."""
+    import json
+    seed_count = 0
+    indexed_count = 0
+    try:
+        with open("agents_seed.json") as f:
+            seed_count = len(json.load(f).get("agents", []))
+    except Exception:
+        pass
+    try:
+        with open("agents_index.json") as f:
+            indexed_count = len(json.load(f).get("agents", []))
+    except Exception:
+        pass
+
+    return {
+        "seed_agents": seed_count,
+        "indexed_agents": indexed_count,
+        "runtime_agents": len(AGENT_STORE),
+        "total": seed_count + indexed_count + len(AGENT_STORE),
+        "onchain_required": True,
+    }
+
+
 @app.get("/agents/{agent_id}")
 async def get_agent(agent_id: str):
     """Get agent profile — seed or indexed."""
@@ -655,27 +681,4 @@ async def integrity_recent(limit: int = 20):
     return {"count": len(events), "events": events}
 
 
-@app.get("/agents/summary")
-async def agents_summary():
-    """Counts and health across all agent categories."""
-    import json
-    seed_count = 0
-    indexed_count = 0
-    try:
-        with open("agents_seed.json") as f:
-            seed_count = len(json.load(f).get("agents", []))
-    except Exception:
-        pass
-    try:
-        with open("agents_index.json") as f:
-            indexed_count = len(json.load(f).get("agents", []))
-    except Exception:
-        pass
 
-    return {
-        "seed_agents": seed_count,
-        "indexed_agents": indexed_count,
-        "runtime_agents": len(AGENT_STORE),
-        "total": seed_count + indexed_count + len(AGENT_STORE),
-        "onchain_required": True,
-    }
