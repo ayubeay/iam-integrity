@@ -1,0 +1,34 @@
+{
+  "updated_at": "2026-03-27T22:44:02Z",
+  "base_block": 43931034,
+  "total_transfers": 960,
+  "unique_addresses": 249,
+  "trail_entries": 246,
+  "errors": 0,
+  "page_stats": {
+    "players": 263,
+    "active": 144,
+    "resolving": 1,
+    "finalized": 395
+  },
+  "verity_scoring": {
+    "agents_scored": 246,
+    "archetypes": {
+      "Guardian": 6,
+      "Advocate": 8,
+      "Maximizer": 3,
+      "Skeptic": 82,
+      "Opportunist": 117,
+      "Diplomat": 17,
+      "Radical": 13
+    },
+    "decisions": {
+      "PASS": 9,
+      "ADJUST": 98,
+      "ADJUST+TRANSITION": 4,
+      "BLOCK": 135
+    },
+    "flagged_agents": 100,
+    "avg_epistemic": 0.2853
+  }
+}

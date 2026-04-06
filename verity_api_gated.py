@@ -560,3 +560,122 @@ def integrity_check(req: IntegrityCheckRequest):
         "reason": "agent_not_found:no_integrity_history",
     }
 
+
+
+# ── Environment bridge routes ─────────────────────────────────────────────────
+# Connect IAM to the live execution stack (OROS, PRAETOR, HELIX, SURVIVOR Gate)
+
+import httpx
+
+OROS_URL = "https://execution-coordinator-production.up.railway.app"
+HELIX_URL = "https://swap-rail-production.up.railway.app"
+GATE_URL = "https://survivor-oracle-production-1501.up.railway.app"
+
+
+@app.get("/environment/status")
+async def environment_status():
+    """Unified status across all IAM-governed systems."""
+    async with httpx.AsyncClient(timeout=8) as client:
+        results = {}
+        for name, url in [
+            ("oros", f"{OROS_URL}/health"),
+            ("praetor", f"{OROS_URL}/praetor/status"),
+            ("helix", f"{HELIX_URL}/health"),
+            ("gate", f"{GATE_URL}/gate/health"),
+        ]:
+            try:
+                r = await client.get(url)
+                results[name] = r.json() if r.status_code == 200 else {"status": "error", "code": r.status_code}
+            except Exception as e:
+                results[name] = {"status": "unreachable", "error": str(e)}
+
+    return {
+        "environment": "IAM",
+        "timestamp": time.time(),
+        "systems": results,
+        "posture": results.get("praetor", {}).get("posture", "unknown"),
+        "kernel_modules": results.get("oros", {}).get("kernel_modules", {}),
+    }
+
+
+@app.get("/agents/{agent_id}")
+async def get_agent(agent_id: str):
+    """Get agent profile — seed or indexed."""
+    import json
+    # Check seed agents
+    try:
+        with open("agents_seed.json") as f:
+            seed_data = json.load(f)
+        for agent in seed_data.get("agents", []):
+            if agent["agent_id"] == agent_id:
+                return {"source": "seed", **agent}
+    except Exception:
+        pass
+
+    # Check indexed agents
+    try:
+        with open("agents_index.json") as f:
+            index_data = json.load(f)
+        for agent in index_data.get("agents", []):
+            if agent["agent_id"] == agent_id:
+                return {"source": "indexed", **agent}
+    except Exception:
+        pass
+
+    # Check runtime store
+    if agent_id in AGENT_STORE:
+        state = AGENT_STORE[agent_id]
+        return {
+            "source": "runtime",
+            "agent_id": agent_id,
+            "identity": state.identity,
+            "coherence": state.coherence,
+            "episode_count": state.episode_count,
+        }
+
+    raise HTTPException(status_code=404, detail="agent_not_found")
+
+
+@app.get("/integrity/recent")
+async def integrity_recent(limit: int = 20):
+    """Recent integrity trail events."""
+    import json
+    events = []
+    try:
+        with open("integrity_trail.jsonl") as f:
+            lines = f.readlines()
+        for line in lines[-limit:]:
+            try:
+                events.append(json.loads(line.strip()))
+            except Exception:
+                pass
+    except FileNotFoundError:
+        pass
+    events.reverse()
+    return {"count": len(events), "events": events}
+
+
+@app.get("/agents/summary")
+async def agents_summary():
+    """Counts and health across all agent categories."""
+    import json
+    seed_count = 0
+    indexed_count = 0
+    try:
+        with open("agents_seed.json") as f:
+            seed_count = len(json.load(f).get("agents", []))
+    except Exception:
+        pass
+    try:
+        with open("agents_index.json") as f:
+            indexed_count = len(json.load(f).get("agents", []))
+    except Exception:
+        pass
+
+    return {
+        "seed_agents": seed_count,
+        "indexed_agents": indexed_count,
+        "runtime_agents": len(AGENT_STORE),
+        "total": seed_count + indexed_count + len(AGENT_STORE),
+        "onchain_required": True,
+    }
