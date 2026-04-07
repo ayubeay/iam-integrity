@@ -562,6 +562,43 @@ def integrity_check(req: IntegrityCheckRequest):
 
 
 
+
+
+@app.get("/challenges")
+async def list_challenges():
+    """List all active challenges."""
+    import json, os
+    challenges = []
+    cdir = "challenges"
+    if os.path.isdir(cdir):
+        for f in sorted(os.listdir(cdir)):
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(cdir, f)) as fh:
+                        challenges.append(json.load(fh))
+                except Exception:
+                    pass
+    return {"count": len(challenges), "challenges": challenges}
+
+
+@app.get("/challenges/{challenge_id}")
+async def get_challenge(challenge_id: str):
+    """Get a specific challenge by ID."""
+    import json, os
+    cdir = "challenges"
+    if os.path.isdir(cdir):
+        for f in os.listdir(cdir):
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(cdir, f)) as fh:
+                        c = json.load(fh)
+                    if c.get("challenge_id") == challenge_id:
+                        return c
+                except Exception:
+                    pass
+    raise HTTPException(status_code=404, detail="challenge_not_found")
+
+
 # ── Environment bridge routes ─────────────────────────────────────────────────
 # Connect IAM to the live execution stack (OROS, PRAETOR, HELIX, SURVIVOR Gate)
 

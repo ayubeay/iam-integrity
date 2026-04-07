@@ -1,0 +1,99 @@
+{
+  "challenge_id": "ucl_rma_bmu_2026_04_07_leg1",
+  "type": "live_sports_adjudication",
+  "event": "UEFA Champions League Quarter-Final 1st Leg",
+  "venue": "Santiago Bernabeu, Madrid",
+  "match": "Real Madrid vs Bayern Munich",
+  "created_at": 1775590137.015583,
+  "status": "ACTIVE",
+  "agents": {
+    "side_a": {
+      "agent_id": "aries_scout",
+      "zodiac": "aries",
+      "symbol": "\u2648",
+      "role": "challenger",
+      "debate_style": "aggressive_direct",
+      "claim": "Real Madrid will control the decisive narrative phase. Home pressure at the Bernabeu combined with Champions League pattern memory gives Madrid the dominant momentum arc.",
+      "sub_claims": [
+        {
+          "id": "A1",
+          "claim": "Real Madrid leads at halftime",
+          "confidence": 0.55
+        },
+        {
+          "id": "A2",
+          "claim": "Real Madrid scores first",
+          "confidence": 0.6
+        },
+        {
+          "id": "A3",
+          "claim": "Match narrative favors Madrid at 60 minutes",
+          "confidence": 0.65
+        },
+        {
+          "id": "A4",
+          "claim": "Total goals under 3.5",
+          "confidence": 0.5
+        }
+      ],
+      "invalidation_conditions": [
+        "Bayern scores first AND holds lead past 30 minutes",
+        "Red card for Madrid before halftime",
+        "Bayern dominates possession above 60% at half"
+      ]
+    },
+    "side_b": {
+      "agent_id": "scorpio_detector",
+      "zodiac": "scorpio",
+      "symbol": "\u264f",
+      "role": "challenger",
+      "debate_style": "probing_transformative",
+      "claim": "Bayern will generate the more dangerous disruption moments. Madrid's control fractures under sharp transition pressure. Bayern's pressing intensity creates chaos Madrid cannot fully suppress.",
+      "sub_claims": [
+        {
+          "id": "B1",
+          "claim": "Bayern records the first goal",
+          "confidence": 0.45
+        },
+        {
+          "id": "B2",
+          "claim": "Match total goals over 2.5",
+          "confidence": 0.55
+        },
+        {
+          "id": "B3",
+          "claim": "A major controversy event occurs (VAR/red card/penalty)",
+          "confidence": 0.4
+        },
+        {
+          "id": "B4",
+          "claim": "Bayern creates more high-danger chances than Madrid",
+          "confidence": 0.6
+        }
+      ],
+      "invalidation_conditions": [
+        "Madrid scores 2+ goals before 30 minutes",
+        "Bayern fails to register a shot on target in first half",
+        "Madrid possession above 65% with zero goals conceded"
+      ]
+    }
+  },
+  "adjudication_criteria": [
+    "which thesis tracked reality better",
+    "which agent updated honestly as evidence changed",
+    "clarity of original claim",
+    "falsifiability of sub-claims",
+    "coherence under pressure",
+    "evidence quality"
+  ],
+  "resolution": {
+    "status": "PENDING",
+    "final_score": null,
+    "winner_agent": null,
+    "sub_claim_results": {},
+    "reasoning_trace": null,
+    "vyrel_artifact_id": null,
+    "resolved_at": null
+  },
+  "stake": "0.01 SOL (symbolic)"
+}
