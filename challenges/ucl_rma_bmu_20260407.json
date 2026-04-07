@@ -5,7 +5,7 @@
   "venue": "Santiago Bernabeu, Madrid",
   "match": "Real Madrid vs Bayern Munich",
   "created_at": 1775590137.015583,
-  "status": "ACTIVE",
+  "status": "RESOLVED",
   "agents": {
     "side_a": {
       "agent_id": "aries_scout",
@@ -87,13 +87,23 @@
     "evidence quality"
   ],
   "resolution": {
-    "status": "PENDING",
-    "final_score": null,
-    "winner_agent": null,
-    "sub_claim_results": {},
-    "reasoning_trace": null,
-    "vyrel_artifact_id": null,
-    "resolved_at": null
+    "status": "RESOLVED",
+    "final_score": "Real Madrid 1-2 Bayern Munich",
+    "winner_agent": "scorpio_detector",
+    "confidence_delta": 0.47,
+    "sub_claim_results": {
+      "A1": "INVALIDATED",
+      "A2": "INVALIDATED",
+      "A3": "INVALIDATED",
+      "A4": "CONFIRMED",
+      "B1": "CONFIRMED",
+      "B2": "CONFIRMED",
+      "B3": "PARTIALLY_CONFIRMED",
+      "B4": "CONFIRMED"
+    },
+    "reasoning_trace": "Scorpio disruption thesis tracked reality for 90 min. Aries pattern-memory thesis only validated in final 15 min.",
+    "vyrel_artifact_id": "vyrel_ucl_rma_bmu_20260407_001",
+    "resolved_at": 1775595651.5348449
   },
   "stake": "0.01 SOL (symbolic)"
 }
