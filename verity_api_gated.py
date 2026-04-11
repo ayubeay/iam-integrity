@@ -738,53 +738,15 @@ def helixcan_summary():
     import json as _json, os as _os
     _DIR = _os.path.dirname(_os.path.abspath(__file__))
 
-    # Recent governance decisions (last 20)
+    # Read from snapshot file (synced from bot)
     recent_gov = []
-    gov_path = _os.path.join(_DIR, "data", "governance_decisions.jsonl")
-    if not _os.path.exists(gov_path):
-        gov_path = "/opt/momentum/data/governance_decisions.jsonl"
-    try:
-        with open(gov_path) as f:
-            lines = f.readlines()
-        for line in lines[-20:]:
-            if line.strip():
-                d = _json.loads(line)
-                recent_gov.append({
-                    "mint": (d.get("mint") or "?")[:16],
-                    "decision": d.get("decision", "?"),
-                    "risk_level": d.get("risk_level", "?"),
-                    "green_count": d.get("green_count", 0) or 0,
-                    "score": d.get("reputation_score", d.get("policy_score", 0)) or 0,
-                    "market_cap_usd": d.get("market_cap_usd", 0),
-                    "liq_usd": d.get("liq_usd", 0),
-                    "ts": d.get("ts", 0),
-                })
-    except: pass
-
-    # Recent paper trades (last 20)
     recent_exec = []
-    trade_path = _os.path.join(_DIR, "data", "paper_trades.jsonl")
-    if not _os.path.exists(trade_path):
-        trade_path = "/opt/momentum/data/paper_trades.jsonl"
+    snapshot_path = _os.path.join(_DIR, "data", "helixcan_snapshot.json")
     try:
-        with open(trade_path) as f:
-            lines = f.readlines()
-        for line in lines[-20:]:
-            if line.strip():
-                t = _json.loads(line)
-                recent_exec.append({
-                    "mint": (t.get("mint") or "?")[:16],
-                    "decision": t.get("decision", "?"),
-                    "regime": t.get("regime", "?"),
-                    "green_count": t.get("green_count", 0) or 0,
-                    "score": t.get("score", 0) or 0,
-                    "liq_usd": t.get("liq_usd", t.get("entry_liquidity", 0)) or 0,
-                    "final_pnl_pct": t.get("final_pnl_pct"),
-                    "exit_reason": t.get("exit_reason", "?"),
-                    "status": t.get("status", "?"),
-                    "entry_mc_usd": t.get("entry_mc_usd", 0),
-                    "ts": t.get("decision_ts", t.get("entry_ts", 0)),
-                })
+        with open(snapshot_path) as f:
+            snapshot = _json.load(f)
+        recent_gov = snapshot.get("recent_governance", [])
+        recent_exec = snapshot.get("recent_executions", [])
     except: pass
 
     # Recent challenges
