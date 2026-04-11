@@ -733,6 +733,8 @@ async def get_agent(agent_id: str):
 @app.get("/verity/stats")
 def verity_stats():
     """Live VERITY scoring stats for landing page. Reads from JSON files, not runtime store."""
+    import json as _json, os as _os
+    _DIR = _os.path.dirname(_os.path.abspath(__file__))
     
     # Count agents from JSON files
     seed_agents = []
