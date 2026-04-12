@@ -747,6 +747,8 @@ def helixcan_summary():
             snapshot = _json.load(f)
         recent_gov = snapshot.get("recent_governance", [])
         recent_exec = snapshot.get("recent_executions", [])
+        cohorts = snapshot.get("cohorts", {})
+        updated_at = snapshot.get("updated_at", 0)
     except: pass
 
     # Recent challenges
@@ -771,6 +773,8 @@ def helixcan_summary():
         "recent_executions": list(reversed(recent_exec)),
         "recent_governance": list(reversed(recent_gov)),
         "recent_challenges": recent_challenges,
+        "cohorts": cohorts if cohorts else {},
+        "updated_at": updated_at if updated_at else 0,
     }
 
 @app.get("/verity/stats")
