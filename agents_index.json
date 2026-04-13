@@ -19,7 +19,10 @@
       "avg_deviation": 1.166,
       "has_onchain_proof": false,
       "last_seen_ts": 1771896076,
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "category": "observed",
+      "provenance_tier": "external",
+      "listing_status": "observed"
     }
   ]
 }
