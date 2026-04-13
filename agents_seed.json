@@ -192,7 +192,14 @@
       "execution_band": "expanded",
       "governance_weight": 1.0,
       "listing_eligible": true,
-      "override_allowed": true
+      "override_allowed": true,
+      "market_eligible": false,
+      "eligibility_progress": {
+        "executions": "314/500",
+        "score": "87.0/90",
+        "stability": "0.9/0.92",
+        "win_rate": "20.9%/30%"
+      }
     }
   ]
 }
