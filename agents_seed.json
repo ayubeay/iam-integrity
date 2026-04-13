@@ -209,7 +209,39 @@
       "dominant_regime": "lowcap_expansion",
       "dominant_decision": "ALLOW",
       "allow_closed_trades": 142,
-      "throttle_closed_trades": 60
+      "throttle_closed_trades": 60,
+      "promotion_history": [
+        {
+          "event": "REGISTERED",
+          "ts": 1739232000,
+          "note": "First registration in IAM registry"
+        },
+        {
+          "event": "FIRST_RECEIPT",
+          "ts": 1741824000,
+          "note": "First validated execution receipt"
+        },
+        {
+          "event": "LIFECYCLE_ADOLESCENT",
+          "ts": 1742256000,
+          "note": "Promoted: execution_count > 25"
+        },
+        {
+          "event": "LIFECYCLE_PRIME",
+          "ts": 1743552000,
+          "note": "Promoted: lifecycle score crossed 40"
+        },
+        {
+          "event": "LIFECYCLE_MATURE",
+          "ts": 1744329600,
+          "note": "Promoted: score 87, 314 executions"
+        },
+        {
+          "event": "ELIGIBILITY_PROGRESS",
+          "ts": 1744416000,
+          "note": "0/4 market thresholds crossed"
+        }
+      ]
     }
   ]
 }

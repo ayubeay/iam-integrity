@@ -22,7 +22,31 @@
       "updated_at": 1771896899,
       "category": "observed",
       "provenance_tier": "external",
-      "listing_status": "observed"
+      "listing_status": "observed",
+      "promotion_history": [
+        {
+          "event": "OBSERVED",
+          "ts": 1743033600,
+          "note": "First detected as external address"
+        },
+        {
+          "event": "CLASSIFIED_EXTERNAL",
+          "ts": 1743033600,
+          "note": "Classified as Opportunist"
+        },
+        {
+          "event": "TRACKING_ENABLED",
+          "ts": 1744416000,
+          "note": "Passive tracking mode enabled"
+        }
+      ],
+      "external_status": {
+        "classification": "Observed External",
+        "verification": "Unverified",
+        "activity": "None observed",
+        "iam_admission": "Not requested",
+        "tracking_mode": "Passive"
+      }
     }
   ]
 }
