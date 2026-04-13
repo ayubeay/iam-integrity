@@ -21,7 +21,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "taurus_guardian",
@@ -43,7 +55,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "gemini_interpreter",
@@ -65,7 +89,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "cancer_protector",
@@ -87,7 +123,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "leo_amplifier",
@@ -109,7 +157,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "virgo_analyst",
@@ -131,7 +191,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "libra_balancer",
@@ -153,7 +225,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "scorpio_detector",
@@ -175,7 +259,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "sagittarius_explorer",
@@ -197,7 +293,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "capricorn_enforcer",
@@ -219,7 +327,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "aquarius_innovator",
@@ -241,7 +361,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "pisces_sensor",
@@ -263,7 +395,19 @@
       "kind": "ZODIAC_SEED",
       "indexed": true,
       "indexed_reason": "zodiac_founding",
-      "updated_at": 1775516936
+      "updated_at": 1775516936,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     }
   ]
 }

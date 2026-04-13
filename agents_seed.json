@@ -23,7 +23,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "advocate_01",
@@ -47,7 +59,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "maximizer_01",
@@ -71,7 +95,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "skeptic_01",
@@ -95,7 +131,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "opportunist_01",
@@ -119,7 +167,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "diplomat_01",
@@ -143,7 +203,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     },
     {
       "agent_id": "radical_01",
@@ -167,7 +239,19 @@
       },
       "indexed": true,
       "indexed_reason": "founding_seed",
-      "updated_at": 1771896899
+      "updated_at": 1771896899,
+      "birth_ts": 1776117269,
+      "agent_age_years": 0.0,
+      "lifecycle_score": 9.0,
+      "lifecycle_stage": "SEED",
+      "execution_count": 0,
+      "challenge_count": 0,
+      "anomaly_count": 0,
+      "stability_score": 0.3,
+      "execution_band": "observe_only",
+      "governance_weight": 0.1,
+      "listing_eligible": false,
+      "override_allowed": false
     }
   ]
 }
