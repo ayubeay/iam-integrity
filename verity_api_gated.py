@@ -774,6 +774,8 @@ def helixcan_summary():
         "recent_governance": list(reversed(recent_gov)),
         "recent_challenges": recent_challenges,
         "cohorts": cohorts if cohorts else {},
+        "regime_board": snapshot.get("regime_board", {}),
+        "governance_drift": snapshot.get("governance_drift", {}),
         "updated_at": updated_at if updated_at else 0,
     }
 
