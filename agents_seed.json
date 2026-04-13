@@ -198,8 +198,18 @@
         "executions": "314/500",
         "score": "87.0/90",
         "stability": "0.9/0.92",
-        "win_rate": "20.9%/30%"
-      }
+        "win_rate": "27.7%/30%"
+      },
+      "win_rate": 0.277,
+      "closed_trades": 202,
+      "avg_final_pnl": -1.76,
+      "median_final_pnl": -8.36,
+      "max_gain_pct": 91.1,
+      "max_loss_pct": -52.2,
+      "dominant_regime": "lowcap_expansion",
+      "dominant_decision": "ALLOW",
+      "allow_closed_trades": 142,
+      "throttle_closed_trades": 60
     }
   ]
 }
