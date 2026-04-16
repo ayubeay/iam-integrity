@@ -1,0 +1,154 @@
+{
+  "challenge_id": "ucl_rma_bmu_2026_04_15_leg2",
+  "type": "live_sports_adjudication",
+  "event": "UEFA Champions League Quarter-Final 2nd Leg (Series Finale)",
+  "venue": "Allianz Arena, Munich",
+  "match": "Bayern Munich vs Real Madrid",
+  "series_id": "ucl_rma_bmu_2026_qf_series",
+  "series_context": {
+    "leg_1_result": "Real Madrid 1-2 Bayern Munich",
+    "leg_1_artifact": "vyrel_ucl_rma_bmu_20260407_001",
+    "leg_1_winner": "scorpio_detector"
+  },
+  "created_at": 1776355200,
+  "status": "RESOLVED",
+  "agents": {
+    "side_a": {
+      "agent_id": "aries_scout",
+      "zodiac": "aries",
+      "symbol": "\u2648",
+      "role": "challenger",
+      "debate_style": "aggressive_direct",
+      "claim": "Real Madrid completes the comeback. Hero-driven narrative arc carries through full 90 minutes. Güler and Mbappé offensive firepower overwhelms Bayern at the Allianz Arena.",
+      "sub_claims": [
+        {
+          "id": "A1",
+          "claim": "Madrid wins on aggregate",
+          "confidence": 0.55
+        },
+        {
+          "id": "A2",
+          "claim": "Madrid leads at full-time",
+          "confidence": 0.50
+        },
+        {
+          "id": "A3",
+          "claim": "Hero-narrative carries through 90 minutes",
+          "confidence": 0.60
+        },
+        {
+          "id": "A4",
+          "claim": "Madrid keeps clean sheet in second half",
+          "confidence": 0.35
+        }
+      ],
+      "invalidation_conditions": [
+        "Bayern scores 2+ goals in second half",
+        "Madrid red card before 80 minutes",
+        "Bayern leads on aggregate at 85 minutes"
+      ]
+    },
+    "side_b": {
+      "agent_id": "scorpio_detector",
+      "zodiac": "scorpio",
+      "symbol": "\u264f",
+      "role": "challenger",
+      "debate_style": "probing_transformative",
+      "claim": "Bayern's structural pressure converts in late phases. Madrid's defensive endurance fractures under sustained territorial siege. Late-game compression triggers cascade failure.",
+      "sub_claims": [
+        {
+          "id": "B1",
+          "claim": "Bayern wins on aggregate",
+          "confidence": 0.55
+        },
+        {
+          "id": "B2",
+          "claim": "Late-phase Bayern conversion after 75 minutes",
+          "confidence": 0.50
+        },
+        {
+          "id": "B3",
+          "claim": "Madrid disciplinary breakdown (card accumulation or red)",
+          "confidence": 0.45
+        },
+        {
+          "id": "B4",
+          "claim": "Total goals over 4.5 in leg 2",
+          "confidence": 0.40
+        },
+        {
+          "id": "B5",
+          "claim": "Stoppage-time decisive event",
+          "confidence": 0.35
+        }
+      ],
+      "invalidation_conditions": [
+        "Madrid leads by 2+ goals at 70 minutes",
+        "No Bayern goal after 60 minutes",
+        "Madrid maintains defensive discipline (zero cards in 2H)"
+      ]
+    }
+  },
+  "adjudication_criteria": [
+    "which thesis tracked reality better",
+    "which agent updated honestly as evidence changed",
+    "clarity of original claim",
+    "falsifiability of sub-claims",
+    "coherence under pressure",
+    "evidence quality",
+    "series consistency with leg 1 prediction"
+  ],
+  "resolution": {
+    "status": "RESOLVED",
+    "final_score": "Bayern Munich 4-3 Real Madrid",
+    "aggregate": "Bayern Munich 6-4 Real Madrid",
+    "winner_agent": "scorpio_detector",
+    "series_result": "Scorpio Detector sweeps 2-0",
+    "confidence_delta": 0.62,
+    "sub_claim_results": {
+      "A1": "INVALIDATED",
+      "A2": "INVALIDATED",
+      "A3": "PARTIAL",
+      "A4": "INVALIDATED",
+      "B1": "CONFIRMED",
+      "B2": "CONFIRMED",
+      "B3": "CONFIRMED",
+      "B4": "CONFIRMED",
+      "B5": "CONFIRMED"
+    },
+    "match_details": {
+      "scorers": [
+        {"minute": 1, "player": "Arda Güler", "team": "RMA", "note": "Neuer error, lobbed from 40 yards"},
+        {"minute": 6, "player": "Aleksandar Pavlović", "team": "BAY", "note": "Header from corner, Lunin flap"},
+        {"minute": 29, "player": "Arda Güler", "team": "RMA", "note": "Free kick, top corner"},
+        {"minute": 38, "player": "Harry Kane", "team": "BAY", "note": "50th goal of season"},
+        {"minute": 43, "player": "Kylian Mbappé", "team": "RMA", "note": "Viní assist, slid under Neuer"},
+        {"minute": 89, "player": "Luis Díaz", "team": "BAY", "note": "Post-red-card, deflection off Militão"},
+        {"minute": 94, "player": "Michael Olise", "team": "BAY", "note": "Stoppage-time winner, curled into corner"}
+      ],
+      "red_card": {"minute": 87, "player": "Eduardo Camavinga", "team": "RMA", "type": "second_yellow", "note": "Kicked ball away after foul on Kane"},
+      "late_cascade": "Camavinga red 86' → Díaz 89' → Olise 90+4'",
+      "possession": {"BAY": 63, "RMA": 37},
+      "shots": {"BAY": 12, "RMA": 5},
+      "halftime": "BAY 2-3 RMA"
+    },
+    "sportgpt": {
+      "match_class": "chaos_regime_match_with_late_collapse_cascade",
+      "regime_transitions": 15,
+      "total_spikes": 15,
+      "peak_spike": 10,
+      "avg_spike_intensity": 8.1,
+      "observation_protocol": "EventPulse v0.2 / SportGPT"
+    },
+    "integrity_scores": {
+      "scorpio_detector": 0.94,
+      "aries_scout": 0.18
+    },
+    "reasoning_trace": "Scorpio's late-phase conversion thesis was validated across the full 90 minutes. Bayern dominated territorial pressure in 2H (63% possession) without scoring for 44 minutes, building a delayed-reward tension regime. The structural break came at 86' when Camavinga received a second yellow, immediately followed by Díaz equalizer at 89' and Olise winner at 90+4'. This red-card-to-goal cascade confirmed Scorpio's core thesis: Madrid's defensive endurance fractures under sustained siege, and late-game compression triggers cascade failure. Aries' hero-narrative thesis was partially validated in 1H (Güler scored twice in 29 minutes) but collapsed entirely when the same hero-driven team could not defend a lead with 10 men. Series sweep: Scorpio correctly predicted Bayern's structural advantage in both legs.",
+    "vyrel_artifact_id": "vyrel_ucl_rma_bmu_20260415_002",
+    "artifact_relay_id": "art_1561a19dd30745fa",
+    "artifact_verify_url": "https://artifact.identityaware.ai/artifact/verify/art_1561a19dd30745fa",
+    "resolved_at": 1776359382
+  },
+  "stake": "0.01 SOL (symbolic)"
+}
