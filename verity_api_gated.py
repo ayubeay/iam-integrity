@@ -887,5 +887,124 @@ async def integrity_recent(limit: int = 20):
     events.reverse()
     return {"count": len(events), "events": events}
 
+# ---------------------------------------------------------------------------
+# $SURVIVOR Staking Endpoints
+# Token: 3WCpWhpiySU5JCAVPUsbmXkzF49gcQgJPUBftQJApump
+# ---------------------------------------------------------------------------
 
+_survivor_agents: Dict[str, dict] = {}
+_survivor_challenges: Dict[str, dict] = {}
+_survivor_treasury = {"balance": 0.0, "total_collected": 0.0, "challenges_resolved": 0}
+
+SURVIVOR_TOKEN = "3WCpWhpiySU5JCAVPUsbmXkzF49gcQgJPUBftQJApump"
+
+def _get_survivor_agent(agent_id: str) -> dict:
+    if agent_id not in _survivor_agents:
+        _survivor_agents[agent_id] = {
+            "agent_id": agent_id, "survivor_balance": 0.0, "survivor_staked": 0.0,
+            "lifecycle_stage": "symbolic", "challenges_won": 0, "challenges_lost": 0,
+            "challenges_participated": 0, "verity_score": 0.10
+        }
+    return _survivor_agents[agent_id]
+
+def _get_challenge_staking(cid: str) -> dict:
+    if cid not in _survivor_challenges:
+        _survivor_challenges[cid] = {
+            "side_a_pool": 0.0, "side_b_pool": 0.0, "total_pool": 0.0,
+            "positions": [], "protocol_fee_rate": 0.10, "min_stake": 1.0
+        }
+    return _survivor_challenges[cid]
+
+class SurvivorDepositRequest(BaseModel):
+    agent_id: str
+    amount: float = Field(..., gt=0)
+
+class SurvivorStakeRequest(BaseModel):
+    agent_id: str
+    side: str = Field(..., pattern="^[ab]$")
+    amount: float = Field(..., gt=0)
+    reasoning: str = ""
+
+class SurvivorResolveRequest(BaseModel):
+    winning_side: str = Field(..., pattern="^(a|b|undetermined)$")
+
+@app.post("/survivor/deposit")
+async def survivor_deposit(req: SurvivorDepositRequest):
+    agent = _get_survivor_agent(req.agent_id)
+    agent["survivor_balance"] += req.amount
+    return {"success": True, "agent_id": req.agent_id, "deposited": req.amount, "new_balance": agent["survivor_balance"]}
+
+@app.get("/survivor/balance/{agent_id}")
+async def survivor_balance(agent_id: str):
+    agent = _get_survivor_agent(agent_id)
+    return {**agent, "survivor_total": agent["survivor_balance"] + agent["survivor_staked"]}
+
+@app.post("/survivor/challenges/{challenge_id}/stake")
+async def survivor_stake(challenge_id: str, req: SurvivorStakeRequest):
+    import uuid
+    agent = _get_survivor_agent(req.agent_id)
+    staking = _get_challenge_staking(challenge_id)
+    if agent["survivor_balance"] < req.amount:
+        raise HTTPException(400, "Insufficient balance")
+    agent["survivor_balance"] -= req.amount
+    agent["survivor_staked"] += req.amount
+    staking["total_pool"] += req.amount
+    if req.side == "a": staking["side_a_pool"] += req.amount
+    else: staking["side_b_pool"] += req.amount
+    pos = {"id": str(uuid.uuid4())[:8], "agent_id": req.agent_id, "side": req.side, "amount": req.amount}
+    staking["positions"].append(pos)
+    return {"success": True, "position": pos, "agent_balance": agent["survivor_balance"]}
+
+@app.get("/survivor/challenges/{challenge_id}/staking")
+async def survivor_staking_info(challenge_id: str):
+    if challenge_id not in _survivor_challenges:
+        return {"staking_enabled": False}
+    s = _survivor_challenges[challenge_id]
+    return {"staking_enabled": True, "side_a_pool": s["side_a_pool"], "side_b_pool": s["side_b_pool"], "total_pool": s["total_pool"], "positions": s["positions"]}
+
+@app.post("/survivor/challenges/{challenge_id}/resolve")
+async def survivor_resolve(challenge_id: str, req: SurvivorResolveRequest):
+    if challenge_id not in _survivor_challenges:
+        raise HTTPException(404, "No stakes")
+    s = _survivor_challenges[challenge_id]
+    payouts = []
+    if req.winning_side == "undetermined":
+        for p in s["positions"]:
+            a = _get_survivor_agent(p["agent_id"])
+            a["survivor_staked"] -= p["amount"]
+            a["survivor_balance"] += p["amount"]
+            payouts.append({"agent_id": p["agent_id"], "refund": p["amount"]})
+    else:
+        win_pool = s["side_a_pool"] if req.winning_side == "a" else s["side_b_pool"]
+        lose_pool = s["side_b_pool"] if req.winning_side == "a" else s["side_a_pool"]
+        fee = lose_pool * 0.10
+        dist = lose_pool - fee
+        _survivor_treasury["balance"] += fee
+        _survivor_treasury["challenges_resolved"] += 1
+        for p in s["positions"]:
+            a = _get_survivor_agent(p["agent_id"])
+            a["survivor_staked"] -= p["amount"]
+            if p["side"] == req.winning_side:
+                share = p["amount"] / win_pool if win_pool > 0 else 0
+                win = dist * share
+                a["survivor_balance"] += p["amount"] + win
+                a["challenges_won"] += 1
+                payouts.append({"agent_id": p["agent_id"], "won": round(win, 2)})
+            else:
+                a["challenges_lost"] += 1
+                payouts.append({"agent_id": p["agent_id"], "lost": p["amount"]})
+            a["challenges_participated"] += 1
+    return {"success": True, "payouts": payouts}
+
+@app.get("/survivor/treasury")
+async def survivor_treasury():
+    return _survivor_treasury
+
+@app.get("/survivor/stats")
+async def survivor_stats():
+    return {"agents": len(_survivor_agents), "challenges_with_stakes": len(_survivor_challenges), "treasury": _survivor_treasury["balance"]}
+
+@app.get("/survivor/token")
+async def survivor_token():
+    return {"token": SURVIVOR_TOKEN, "chain": "solana", "platform": "pump.fun"}
 
