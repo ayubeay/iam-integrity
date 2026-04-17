@@ -1113,6 +1113,13 @@ async def survivor_auto_resolve(challenge_id: str):
         
         a["challenges_participated"] += 1
     
+    # Clear resolved positions
+    s["positions"] = []
+    s["resolved"] = True
+    s["resolved_at"] = time.time()
+    s["winning_side"] = winning_side
+    _save_survivor_data()
+    
     return {
         "success": True,
         "challenge_id": challenge_id,
