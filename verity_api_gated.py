@@ -892,9 +892,30 @@ async def integrity_recent(limit: int = 20):
 # Token: 3WCpWhpiySU5JCAVPUsbmXkzF49gcQgJPUBftQJApump
 # ---------------------------------------------------------------------------
 
-_survivor_agents: Dict[str, dict] = {}
-_survivor_challenges: Dict[str, dict] = {}
-_survivor_treasury = {"balance": 0.0, "total_collected": 0.0, "challenges_resolved": 0}
+import os as _os_survivor
+import json as _json_survivor
+
+_SURVIVOR_DATA_FILE = _os_survivor.path.join(_os_survivor.path.dirname(__file__), "data", "survivor_data.json")
+
+def _load_survivor_data():
+    if _os_survivor.path.exists(_SURVIVOR_DATA_FILE):
+        try:
+            with open(_SURVIVOR_DATA_FILE) as f:
+                return _json_survivor.load(f)
+        except:
+            pass
+    return {"agents": {}, "challenges": {}, "treasury": {"balance": 0.0, "total_collected": 0.0, "challenges_resolved": 0}}
+
+def _save_survivor_data():
+    data = {"agents": _survivor_agents, "challenges": _survivor_challenges, "treasury": _survivor_treasury}
+    _os_survivor.makedirs(_os_survivor.path.dirname(_SURVIVOR_DATA_FILE), exist_ok=True)
+    with open(_SURVIVOR_DATA_FILE, "w") as f:
+        _json_survivor.dump(data, f, indent=2)
+
+_survivor_state = _load_survivor_data()
+_survivor_agents: Dict[str, dict] = _survivor_state["agents"]
+_survivor_challenges: Dict[str, dict] = _survivor_state["challenges"]
+_survivor_treasury = _survivor_state["treasury"]
 
 SURVIVOR_TOKEN = "3WCpWhpiySU5JCAVPUsbmXkzF49gcQgJPUBftQJApump"
 
@@ -932,6 +953,7 @@ class SurvivorResolveRequest(BaseModel):
 async def survivor_deposit(req: SurvivorDepositRequest):
     agent = _get_survivor_agent(req.agent_id)
     agent["survivor_balance"] += req.amount
+    _save_survivor_data()
     return {"success": True, "agent_id": req.agent_id, "deposited": req.amount, "new_balance": agent["survivor_balance"]}
 
 @app.get("/survivor/balance/{agent_id}")
@@ -953,6 +975,7 @@ async def survivor_stake(challenge_id: str, req: SurvivorStakeRequest):
     else: staking["side_b_pool"] += req.amount
     pos = {"id": str(uuid.uuid4())[:8], "agent_id": req.agent_id, "side": req.side, "amount": req.amount}
     staking["positions"].append(pos)
+    _save_survivor_data()
     return {"success": True, "position": pos, "agent_balance": agent["survivor_balance"]}
 
 @app.get("/survivor/challenges/{challenge_id}/staking")
@@ -994,6 +1017,7 @@ async def survivor_resolve(challenge_id: str, req: SurvivorResolveRequest):
                 a["challenges_lost"] += 1
                 payouts.append({"agent_id": p["agent_id"], "lost": p["amount"]})
             a["challenges_participated"] += 1
+    _save_survivor_data()
     return {"success": True, "payouts": payouts}
 
 @app.get("/survivor/treasury")
