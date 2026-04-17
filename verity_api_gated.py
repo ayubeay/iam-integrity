@@ -1008,3 +1008,125 @@ async def survivor_stats():
 async def survivor_token():
     return {"token": SURVIVOR_TOKEN, "chain": "solana", "platform": "pump.fun"}
 
+@app.post("/survivor/challenges/{challenge_id}/auto-resolve")
+async def survivor_auto_resolve(challenge_id: str):
+    """Auto-resolve stakes based on existing challenge resolution."""
+    import os as _os
+    import json
+    
+    # Load challenge data
+    cdir = _os.path.join(_os.path.dirname(__file__), "challenges")
+    challenge = None
+    for fname in _os.listdir(cdir):
+        if fname.endswith(".json"):
+            with open(_os.path.join(cdir, fname)) as f:
+                c = json.load(f)
+                if c.get("challenge_id") == challenge_id:
+                    challenge = c
+                    break
+    
+    if not challenge:
+        raise HTTPException(404, f"Challenge {challenge_id} not found")
+    
+    resolution = challenge.get("resolution", {})
+    if resolution.get("status") != "RESOLVED":
+        raise HTTPException(400, "Challenge not yet resolved")
+    
+    winner_agent = resolution.get("winner_agent")
+    if not winner_agent:
+        raise HTTPException(400, "No winner determined")
+    
+    # Determine winning side
+    agents = challenge.get("agents", {})
+    winning_side = None
+    if agents.get("side_a", {}).get("agent_id") == winner_agent:
+        winning_side = "a"
+    elif agents.get("side_b", {}).get("agent_id") == winner_agent:
+        winning_side = "b"
+    elif agents.get("claim_holder", {}).get("agent_id") == winner_agent:
+        winning_side = "a"
+    elif agents.get("challenger", {}).get("agent_id") == winner_agent:
+        winning_side = "b"
+    
+    if not winning_side:
+        raise HTTPException(400, f"Could not determine side for winner {winner_agent}")
+    
+    # Check if stakes exist
+    if challenge_id not in _survivor_challenges:
+        return {"success": True, "message": "No stakes to resolve", "winner": winner_agent, "winning_side": winning_side}
+    
+    # Resolve stakes
+    s = _survivor_challenges[challenge_id]
+    if len(s["positions"]) == 0:
+        return {"success": True, "message": "No positions to resolve", "winner": winner_agent}
+    
+    payouts = []
+    win_pool = s["side_a_pool"] if winning_side == "a" else s["side_b_pool"]
+    lose_pool = s["side_b_pool"] if winning_side == "a" else s["side_a_pool"]
+    
+    fee = lose_pool * 0.10
+    dist = lose_pool - fee
+    _survivor_treasury["balance"] += fee
+    _survivor_treasury["challenges_resolved"] += 1
+    
+    for p in s["positions"]:
+        a = _get_survivor_agent(p["agent_id"])
+        a["survivor_staked"] -= p["amount"]
+        
+        if p["side"] == winning_side:
+            share = p["amount"] / win_pool if win_pool > 0 else 0
+            winnings = dist * share
+            a["survivor_balance"] += p["amount"] + winnings
+            a["challenges_won"] += 1
+            payouts.append({"agent_id": p["agent_id"], "side": p["side"], "staked": p["amount"], "won": round(winnings, 2), "is_winner": True})
+            
+            # Auto-promote lifecycle
+            if a["lifecycle_stage"] == "symbolic" and a["challenges_participated"] >= 1:
+                a["lifecycle_stage"] = "challenge_active"
+        else:
+            a["challenges_lost"] += 1
+            payouts.append({"agent_id": p["agent_id"], "side": p["side"], "staked": p["amount"], "lost": p["amount"], "is_winner": False})
+        
+        a["challenges_participated"] += 1
+    
+    return {
+        "success": True,
+        "challenge_id": challenge_id,
+        "winner_agent": winner_agent,
+        "winning_side": winning_side,
+        "total_pool": s["total_pool"],
+        "protocol_fee": round(fee, 2),
+        "payouts": payouts
+    }
+
+
+@app.get("/survivor/balance/{agent_id}/full")
+async def survivor_balance_full(agent_id: str):
+    """Full balance with open positions."""
+    agent = _get_survivor_agent(agent_id)
+    
+    # Find open positions
+    open_positions = []
+    for cid, staking in _survivor_challenges.items():
+        for pos in staking["positions"]:
+            if pos["agent_id"] == agent_id:
+                open_positions.append({
+                    "challenge_id": cid,
+                    "side": pos["side"],
+                    "amount": pos["amount"],
+                    "staked_at": pos.get("staked_at", None)
+                })
+    
+    total = agent["survivor_balance"] + agent["survivor_staked"]
+    participated = agent["challenges_participated"]
+    win_rate = agent["challenges_won"] / participated if participated > 0 else 0.0
+    
+    return {
+        **agent,
+        "survivor_total": round(total, 2),
+        "challenge_win_rate": round(win_rate, 4),
+        "open_positions": open_positions,
+        "open_position_count": len(open_positions),
+        "last_updated": time.time()
+    }
+
