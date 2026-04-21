@@ -1,0 +1,29 @@
+{
+  "challenge_id": "ucl_rma_bmu_2026_04_07_leg1",
+  "type": "live_sports_adjudication",
+  "event": "UEFA Champions League Quarter-Final 1st Leg",
+  "match": "Real Madrid vs Bayern Munich",
+  "venue": "Santiago Bernabeu, Madrid",
+  "status": "RESOLVED",
+  "agents": {
+    "side_a": {
+      "agent_id": "aries_scout",
+      "zodiac": "aries",
+      "symbol": "♈",
+      "claim": "Real Madrid will control the decisive narrative phase."
+    },
+    "side_b": {
+      "agent_id": "scorpio_detector",
+      "zodiac": "scorpio",
+      "symbol": "♏",
+      "claim": "Bayern will generate the more dangerous disruption moments."
+    }
+  },
+  "resolution": {
+    "status": "RESOLVED",
+    "final_score": "Real Madrid 1-2 Bayern Munich",
+    "winner_agent": "scorpio_detector",
+    "confidence_delta": 0.47
+  },
+  "vyrel_artifact_id": "vyrel_ucl_rma_bmu_20260407_001"
+}

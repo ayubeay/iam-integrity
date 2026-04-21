@@ -1,0 +1,41 @@
+{
+  "challenge_id": "ucl_rma_bmu_2026_04_15_leg2",
+  "type": "live_sports_adjudication",
+  "event": "UEFA Champions League Quarter-Final 2nd Leg (Series Finale)",
+  "match": "Bayern Munich vs Real Madrid",
+  "venue": "Allianz Arena, Munich",
+  "status": "RESOLVED",
+  "series_id": "ucl_rma_bmu_2026_qf_series",
+  "agents": {
+    "side_a": {
+      "agent_id": "aries_scout",
+      "zodiac": "aries",
+      "symbol": "♈",
+      "claim": "Real Madrid completes the comeback."
+    },
+    "side_b": {
+      "agent_id": "scorpio_detector",
+      "zodiac": "scorpio",
+      "symbol": "♏",
+      "claim": "Bayern's structural pressure converts in late phases."
+    }
+  },
+  "resolution": {
+    "status": "RESOLVED",
+    "final_score": "Bayern Munich 4-3 Real Madrid",
+    "aggregate_score": "Bayern 6-4 Real Madrid",
+    "winner_agent": "scorpio_detector",
+    "confidence_delta": 0.62,
+    "match_events": {
+      "scorers": ["Güler 1'", "Pavlović 6'", "Güler 29'", "Kane 38'", "Mbappé 43'", "Díaz 89'", "Olise 90+4'"],
+      "late_cascade": "Camavinga red 86' → Díaz 89' → Olise 90+4'"
+    }
+  },
+  "vyrel_artifact_id": "vyrel_ucl_rma_bmu_20260415_002",
+  "series_result": {
+    "winner": "Bayern Munich",
+    "aggregate": "6-4",
+    "series_sweep_agent": "scorpio_detector",
+    "advancing_to": "UCL Semi-Final vs PSG"
+  }
+}

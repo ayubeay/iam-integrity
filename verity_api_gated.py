@@ -566,36 +566,115 @@ def integrity_check(req: IntegrityCheckRequest):
 
 @app.get("/challenges")
 async def list_challenges():
-    """List all active challenges."""
+    """List all challenges enriched with SURVIVOR staking receipts when available."""
     import json, os
+
     challenges = []
     cdir = "challenges"
+
     if os.path.isdir(cdir):
         for f in sorted(os.listdir(cdir)):
-            if f.endswith(".json"):
-                try:
-                    with open(os.path.join(cdir, f)) as fh:
-                        challenges.append(json.load(fh))
-                except Exception:
-                    pass
+            if not f.endswith(".json"):
+                continue
+            try:
+                with open(os.path.join(cdir, f)) as fh:
+                    c = json.load(fh)
+
+                cid = c.get("challenge_id")
+                staking = _survivor_challenges.get(cid)
+
+                if staking:
+                    side_a_pool = float(staking.get("side_a_pool", 0.0))
+                    side_b_pool = float(staking.get("side_b_pool", 0.0))
+                    total_pool = float(staking.get("total_pool", side_a_pool + side_b_pool))
+                    payouts = staking.get("payouts", [])
+                    positions = staking.get("positions", [])
+
+                    c["survivor_receipt"] = {
+                        "staking_enabled": True,
+                        "token": SURVIVOR_TOKEN,
+                        "symbol": "$SURVIVOR",
+                        "side_a_pool": side_a_pool,
+                        "side_b_pool": side_b_pool,
+                        "total_pool": total_pool,
+                        "protocol_fee": float(staking.get("protocol_take", 0.0)),
+                        "positions": positions,
+                        "payouts": payouts,
+                        "winning_side": staking.get("winning_side"),
+                        "resolved_at": staking.get("resolved_at"),
+                    }
+                    c["participants_count"] = len(positions)
+                    c["pool"] = {
+                        "token": "$SURVIVOR",
+                        "total": total_pool,
+                    }
+                else:
+                    c.setdefault("survivor_receipt", {
+                        "staking_enabled": False
+                    })
+                    c.setdefault("participants_count", 0)
+
+                challenges.append(c)
+            except Exception:
+                pass
+
     return {"count": len(challenges), "challenges": challenges}
 
 
 @app.get("/challenges/{challenge_id}")
 async def get_challenge(challenge_id: str):
-    """Get a specific challenge by ID."""
+    """Get a specific challenge enriched with SURVIVOR staking receipt when available."""
     import json, os
+
     cdir = "challenges"
     if os.path.isdir(cdir):
         for f in os.listdir(cdir):
-            if f.endswith(".json"):
-                try:
-                    with open(os.path.join(cdir, f)) as fh:
-                        c = json.load(fh)
-                    if c.get("challenge_id") == challenge_id:
-                        return c
-                except Exception:
-                    pass
+            if not f.endswith(".json"):
+                continue
+            try:
+                with open(os.path.join(cdir, f)) as fh:
+                    c = json.load(fh)
+
+                if c.get("challenge_id") != challenge_id:
+                    continue
+
+                staking = _survivor_challenges.get(challenge_id)
+
+                if staking:
+                    side_a_pool = float(staking.get("side_a_pool", 0.0))
+                    side_b_pool = float(staking.get("side_b_pool", 0.0))
+                    total_pool = float(staking.get("total_pool", side_a_pool + side_b_pool))
+                    payouts = staking.get("payouts", [])
+                    positions = staking.get("positions", [])
+
+                    c["survivor_receipt"] = {
+                        "staking_enabled": True,
+                        "token": SURVIVOR_TOKEN,
+                        "symbol": "$SURVIVOR",
+                        "side_a_pool": side_a_pool,
+                        "side_b_pool": side_b_pool,
+                        "total_pool": total_pool,
+                        "protocol_fee": float(staking.get("protocol_take", 0.0)),
+                        "positions": positions,
+                        "payouts": payouts,
+                        "winning_side": staking.get("winning_side"),
+                        "resolved_at": staking.get("resolved_at"),
+                    }
+                    c["participants_count"] = len(positions)
+                    c["pool"] = {
+                        "token": "$SURVIVOR",
+                        "total": total_pool,
+                    }
+                else:
+                    c.setdefault("survivor_receipt", {
+                        "staking_enabled": False
+                    })
+                    c.setdefault("participants_count", 0)
+
+                return c
+            except Exception:
+                pass
+
     raise HTTPException(status_code=404, detail="challenge_not_found")
 
 

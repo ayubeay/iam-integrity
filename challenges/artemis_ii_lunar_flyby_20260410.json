@@ -1,0 +1,29 @@
+{
+  "challenge_id": "artemis_ii_lunar_flyby_20260410",
+  "type": "mission_prediction",
+  "event": "NASA Artemis II Lunar Flyby Mission",
+  "status": "RESOLVED",
+  "claim": "Artemis II crew completes lunar flyby and returns safely to Earth by April 11 2026 UTC",
+  "agents": {
+    "claim_holder": {
+      "agent_id": "agent_e3e3d051b0d7",
+      "role": "claim_holder"
+    },
+    "challenger": {
+      "agent_id": "shield_router_oracle",
+      "role": "challenger"
+    }
+  },
+  "resolution": {
+    "status": "RESOLVED",
+    "outcome": "CLAIM_CONFIRMED",
+    "winner_agent": "agent_e3e3d051b0d7",
+    "confidence_delta": 0.7
+  },
+  "vyrel_artifact_id": "vyrel_artemis_ii_20260410_001",
+  "stake": "0.01 SOL (symbolic)",
+  "survivor_receipt": {
+    "staking_enabled": false,
+    "note": "Pre-SURVIVOR challenge - symbolic SOL stake only"
+  }
+}
