@@ -1240,3 +1240,270 @@ async def survivor_balance_full(agent_id: str):
         "last_updated": time.time()
     }
 
+
+# ============================================================================
+# SIGNED SURVIVOR RECEIPT INFRASTRUCTURE
+# ============================================================================
+
+import hashlib
+import json as json_module
+import base64
+import os
+
+# Default token constant
+DEFAULT_SURVIVOR_TOKEN = "3WCpWhpiySU5JCAVPUsbmXkzF49gcQgJPUBftQJApump"
+IAM_API_BASE = "https://web-production-949249.up.railway.app"
+
+# Ed25519 signing (using nacl if available)
+try:
+    import nacl.signing
+    import nacl.encoding
+    NACL_AVAILABLE = True
+except ImportError:
+    NACL_AVAILABLE = False
+
+# Signer key management
+SIGNER_KEY_ID = "vyre_v1"
+_signing_key = None
+_verify_key_hex = None
+
+def _init_signing_key():
+    """Initialize Ed25519 signing key from env seed."""
+    global _signing_key, _verify_key_hex
+    if not NACL_AVAILABLE:
+        return
+    
+    seed_hex = os.environ.get("VYRE_SIGNING_SEED_HEX", "").strip()
+    if not seed_hex:
+        # No seed configured - signing will be unavailable
+        return
+    
+    try:
+        seed = bytes.fromhex(seed_hex)
+        if len(seed) != 32:
+            raise ValueError("VYRE_SIGNING_SEED_HEX must decode to exactly 32 bytes")
+        _signing_key = nacl.signing.SigningKey(seed)
+        _verify_key_hex = _signing_key.verify_key.encode(
+            encoder=nacl.encoding.HexEncoder
+        ).decode()
+    except Exception as e:
+        print(f"[VYRE] Signing key init failed: {e}")
+
+_init_signing_key()
+
+def _canonical_json(obj: dict) -> str:
+    """Produce canonical JSON: sorted keys, no whitespace, UTF-8."""
+    return json_module.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+def _hash_receipt(canonical: str) -> str:
+    """SHA-256 hash of canonical JSON."""
+    return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+def _sign_receipt(canonical: str) -> tuple:
+    """Sign canonical JSON, return (signature_hex, signer_key_id, verify_key_hex)."""
+    if not NACL_AVAILABLE or not _signing_key:
+        return (None, None, None)
+    
+    signed = _signing_key.sign(canonical.encode("utf-8"))
+    sig_hex = signed.signature.hex()
+    return (sig_hex, SIGNER_KEY_ID, _verify_key_hex)
+
+def _build_signed_receipt(challenge: dict) -> dict:
+    """Build a signed SURVIVOR settlement receipt from challenge data."""
+    sr = challenge.get("survivor_receipt", {})
+    
+    if not sr.get("staking_enabled"):
+        return {
+            "receipt_type": "survivor_challenge_settlement",
+            "challenge_id": challenge.get("challenge_id"),
+            "status": "SYMBOLIC",
+            "staking_enabled": False,
+            "note": sr.get("note", "Pre-SURVIVOR challenge"),
+            "signed": False,
+            "verification_status": "SYMBOLIC"
+        }
+    
+    # Sort positions and payouts deterministically
+    positions = sorted(
+        sr.get("positions", []),
+        key=lambda x: (x.get("agent_id", ""), x.get("side", ""), float(x.get("amount", 0)))
+    )
+    payouts = sorted(
+        sr.get("payouts", []),
+        key=lambda x: (x.get("agent_id", ""), x.get("side", ""))
+    )
+    
+    # Build canonical receipt payload (excludes signature fields)
+    payload = {
+        "receipt_type": "survivor_challenge_settlement",
+        "challenge_id": challenge.get("challenge_id"),
+        "status": "SETTLED",
+        "token": sr.get("token") or DEFAULT_SURVIVOR_TOKEN,
+        "token_symbol": sr.get("symbol", "$SURVIVOR"),
+        "side_a_pool": float(sr.get("side_a_pool", 0)),
+        "side_b_pool": float(sr.get("side_b_pool", 0)),
+        "total_pool": float(sr.get("total_pool", 0)),
+        "protocol_fee": float(sr.get("protocol_fee", 0)),
+        "winning_side": sr.get("winning_side"),
+        "positions": positions,
+        "payouts": payouts,
+        "resolved_at": sr.get("resolved_at"),
+        "vyrel_artifact_id": challenge.get("vyrel_artifact_id"),
+    }
+    
+    canonical = _canonical_json(payload)
+    receipt_hash = _hash_receipt(canonical)
+    sig, signer_id, verify_key = _sign_receipt(canonical)
+    
+    # Fail loudly if staking receipt cannot be signed
+    if not sig:
+        raise HTTPException(
+            status_code=500,
+            detail="signing_unavailable_for_staked_receipt"
+        )
+    
+    return {
+        **payload,
+        "staking_enabled": True,
+        "receipt_hash": receipt_hash,
+        "signer": signer_id,
+        "verify_key": verify_key,
+        "signature": sig,
+        "signed": True,
+        "verification_status": "SIGNED"
+    }
+
+
+@app.get("/survivor/receipt/{challenge_id}")
+async def get_survivor_receipt(challenge_id: str):
+    """Get signed SURVIVOR settlement receipt for a challenge."""
+    cdir = "challenges"
+    if not os.path.isdir(cdir):
+        raise HTTPException(status_code=404, detail="challenges_dir_missing")
+    
+    for f in os.listdir(cdir):
+        if not f.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(cdir, f)) as fh:
+                ch = json_module.load(fh)
+            if ch.get("challenge_id") == challenge_id:
+                return _build_signed_receipt(ch)
+        except HTTPException:
+            raise
+        except Exception:
+            continue
+    
+    raise HTTPException(status_code=404, detail="challenge_not_found")
+
+
+@app.get("/survivor/receipt/{challenge_id}/verify")
+async def verify_survivor_receipt(challenge_id: str):
+    """Verify signature on a SURVIVOR settlement receipt."""
+    receipt = await get_survivor_receipt(challenge_id)
+    
+    if not receipt.get("signed"):
+        return {"verified": False, "reason": "unsigned", "challenge_id": challenge_id}
+    
+    # Rebuild payload without signature fields
+    payload = {
+        k: v for k, v in receipt.items()
+        if k not in {"receipt_hash", "signer", "verify_key", "signature", "signed", "verification_status", "staking_enabled"}
+    }
+    
+    canonical = _canonical_json(payload)
+    expected_hash = _hash_receipt(canonical)
+    
+    if expected_hash != receipt.get("receipt_hash"):
+        return {"verified": False, "reason": "hash_mismatch", "challenge_id": challenge_id}
+    
+    if not NACL_AVAILABLE:
+        return {"verified": False, "reason": "nacl_unavailable", "challenge_id": challenge_id}
+    
+    try:
+        verify_key = nacl.signing.VerifyKey(
+            receipt["verify_key"],
+            encoder=nacl.encoding.HexEncoder
+        )
+        verify_key.verify(
+            canonical.encode("utf-8"),
+            bytes.fromhex(receipt["signature"])
+        )
+        return {
+            "verified": True,
+            "reason": "signature_valid",
+            "challenge_id": challenge_id,
+            "receipt_hash": receipt.get("receipt_hash"),
+            "signer": receipt.get("signer")
+        }
+    except Exception as e:
+        return {
+            "verified": False,
+            "reason": "signature_invalid",
+            "challenge_id": challenge_id,
+            "error": str(e)
+        }
+
+
+@app.get("/challenges/{challenge_id}/public-proof")
+async def get_challenge_public_proof(challenge_id: str):
+    """Get stripped public proof object for RACER/Helixcan."""
+    cdir = "challenges"
+    if not os.path.isdir(cdir):
+        raise HTTPException(status_code=404, detail="challenges_dir_missing")
+    
+    for f in os.listdir(cdir):
+        if not f.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(cdir, f)) as fh:
+                ch = json_module.load(fh)
+            if ch.get("challenge_id") == challenge_id:
+                receipt = _build_signed_receipt(ch)
+                
+                resolution = ch.get("resolution", {})
+                agents = ch.get("agents", {})
+                
+                return {
+                    "challenge_id": challenge_id,
+                    "status": ch.get("status", "UNKNOWN"),
+                    "event": ch.get("event"),
+                    "match": ch.get("match"),
+                    "winner_agent": resolution.get("winner_agent"),
+                    "confidence_delta": resolution.get("confidence_delta"),
+                    "vyrel_artifact_id": ch.get("vyrel_artifact_id"),
+                    "agents": {
+                        "side_a": agents.get("side_a", {}).get("agent_id"),
+                        "side_b": agents.get("side_b", {}).get("agent_id"),
+                    },
+                    "survivor_summary": {
+                        "staking_enabled": receipt.get("staking_enabled"),
+                        "total_pool": receipt.get("total_pool"),
+                        "winning_side": receipt.get("winning_side"),
+                        "token": receipt.get("token_symbol"),
+                    },
+                    "receipt_hash": receipt.get("receipt_hash"),
+                    "signature": receipt.get("signature"),
+                    "signer": receipt.get("signer"),
+                    "verification_status": receipt.get("verification_status"),
+                    "verify_url": f"{IAM_API_BASE}/survivor/receipt/{challenge_id}/verify"
+                }
+        except HTTPException:
+            raise
+        except Exception:
+            continue
+    
+    raise HTTPException(status_code=404, detail="challenge_not_found")
+
+
+@app.get("/survivor/verify-key")
+async def get_verify_key():
+    """Get the public verification key for receipt signatures."""
+    return {
+        "signer_key_id": SIGNER_KEY_ID,
+        "verify_key_hex": _verify_key_hex,
+        "algorithm": "Ed25519",
+        "nacl_available": NACL_AVAILABLE,
+        "signing_configured": _signing_key is not None
+    }
+
