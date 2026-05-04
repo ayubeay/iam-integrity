@@ -3,9 +3,9 @@ Domain-agnostic agent minting.
 
 Atomic birth pipeline that creates a new mint-born agent with:
   - structured agent record in agents_index.json (with scope + ORA bindings)
-  - birth receipt in integrity_trail.jsonl (with scope + ORA bindings)
+  - SIGNED birth receipt in integrity_trail.jsonl
   - persistent scope contract in scopes/{scope_id}.json
-  - persistent ORA contract reference (oras/{ora_id}.json must already exist)
+  - persistent ORA contract reference (oras/{ora_id}.json)
   - VERITY score baseline (0.10)
   - identity state seeded from behavioral template
   - lifecycle initialized to "seed"
@@ -14,11 +14,21 @@ Each mint binds the agent to two contracts:
   scope_contract_id  — what the agent is allowed to do  (capabilities)
   ora_contract_id    — how the agent is governed         (constraint rules + enforcement)
 
-NOTE: This module creates the artifacts that will later allow OROS to
-enforce both scope and ORA contracts. OROS does not yet read or enforce
-either — those are separate later patches. Anchoring at mint comes first
-so all agents born after this patch share the same governance schema,
-avoiding migration debt when enforcement arrives.
+Birth receipts are now cryptographically signed when the platform's signing
+key is configured (VYRE_SIGNING_SEED_HEX env var). The signed payload
+INCLUDES both scope_contract_id and ora_contract_id, meaning the agent's
+binding to a specific scope and governance contract is cryptographically
+attested at birth — not just stored in the registry.
+
+Receipt structure:
+  - canonical payload (signed): identity, scope binding, ORA binding, etc.
+  - receipt_hash: SHA-256 of canonical payload
+  - signature + signer + verify_key: Ed25519 attestation (when configured)
+  - verification_status: "SIGNED" | "UNSIGNED"
+
+NOTE: When VYRE_SIGNING_SEED_HEX is not set (typical in local dev), mints
+still succeed but produce unsigned receipts with verification_status
+set to "UNSIGNED". Production deploys MUST set the env var.
 """
 from __future__ import annotations
 
@@ -29,6 +39,14 @@ import time
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from signing import (
+    canonical_json,
+    hash_receipt,
+    sign_receipt,
+    get_verify_key_hex,
+    is_signing_configured,
+    SIGNER_KEY_ID,
+)
 from ora_contract import (
     DEFAULT_ORA_ID,
     ensure_default_ora_persisted,
@@ -62,19 +80,27 @@ def mint_agent(
     scope_contract: Dict[str, Any],
     ora_contract_id: str = DEFAULT_ORA_ID,
     identity_seed: Optional[Dict[str, float]] = None,
+    require_signing: bool = False,
 ) -> Dict[str, Any]:
     """
-    Atomic birth: create agent record, persist scope, write birth receipt,
-    register in agents_index. Roll back if any step fails.
+    Atomic birth: create agent record, persist scope, write SIGNED birth
+    receipt, register in agents_index. Roll back if any step fails.
+
+    The signed payload includes scope_contract_id AND ora_contract_id,
+    so the agent's binding to specific governance is cryptographically
+    attested — verification proves not just identity but also "this agent
+    was bound to this scope and this ORA at birth."
 
     Args:
         agent_type:           "music" | "trading" | "inspection" | "debate"
         role:                 e.g. "music_curator", "track_predictor"
         birth_owner:          wallet or account that creates the agent
-        behavioral_template:  archetype name, e.g. "advocate_01" or "Advocate"
+        behavioral_template:  archetype name
         scope_contract:       structured scope dict (from scope_contract.py)
         ora_contract_id:      governance contract id (default: ora_default_v1)
         identity_seed:        optional override for initial identity vector
+        require_signing:      if True, fail mint if signing unavailable.
+                              Default False allows local dev without signing key.
 
     Returns:
         The full agent record that was written to agents_index.json.
@@ -108,9 +134,6 @@ def mint_agent(
         )
 
     # ── 2. Verify ORA contract is persisted on disk ──────────────────────────
-    # If the requested ora_contract_id is the default, ensure it exists.
-    # If it's a custom id, the caller is responsible for persisting it
-    # before calling mint_agent.
     if ora_contract_id == DEFAULT_ORA_ID:
         ensure_default_ora_persisted()
 
@@ -122,22 +145,27 @@ def mint_agent(
             f"Persist it to oras/{ora_contract_id}.json before minting."
         ) from e
 
-    # ── 3. Load behavioral template ──────────────────────────────────────────
+    # ── 3. Check signing availability ────────────────────────────────────────
+    if require_signing and not is_signing_configured():
+        raise MintError(
+            "require_signing=True but signing is not configured. "
+            "Set VYRE_SIGNING_SEED_HEX env var."
+        )
+
+    # ── 4. Load behavioral template ──────────────────────────────────────────
     archetype_profile = _load_archetype(behavioral_template)
     if archetype_profile is None:
         raise ValueError(
-            f"unknown behavioral_template: {behavioral_template!r}. "
-            f"Must match an archetype in archetypes.json by archetype name "
-            f"or agent_id."
+            f"unknown behavioral_template: {behavioral_template!r}"
         )
 
-    # ── 4. Compute deterministic agent_id ────────────────────────────────────
+    # ── 5. Compute deterministic agent_id ────────────────────────────────────
     now = time.time()
     agent_id = "agent_" + hashlib.sha256(
         f"{birth_owner}:{agent_type}:{role}:{now}".encode()
     ).hexdigest()[:16]
 
-    # ── 5. Build agent record ────────────────────────────────────────────────
+    # ── 6. Build agent record ────────────────────────────────────────────────
     initial_identity = (
         identity_seed
         if identity_seed is not None
@@ -153,7 +181,7 @@ def mint_agent(
         "bound_identity": None,
         "behavioral_template": behavioral_template,
         "scope_contract_id": scope_contract["scope_id"],
-        "ora_contract_id": ora_contract_id,                # ← NEW: ORA binding
+        "ora_contract_id": ora_contract_id,
         "identity_state": initial_identity,
         "verity_score": 0.10,
         "coherence": 1.00,
@@ -174,8 +202,9 @@ def mint_agent(
         },
     }
 
-    # ── 6. Build birth receipt ───────────────────────────────────────────────
-    birth_receipt = {
+    # ── 7. Build canonical receipt payload ───────────────────────────────────
+    # Includes BOTH scope_contract_id AND ora_contract_id in the signed payload
+    receipt_payload = {
         "ts": round(now, 3),
         "agent_id": agent_id,
         "type": "birth",
@@ -184,7 +213,7 @@ def mint_agent(
         "birth_owner": birth_owner,
         "behavioral_template": behavioral_template,
         "scope_contract_id": scope_contract["scope_id"],
-        "ora_contract_id": ora_contract_id,                # ← NEW: ORA binding
+        "ora_contract_id": ora_contract_id,
         "decision": "PASS",
         "deviation": 0.0,
         "integrity_score": 0.10,
@@ -192,7 +221,33 @@ def mint_agent(
         "note": f"Agent {agent_id} minted as {agent_type}/{role}",
     }
 
-    # ── 7. Atomic write — track what was written for rollback ────────────────
+    # ── 8. Hash and sign the receipt ─────────────────────────────────────────
+    canonical = canonical_json(receipt_payload)
+    receipt_hash_value = hash_receipt(canonical)
+    sig, signer_id, verify_key = sign_receipt(canonical)
+
+    if sig is not None:
+        birth_receipt = {
+            **receipt_payload,
+            "receipt_hash": receipt_hash_value,
+            "signer": signer_id,
+            "verify_key": verify_key,
+            "signature": sig,
+            "signed": True,
+            "verification_status": "SIGNED",
+        }
+    else:
+        birth_receipt = {
+            **receipt_payload,
+            "receipt_hash": receipt_hash_value,
+            "signer": None,
+            "verify_key": None,
+            "signature": None,
+            "signed": False,
+            "verification_status": "UNSIGNED",
+        }
+
+    # ── 9. Atomic write — track what was written for rollback ────────────────
     written_steps = []
 
     try:
@@ -323,12 +378,23 @@ def _rollback(agent_id: str, scope_id: str, ts: float, written_steps: list):
 
 if __name__ == "__main__":
     """
-    Local self-test:
+    Local self-test (PATCH 3: signed birth receipts with ORA binding):
         python3 mint_agent.py
+
+    To test signed mints locally:
+        VYRE_SIGNING_SEED_HEX=$(python3 -c "import os; print(os.urandom(32).hex())") \
+            python3 mint_agent.py
     """
     from scope_contract import music_curator_scope
 
-    print("=== Local mint test (PATCH 2: ORA anchored) ===\n")
+    print("=== Local mint test (PATCH 3: signed receipts + ORA) ===\n")
+
+    if is_signing_configured():
+        print(f"[signing CONFIGURED]    verify_key: {get_verify_key_hex()}")
+    else:
+        print("[signing UNCONFIGURED]  receipts will be UNSIGNED")
+        print("                        set VYRE_SIGNING_SEED_HEX to enable signing")
+    print()
 
     scope = music_curator_scope()
     print(f"Generated scope_id:   {scope['scope_id']}")
@@ -348,22 +414,21 @@ if __name__ == "__main__":
         print(f"  scope_contract_id:  {agent['scope_contract_id']}")
         print(f"  ora_contract_id:    {agent['ora_contract_id']}")
         print(f"  verity_score:       {agent['verity_score']}")
-        print(f"  lifecycle_stage:    {agent['lifecycle_stage']}")
         print()
 
-        # Verify the ORA binding made it into the receipt
+        # Read back the receipt to confirm signed payload contains ORA binding
         with open(TRAIL_PATH) as f:
             last_line = f.readlines()[-1]
         receipt = json.loads(last_line)
         print("Birth receipt:")
-        print(f"  scope_contract_id:  {receipt.get('scope_contract_id')}")
-        print(f"  ora_contract_id:    {receipt.get('ora_contract_id')}")
-        print()
-
-        # Verify ora contract file exists
-        ora_path = DATA_DIR / "oras" / f"{DEFAULT_ORA_ID}.json"
-        assert ora_path.exists(), f"ORA contract not persisted at {ora_path}"
-        print(f"ORA contract file:    {ora_path} (exists)")
+        print(f"  receipt_hash:        {receipt.get('receipt_hash')}")
+        print(f"  scope_contract_id:   {receipt.get('scope_contract_id')}")
+        print(f"  ora_contract_id:     {receipt.get('ora_contract_id')}")
+        print(f"  verification_status: {receipt.get('verification_status')}")
+        print(f"  signed:              {receipt.get('signed')}")
+        if receipt.get('signed'):
+            print(f"  signer:              {receipt.get('signer')}")
+            print(f"  signature:           {receipt.get('signature')[:32]}...")
 
     except Exception as e:
         print(f"Mint failed: {e}")
