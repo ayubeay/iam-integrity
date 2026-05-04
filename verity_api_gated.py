@@ -1507,3 +1507,71 @@ async def get_verify_key():
         "signing_configured": _signing_key is not None
     }
 
+
+# ──────────────────────────────────────────────────────────────────
+# POST /agents/mint — Mint a new domain-agnostic agent
+#
+# Creates a mint-born agent through the atomic birth pipeline:
+# scope contract is persisted to scopes/{scope_id}.json, birth
+# receipt is written to integrity_trail.jsonl, and the agent is
+# added to agents_index.json.
+#
+# NOTE: This endpoint creates the artifacts that will later allow
+# OROS to enforce scope contracts. OROS does not yet read or
+# enforce scope contracts — that is a separate later patch.
+# ──────────────────────────────────────────────────────────────────
+
+class MintAgentRequest(BaseModel):
+    agent_type: str = Field(..., description="music | trading | inspection | debate")
+    role: str = Field(..., description="role within the domain")
+    birth_owner: str = Field(..., description="wallet or account creating the agent")
+    behavioral_template: str = Field(
+        default="advocate_01",
+        description="archetype name from archetypes.json",
+    )
+    scope_template: str = Field(
+        ...,
+        description="scope template name: music_curator | trading | debate",
+    )
+
+
+@app.post("/agents/mint")
+async def mint_agent_endpoint(req: MintAgentRequest):
+    """Mint a new mint-born agent. Atomic — all artifacts written or none."""
+    try:
+        from mint_agent import mint_agent, MintError
+        from scope_contract import get_scope_by_template
+
+        try:
+            scope = get_scope_by_template(req.scope_template)
+        except KeyError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        if scope["agent_type"] != req.agent_type:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"scope_template produces agent_type={scope['agent_type']!r} "
+                    f"but request asks for agent_type={req.agent_type!r}"
+                ),
+            )
+
+        agent = mint_agent(
+            agent_type=req.agent_type,
+            role=req.role,
+            birth_owner=req.birth_owner,
+            behavioral_template=req.behavioral_template,
+            scope_contract=scope,
+        )
+
+        return {"success": True, "agent": agent, "scope": scope}
+
+    except MintError as e:
+        raise HTTPException(status_code=500, detail=f"mint failed: {e}")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"unexpected mint error: {type(e).__name__}: {e}",
+        )
