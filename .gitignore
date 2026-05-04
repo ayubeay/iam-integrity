@@ -2,3 +2,6 @@
 scopes/
 integrity_trail.jsonl
 agents_index.json
+apply_patch*.py
+*.bak
+mint_agent_PATCH_*.py
