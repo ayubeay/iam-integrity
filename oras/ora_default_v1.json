@@ -1,0 +1,21 @@
+{
+  "ora_id": "ora_default_v1",
+  "version": 1,
+  "constraint_rules": {
+    "require_scope_alignment": true,
+    "block_unauthorized_actions": true,
+    "no_deceptive_output": true,
+    "no_hidden_state_mutation": true,
+    "traceable_reasoning_required": true
+  },
+  "enforcement": {
+    "on_violation": "BLOCK",
+    "on_risk": "ADJUST",
+    "on_ambiguity": "ADJUST+TRANSITION"
+  },
+  "audit": {
+    "log_all_decisions": true,
+    "emit_receipt": true
+  },
+  "created_at": 0
+}
