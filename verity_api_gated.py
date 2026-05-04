@@ -34,6 +34,15 @@ from pydantic import BaseModel, Field
 from iam_core import IAMCoreState, ArchetypeProfile, EpisodeSignal
 from iam_memory import AutobiographicalMemoryGraph
 from iam_explain import NCEFixed
+from signing import (
+    canonical_json,
+    hash_receipt,
+    sign_receipt,
+    get_verify_key_hex,
+    is_signing_configured,
+    is_nacl_available,
+    SIGNER_KEY_ID,
+)
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -1241,72 +1250,10 @@ async def survivor_balance_full(agent_id: str):
     }
 
 
-# ============================================================================
-# SIGNED SURVIVOR RECEIPT INFRASTRUCTURE
-# ============================================================================
-
-import hashlib
-import json as json_module
-import base64
-import os
-
-# Default token constant
+# Constants used by SURVIVOR receipt infrastructure
 DEFAULT_SURVIVOR_TOKEN = "3WCpWhpiySU5JCAVPUsbmXkzF49gcQgJPUBftQJApump"
 IAM_API_BASE = "https://web-production-949249.up.railway.app"
 
-# Ed25519 signing (using nacl if available)
-try:
-    import nacl.signing
-    import nacl.encoding
-    NACL_AVAILABLE = True
-except ImportError:
-    NACL_AVAILABLE = False
-
-# Signer key management
-SIGNER_KEY_ID = "vyre_v1"
-_signing_key = None
-_verify_key_hex = None
-
-def _init_signing_key():
-    """Initialize Ed25519 signing key from env seed."""
-    global _signing_key, _verify_key_hex
-    if not NACL_AVAILABLE:
-        return
-    
-    seed_hex = os.environ.get("VYRE_SIGNING_SEED_HEX", "").strip()
-    if not seed_hex:
-        # No seed configured - signing will be unavailable
-        return
-    
-    try:
-        seed = bytes.fromhex(seed_hex)
-        if len(seed) != 32:
-            raise ValueError("VYRE_SIGNING_SEED_HEX must decode to exactly 32 bytes")
-        _signing_key = nacl.signing.SigningKey(seed)
-        _verify_key_hex = _signing_key.verify_key.encode(
-            encoder=nacl.encoding.HexEncoder
-        ).decode()
-    except Exception as e:
-        print(f"[VYRE] Signing key init failed: {e}")
-
-_init_signing_key()
-
-def _canonical_json(obj: dict) -> str:
-    """Produce canonical JSON: sorted keys, no whitespace, UTF-8."""
-    return json_module.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-def _hash_receipt(canonical: str) -> str:
-    """SHA-256 hash of canonical JSON."""
-    return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-def _sign_receipt(canonical: str) -> tuple:
-    """Sign canonical JSON, return (signature_hex, signer_key_id, verify_key_hex)."""
-    if not NACL_AVAILABLE or not _signing_key:
-        return (None, None, None)
-    
-    signed = _signing_key.sign(canonical.encode("utf-8"))
-    sig_hex = signed.signature.hex()
-    return (sig_hex, SIGNER_KEY_ID, _verify_key_hex)
 
 def _build_signed_receipt(challenge: dict) -> dict:
     """Build a signed SURVIVOR settlement receipt from challenge data."""
@@ -1351,9 +1298,9 @@ def _build_signed_receipt(challenge: dict) -> dict:
         "vyrel_artifact_id": challenge.get("vyrel_artifact_id"),
     }
     
-    canonical = _canonical_json(payload)
-    receipt_hash = _hash_receipt(canonical)
-    sig, signer_id, verify_key = _sign_receipt(canonical)
+    canonical = canonical_json(payload)
+    receipt_hash = hash_receipt(canonical)
+    sig, signer_id, verify_key = sign_receipt(canonical)
     
     # Fail loudly if staking receipt cannot be signed
     if not sig:
@@ -1411,13 +1358,13 @@ async def verify_survivor_receipt(challenge_id: str):
         if k not in {"receipt_hash", "signer", "verify_key", "signature", "signed", "verification_status", "staking_enabled"}
     }
     
-    canonical = _canonical_json(payload)
-    expected_hash = _hash_receipt(canonical)
+    canonical = canonical_json(payload)
+    expected_hash = hash_receipt(canonical)
     
     if expected_hash != receipt.get("receipt_hash"):
         return {"verified": False, "reason": "hash_mismatch", "challenge_id": challenge_id}
     
-    if not NACL_AVAILABLE:
+    if not is_nacl_available():
         return {"verified": False, "reason": "nacl_unavailable", "challenge_id": challenge_id}
     
     try:
@@ -1501,10 +1448,10 @@ async def get_verify_key():
     """Get the public verification key for receipt signatures."""
     return {
         "signer_key_id": SIGNER_KEY_ID,
-        "verify_key_hex": _verify_key_hex,
+        "verify_key_hex": get_verify_key_hex(),
         "algorithm": "Ed25519",
-        "nacl_available": NACL_AVAILABLE,
-        "signing_configured": _signing_key is not None
+        "nacl_available": is_nacl_available(),
+        "signing_configured": is_signing_configured(),
     }
 
 
