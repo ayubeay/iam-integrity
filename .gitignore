@@ -1,0 +1,4 @@
+.wrangler/
+scopes/
+integrity_trail.jsonl
+agents_index.json
