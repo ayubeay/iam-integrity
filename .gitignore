@@ -5,3 +5,5 @@ agents_index.json
 apply_patch*.py
 *.bak
 mint_agent_PATCH_*.py
+apply_*.py
+test_listen_history.json
