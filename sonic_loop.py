@@ -42,12 +42,11 @@ from signing import (
     is_signing_configured,
     SIGNER_KEY_ID,
 )
+from paths import SONIC_CATALOG_PATH as CATALOG_PATH
+from paths import INTEGRITY_TRAIL_PATH as TRAIL_PATH
 
 # ── Paths ────────────────────────────────────────────────────────────────────
-
-DATA_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-CATALOG_PATH = DATA_DIR / "data" / "sonic_catalog_seed.json"
-TRAIL_PATH = DATA_DIR / "integrity_trail.jsonl"
+# (CATALOG_PATH static, TRAIL_PATH mutable — both routed via paths.py)
 
 # ── Constants ────────────────────────────────────────────────────────────────
 

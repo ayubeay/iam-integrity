@@ -22,13 +22,10 @@ already map to existing IAM/NCE/scope/VERITY behavior.
 from __future__ import annotations
 
 import json
-import os
 import time
-from pathlib import Path
 from typing import Dict, Any
 
-DATA_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-ORAS_DIR = DATA_DIR / "oras"
+from paths import ORAS_DIR
 
 DEFAULT_ORA_ID = "ora_default_v1"
 

@@ -43,6 +43,17 @@ from signing import (
     is_nacl_available,
     SIGNER_KEY_ID,
 )
+from paths import (
+    CODE_ROOT,
+    AGENTS_INDEX_PATH,
+    AGENTS_SEED_PATH,
+    AGENTS_ZODIAC_PATH,
+    INTEGRITY_TRAIL_PATH,
+    CHALLENGES_DIR,
+    SURVIVOR_DATA_FILE,
+    HELIXCAN_SNAPSHOT_PATH,
+    ensure_runtime_dirs,
+)
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -53,6 +64,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+ensure_runtime_dirs()
 app.add_middleware(X402Middleware)
 app.add_middleware(
     CORSMiddleware,
@@ -285,7 +297,7 @@ def score_integrity(req: IntegrityRequest):
         "identity_state": dict(core.identity_vector),
     }
     try:
-        trail_path = os.getenv("TRAIL_PATH", os.path.join(os.path.dirname(__file__), "integrity_trail.jsonl"))
+        trail_path = os.getenv("TRAIL_PATH", str(INTEGRITY_TRAIL_PATH))
         with open(trail_path, "a") as _tf:
             _tf.write(_json.dumps(trail_entry) + "\n")
     except Exception as _e:
@@ -313,7 +325,7 @@ def score_integrity(req: IntegrityRequest):
 def get_integrity_trail(agent_id: str, limit: int = 20):
     """Return integrity trail entries for a specific agent."""
     import json as _json, os as _os
-    trail_path = _os.getenv("TRAIL_PATH", "integrity_trail.jsonl")
+    trail_path = _os.getenv("TRAIL_PATH", str(INTEGRITY_TRAIL_PATH))
     entries = []
     try:
         with open(trail_path, "r") as f:
@@ -348,10 +360,9 @@ def root():
 
 @app.get("/health")
 def health():
-    import json as _json, os as _os
-    _DIR = _os.path.dirname(_os.path.abspath(__file__))
+    import json as _json
     try:
-        idx = _json.loads(open(_os.path.join(_DIR, "agents_index.json")).read())
+        idx = _json.loads(open(AGENTS_INDEX_PATH).read())
         indexed = len([a for a in idx["agents"] if a["indexed"]])
     except:
         indexed = 0
@@ -366,15 +377,12 @@ if __name__ == "__main__":
 
 @app.get("/agents/seed")
 def agents_seed():
-    import json as _json, time, os as _os
-    _DIR = _os.path.dirname(_os.path.abspath(__file__))
-    seed_path = _os.path.join(_DIR, "agents_seed.json")
-    if _os.path.exists(seed_path):
-        return _json.loads(open(seed_path).read())
-    arch_path = _os.path.join(_DIR, "archetypes.json")
-    if not _os.path.exists(arch_path):
+    import json as _json, time
+    if AGENTS_SEED_PATH.exists():
+        return _json.loads(open(AGENTS_SEED_PATH).read())
+    if not (CODE_ROOT / "archetypes.json").exists():
         return JSONResponse(status_code=404, content={"error": "archetypes.json not found"})
-    archetypes = _json.loads(open(arch_path).read())["archetypes"]
+    archetypes = _json.loads(open(CODE_ROOT / "archetypes.json").read())["archetypes"]
     seeds = [{"agent_id": a["agent_id"], "kind": "SEED", "archetype": a["archetype"],
               "role": a.get("role"), "identity_anchor": a["identity_anchor"],
               "indexed": True, "indexed_reason": "founding_seed",
@@ -383,11 +391,9 @@ def agents_seed():
 
 @app.get("/agents/index")
 def agents_index():
-    import json as _json, time, os as _os
-    _DIR = _os.path.dirname(_os.path.abspath(__file__))
-    index_path = _os.path.join(_DIR, "agents_index.json")
-    if _os.path.exists(index_path):
-        return _json.loads(open(index_path).read())
+    import json as _json, time
+    if AGENTS_INDEX_PATH.exists():
+        return _json.loads(open(AGENTS_INDEX_PATH).read())
     return {"generated_at": int(time.time()), "agents": [], "note": "Run verity_indexer.py to populate"}
 
 @app.post("/agents/refresh")
@@ -480,10 +486,8 @@ def authorize(req: AuthorizeRequest):
         }
 
     # Check indexed agents file
-    _DIR = _os.path.dirname(_os.path.abspath(__file__))
-    index_path = _os.path.join(_DIR, "agents_index.json")
     try:
-        idx = _json.loads(open(index_path).read())
+        idx = _json.loads(open(AGENTS_INDEX_PATH).read())
         agent_id_lower = req.agent_id.lower()
         for agent in idx.get("agents", []):
             wallet = (agent.get("agent_id") or "").lower()
@@ -538,10 +542,8 @@ def integrity_check(req: IntegrityCheckRequest):
         }
 
     # Check indexed agents
-    _DIR = _os.path.dirname(_os.path.abspath(__file__))
-    index_path = _os.path.join(_DIR, "agents_index.json")
     try:
-        idx = _json.loads(open(index_path).read())
+        idx = _json.loads(open(AGENTS_INDEX_PATH).read())
         agent_id_lower = req.agent_id.lower()
         for agent in idx.get("agents", []):
             wallet = (agent.get("agent_id") or "").lower()
@@ -579,7 +581,7 @@ async def list_challenges():
     import json, os
 
     challenges = []
-    cdir = "challenges"
+    cdir = str(CHALLENGES_DIR)
 
     if os.path.isdir(cdir):
         for f in sorted(os.listdir(cdir)):
@@ -635,7 +637,7 @@ async def get_challenge(challenge_id: str):
     """Get a specific challenge enriched with SURVIVOR staking receipt when available."""
     import json, os
 
-    cdir = "challenges"
+    cdir = str(CHALLENGES_DIR)
     if os.path.isdir(cdir):
         for f in os.listdir(cdir):
             if not f.endswith(".json"):
@@ -728,7 +730,7 @@ async def agents_zodiac():
     """12 zodiac-aligned agent archetypes with debate pairings."""
     import json
     try:
-        with open("agents_zodiac.json") as f:
+        with open(AGENTS_ZODIAC_PATH) as f:
             return json.load(f)
     except Exception:
         return {"agents": []}
@@ -741,19 +743,19 @@ async def agents_summary():
     seed_count = 0
     indexed_count = 0
     try:
-        with open("agents_seed.json") as f:
+        with open(AGENTS_SEED_PATH) as f:
             seed_count = len(json.load(f).get("agents", []))
     except Exception:
         pass
     try:
-        with open("agents_index.json") as f:
+        with open(AGENTS_INDEX_PATH) as f:
             indexed_count = len(json.load(f).get("agents", []))
     except Exception:
         pass
 
     zodiac_count = 0
     try:
-        with open("agents_zodiac.json") as f:
+        with open(AGENTS_ZODIAC_PATH) as f:
             zodiac_count = len(json.load(f).get("agents", []))
     except Exception:
         pass
@@ -774,7 +776,7 @@ async def get_agent(agent_id: str):
     import json
     # Check seed agents
     try:
-        with open("agents_seed.json") as f:
+        with open(AGENTS_SEED_PATH) as f:
             seed_data = json.load(f)
         for agent in seed_data.get("agents", []):
             if agent["agent_id"] == agent_id:
@@ -784,7 +786,7 @@ async def get_agent(agent_id: str):
 
     # Check zodiac agents
     try:
-        with open("agents_zodiac.json") as f:
+        with open(AGENTS_ZODIAC_PATH) as f:
             zodiac_data = json.load(f)
         for agent in zodiac_data.get("agents", []):
             if agent["agent_id"] == agent_id:
@@ -794,7 +796,7 @@ async def get_agent(agent_id: str):
 
     # Check indexed agents
     try:
-        with open("agents_index.json") as f:
+        with open(AGENTS_INDEX_PATH) as f:
             index_data = json.load(f)
         for agent in index_data.get("agents", []):
             if agent["agent_id"] == agent_id:
@@ -829,7 +831,7 @@ def helixcan_summary():
     # Read from snapshot file (synced from bot)
     recent_gov = []
     recent_exec = []
-    snapshot_path = _os.path.join(_DIR, "data", "helixcan_snapshot.json")
+    snapshot_path = HELIXCAN_SNAPSHOT_PATH
     try:
         with open(snapshot_path) as f:
             snapshot = _json.load(f)
@@ -842,7 +844,7 @@ def helixcan_summary():
     # Recent challenges
     recent_challenges = []
     try:
-        cdir = _os.path.join(_DIR, "challenges")
+        cdir = str(CHALLENGES_DIR)
         if _os.path.isdir(cdir):
             for fname in _os.listdir(cdir):
                 if fname.endswith(".json"):
@@ -876,19 +878,19 @@ def verity_stats():
     # Count agents from JSON files
     seed_agents = []
     try:
-        sd = _json.loads(open(_os.path.join(_DIR, "agents_seed.json")).read())
+        sd = _json.loads(open(AGENTS_SEED_PATH).read())
         seed_agents = sd.get("agents", []) if isinstance(sd, dict) else sd
     except: pass
     
     zodiac_agents = []
     try:
-        zd = _json.loads(open(_os.path.join(_DIR, "agents_zodiac.json")).read())
+        zd = _json.loads(open(AGENTS_ZODIAC_PATH).read())
         zodiac_agents = zd.get("agents", []) if isinstance(zd, dict) else zd
     except: pass
     
     indexed_agents = []
     try:
-        idata = _json.loads(open(_os.path.join(_DIR, "agents_index.json")).read())
+        idata = _json.loads(open(AGENTS_INDEX_PATH).read())
         indexed_agents = [a for a in idata.get("agents", []) if a.get("indexed")]
     except: pass
     
@@ -899,7 +901,7 @@ def verity_stats():
     challenges_resolved = 0
     challenges_total = 0
     try:
-        cdir = _os.path.join(_DIR, "challenges")
+        cdir = str(CHALLENGES_DIR)
         if _os.path.isdir(cdir):
             for fname in _os.listdir(cdir):
                 if fname.endswith(".json"):
@@ -963,7 +965,7 @@ async def integrity_recent(limit: int = 20):
     import json
     events = []
     try:
-        with open("integrity_trail.jsonl") as f:
+        with open(INTEGRITY_TRAIL_PATH) as f:
             lines = f.readlines()
         for line in lines[-limit:]:
             try:
@@ -983,7 +985,7 @@ async def integrity_recent(limit: int = 20):
 import os as _os_survivor
 import json as _json_survivor
 
-_SURVIVOR_DATA_FILE = _os_survivor.path.join(_os_survivor.path.dirname(__file__), "data", "survivor_data.json")
+_SURVIVOR_DATA_FILE = str(SURVIVOR_DATA_FILE)
 
 def _load_survivor_data():
     if _os_survivor.path.exists(_SURVIVOR_DATA_FILE):
@@ -1127,7 +1129,7 @@ async def survivor_auto_resolve(challenge_id: str):
     import json
     
     # Load challenge data
-    cdir = _os.path.join(_os.path.dirname(__file__), "challenges")
+    cdir = str(CHALLENGES_DIR)
     challenge = None
     for fname in _os.listdir(cdir):
         if fname.endswith(".json"):
@@ -1324,7 +1326,7 @@ def _build_signed_receipt(challenge: dict) -> dict:
 @app.get("/survivor/receipt/{challenge_id}")
 async def get_survivor_receipt(challenge_id: str):
     """Get signed SURVIVOR settlement receipt for a challenge."""
-    cdir = "challenges"
+    cdir = str(CHALLENGES_DIR)
     if not os.path.isdir(cdir):
         raise HTTPException(status_code=404, detail="challenges_dir_missing")
     
@@ -1395,7 +1397,7 @@ async def verify_survivor_receipt(challenge_id: str):
 @app.get("/challenges/{challenge_id}/public-proof")
 async def get_challenge_public_proof(challenge_id: str):
     """Get stripped public proof object for RACER/Helixcan."""
-    cdir = "challenges"
+    cdir = str(CHALLENGES_DIR)
     if not os.path.isdir(cdir):
         raise HTTPException(status_code=404, detail="challenges_dir_missing")
     
@@ -1567,12 +1569,9 @@ async def sonic_recommend_endpoint(agent_id: str, req: SonicRecommendRequest):
     import json as _json, os as _os
 
     # 1. Look up the agent record from agents_index.json
-    _DIR = _os.path.dirname(_os.path.abspath(__file__))
-    index_path = _os.path.join(_DIR, "agents_index.json")
-
     agent_record = None
     try:
-        idx = _json.loads(open(index_path).read())
+        idx = _json.loads(open(AGENTS_INDEX_PATH).read())
         for a in idx.get("agents", []):
             if a.get("agent_id") == agent_id:
                 agent_record = a

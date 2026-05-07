@@ -52,14 +52,17 @@ from ora_contract import (
     ensure_default_ora_persisted,
     load_ora_contract,
 )
+from paths import (
+    AGENTS_INDEX_PATH,
+    INTEGRITY_TRAIL_PATH as TRAIL_PATH,
+    SCOPES_DIR,
+    ARCHETYPES_PATH,
+    DATA_ROOT,
+    ensure_runtime_dirs,
+)
 
 # ── Paths ────────────────────────────────────────────────────────────────────
-
-DATA_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-AGENTS_INDEX_PATH = DATA_DIR / "agents_index.json"
-TRAIL_PATH = DATA_DIR / "integrity_trail.jsonl"
-SCOPES_DIR = DATA_DIR / "scopes"
-ARCHETYPES_PATH = DATA_DIR / "archetypes.json"
+# (now imported from paths.py — DATA_ROOT controls mutable state location)
 
 
 # ── Errors ───────────────────────────────────────────────────────────────────
@@ -277,8 +280,7 @@ def mint_agent(
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _ensure_dirs():
-    SCOPES_DIR.mkdir(exist_ok=True)
-    DATA_DIR.mkdir(exist_ok=True)
+    ensure_runtime_dirs()
 
 
 def _load_archetype(name: str) -> Optional[Dict[str, Any]]:

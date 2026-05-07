@@ -3,11 +3,17 @@ from dataclasses import dataclass, asdict
 from typing import Dict, Any, List, Optional, Tuple
 
 import sys
-_DIR = os.path.dirname(os.path.abspath(__file__))
-ARCHETYPES_PATH = os.getenv("ARCHETYPES_PATH", os.path.join(_DIR, "archetypes.json"))
-TRAIL_PATH = os.getenv("TRAIL_PATH", os.path.join(_DIR, "integrity_trail.jsonl"))
-OUT_INDEX = os.getenv("OUT_INDEX", os.path.join(_DIR, "agents_index.json"))
-OUT_SEED = os.getenv("OUT_SEED", os.path.join(_DIR, "agents_seed.json"))
+from paths import (
+    ARCHETYPES_PATH as _DEFAULT_ARCHETYPES,
+    INTEGRITY_TRAIL_PATH as _DEFAULT_TRAIL,
+    AGENTS_INDEX_PATH as _DEFAULT_INDEX,
+    AGENTS_SEED_PATH as _DEFAULT_SEED,
+)
+
+ARCHETYPES_PATH = os.getenv("ARCHETYPES_PATH", str(_DEFAULT_ARCHETYPES))
+TRAIL_PATH = os.getenv("TRAIL_PATH", str(_DEFAULT_TRAIL))
+OUT_INDEX = os.getenv("OUT_INDEX", str(_DEFAULT_INDEX))
+OUT_SEED = os.getenv("OUT_SEED", str(_DEFAULT_SEED))
 MIN_TURNS = int(os.getenv("INDEX_MIN_TURNS", "3"))
 REQUIRE_ONCHAIN = os.getenv("INDEX_REQUIRE_ONCHAIN", "1") == "1"
 PASSLIKE = {"PASS", "ADJUST", "ADJUST+TRANSITION"}
