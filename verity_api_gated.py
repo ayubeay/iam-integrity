@@ -1522,3 +1522,98 @@ async def mint_agent_endpoint(req: MintAgentRequest):
             status_code=500,
             detail=f"unexpected mint error: {type(e).__name__}: {e}",
         )
+
+
+
+# ──────────────────────────────────────────────────────────────────
+# POST /agents/{agent_id}/sonic/recommend
+#
+# Sonic v1 music cognition loop. Takes a listen history, computes a
+# taste-state, returns a deterministic, signed recommendation receipt.
+#
+# This endpoint:
+#   - validates the agent exists and is agent_type=music
+#   - calls sonic_loop.recommend() with the agent record + listen history
+#   - persists the signed receipt to integrity_trail.jsonl
+#   - returns the receipt to the caller
+#
+# Sonic v1 does NOT enforce ORA. It claims compliance and binds to
+# ora_default_v1; OROS-side enforcement is a separate later patch.
+# ──────────────────────────────────────────────────────────────────
+
+class SonicListen(BaseModel):
+    artist: str
+    title: str
+    played_at: Optional[str] = None
+    duration_ms: Optional[int] = None
+
+
+class SonicRecommendRequest(BaseModel):
+    listen_history: list = Field(
+        ...,
+        description="Time-ordered list of {artist, title, played_at} entries",
+    )
+    n_recommendations: int = Field(
+        default=5, ge=1, le=20,
+        description="Number of tracks to recommend (1-20)",
+    )
+
+
+@app.post("/agents/{agent_id}/sonic/recommend")
+async def sonic_recommend_endpoint(agent_id: str, req: SonicRecommendRequest):
+    """
+    Produce a deterministic, signed Sonic recommendation receipt.
+    """
+    import json as _json, os as _os
+
+    # 1. Look up the agent record from agents_index.json
+    _DIR = _os.path.dirname(_os.path.abspath(__file__))
+    index_path = _os.path.join(_DIR, "agents_index.json")
+
+    agent_record = None
+    try:
+        idx = _json.loads(open(index_path).read())
+        for a in idx.get("agents", []):
+            if a.get("agent_id") == agent_id:
+                agent_record = a
+                break
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"failed to read agents_index: {e}",
+        )
+
+    if agent_record is None:
+        raise HTTPException(status_code=404, detail=f"agent_not_found: {agent_id}")
+
+    # 2. Validate agent_type
+    if agent_record.get("agent_type") != "music":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"agent_type must be 'music', got "
+                f"{agent_record.get('agent_type')!r}"
+            ),
+        )
+
+    # 3. Run the Sonic loop
+    try:
+        from sonic_loop import recommend, SonicError
+
+        receipt = recommend(
+            agent_record=agent_record,
+            listen_history=req.listen_history,
+            n_recommendations=req.n_recommendations,
+            persist_receipt=True,
+        )
+        return {"success": True, "receipt": receipt}
+
+    except SonicError as e:
+        raise HTTPException(status_code=400, detail=f"sonic_error: {e}")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"unexpected sonic error: {type(e).__name__}: {e}",
+        )
