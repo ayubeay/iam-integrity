@@ -39,7 +39,7 @@ resolve identically after each redeploy.
 
 **Status: PARTIALLY VALIDATED**
 
-Evidence: `agent_af611f1f5ac50670` resolved ~58 hours after mint, through
+Evidence: `agent_af611f1f5ac50670` resolved ~82 hours after mint, through
 unspecified Railway lifecycle activity in the intervening window.
 
 What's missing: no controlled measurements of what happened in the window.

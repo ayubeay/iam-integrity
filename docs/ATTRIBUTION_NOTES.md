@@ -124,16 +124,16 @@ remained byte-identical pre/post redeploy.
 
 ---
 
-## May 9 — ~58 hour resolve
+## May 10 — ~82 hour resolve
 
 **Observation:**
 
-`agent_af611f1f5ac50670` queried May 9 ~10:30 EDT. Returned full agent
+`agent_af611f1f5ac50670` queried May 10 ~morning EDT. Returned full agent
 record with `created_at: 1778125970.7004893` (May 7 ~00:30 UTC).
 
 **What this adds:**
 
-The agent remained resolvable approximately 58 hours after its mint and
+The agent remained resolvable approximately 82 hours after its mint and
 through whatever Railway lifecycle activity occurred in that window
 (replicas, container churn, scheduled processes — exact count not
 recorded). This strengthens the May 7 redeploy test by extending the
