@@ -21,17 +21,25 @@ Discipline rule: when in doubt between two statuses, pick the lower one.
 
 ### Agents survive container redeploy on the same persistent volume
 
-**Status: PARTIALLY VALIDATED**
+**Status: VALIDATED**
 
-Evidence: `agent_af611f1f5ac50670` minted on deploy `7214d6a7`, resolved
-identically on deploy `965e55c2` after empty-commit redeploy. Same volume,
-same region.
+Evidence: original test on May 7 — `agent_af611f1f5ac50670` minted on
+deploy `7214d6a7`, resolved identically on deploy `965e55c2` after
+empty-commit redeploy.
 
-What's missing: only one agent tested, only one redeploy executed.
-Multi-agent and sequential-redeploy stress not performed.
+Stress test on May 10 (see `DURABILITY_TEST_2026_05_10.md`) — three
+agents (`agent_7c9083e88f402e96`, `agent_8f6ee0a9cfe1ce9a`,
+`agent_66b88383c8644794`) minted on deploy `965e55c2`, resolved
+identically across 5 sequential redeploys (`c160e1da`, `074ee94b`,
+`4aab5e26`, `1adc6391`, `28f9165d`). All `created_at`, `scope_contract_id`,
+and `ora_contract_id` fields byte-identical across all 5 cycles.
 
-To advance to VALIDATED: ≥3 agents, ≥5 sequential redeploys, all agents
-resolve identically after each redeploy.
+Same volume (`vol_2fd8mdw84fc3x0v3`) attached to 6 distinct container
+instances throughout the test.
+
+Bounds: same region (europe-west4-drams3a), single replica, ~30 minute
+span. Volume migration, region failover, and longer time windows remain
+untested.
 
 ---
 
@@ -126,13 +134,16 @@ recommendation receipts not tested across redeploy.
 
 ### Sonic recommendation receipts persist across redeploy
 
-**Status: UNTESTED**
+**Status: VALIDATED**
 
-The infrastructure should support this (recommendation receipts use the
-same trail file as birth receipts), but it was never explicitly verified.
+Evidence: May 10 durability test (see `DURABILITY_TEST_2026_05_10.md`).
+A `sonic_recommendation` receipt with hash
+`sha256:f92f816add41ab27fedcb89d4b0762571bf0342843a40a09934062f0e6efeb90`
+was produced before the test, then verified byte-identical in the
+integrity trail across 5 sequential redeploys.
 
-To validate: produce a sonic_recommendation receipt, redeploy, query the
-trail, confirm receipt hash unchanged.
+Bounds: same as agent redeploy persistence — single region, single
+replica, ~30 minute span.
 
 ---
 
