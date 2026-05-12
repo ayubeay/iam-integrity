@@ -251,3 +251,104 @@ measured for "recency." Currently no activity timestamps beyond mint.
 
 **Why deferred:** Decay against an essentially-static population is
 just slow drift toward zero with no information content.
+
+---
+
+## CYCLE142857 — deterministic cyclic sequencing primitive
+
+A small Python module exposing rotations of the cyclic number 142857
+(from 1/7 = 0.142857...) as deterministic ordering, rhythm emphasis,
+and state-cycling helpers. The math is real (cyclic number theory);
+the framing is generative/mathematical only — no mystical, predictive,
+or execution-authority claims.
+
+**Activation condition:** SoundKeep v1 or Sonic runtime develops a
+concrete subsystem need for deterministic ordering, repeatable
+sequencing, procedural rhythm generation, or sync-safe queue cycling.
+
+**Why deferred:** No current subsystem needs cyclic ordering. Adding
+the primitive to the repo without a consumer would be infrastructure
+without a consumer — exactly the pattern this document is designed
+to prevent. A `[1,4,2,8,5,7]` constant is trivially recoverable when
+the consumer appears.
+
+---
+
+## LeadScan v2 — outreach + identity infrastructure reframe
+
+LeadScan v1 sends cold emails to scraped Shopify domains. LeadScan v2
+reframes the same pipeline as relationship + workflow intelligence
+infrastructure: stack-aware messaging, lifecycle inference, signed
+outbound receipts, structured participation memory, identity-verified
+sender reputation. Same scraping core, different output product.
+
+**Activation condition:** LeadScan v1 produces evidence about what
+actually moves enterprise reply rates — specifically, ≥1 engaged
+human reply traced to a specific message variant, target type, or
+sender signal. Reframe is informed by behavior, not strategy.
+
+**Why deferred:** v1 has sent ~30 emails, received only autoreplies
+(e.g. Biodroga). Reframing v2 before understanding why v1 didn't
+convert risks building a more elaborate version of the same failure
+mode. The bottleneck is message/target/conversion path, not
+architectural sophistication.
+
+---
+
+## Track provenance receipts
+
+Extend the existing signed-receipt pattern (birth, sonic_recommendation)
+to track-level events: upload origin, license scope, allowed usage,
+remix permission, distribution targets, monetization split. Each
+track interaction emits a signed receipt with the same vyre_v1
+substrate that birth and recommendation receipts use.
+
+**Activation condition:** A consumer of track-level receipts exists.
+Concretely: SoundKeep v1 has a track-upload or track-organization
+surface, OR a DJ workflow produces interaction events that would
+benefit from signed lineage.
+
+**Why deferred:** No track-level events currently flow through any
+production system. Designing the receipt schema before knowing which
+events matter (upload? download? remix? play? skip?) would commit to
+a structure prematurely. Receipt schema discipline says: wait for
+real events.
+
+---
+
+## DJ reputation graph
+
+A reputation primitive for DJs/curators based on observed behavior:
+track discovery success, replay value, transition quality, crowd
+retention, originality, attribution honesty. Conceptually similar
+to VERITY scoring but specialized for music-curation behavior.
+
+**Activation condition:** SoundKeep v1 has ≥10 active DJs producing
+real interaction data (session history, transition patterns, crowd
+response signals) over a meaningful time window.
+
+**Why deferred:** Reputation against zero observed behavior is
+theoretical. The hard problem isn't designing the score; it's having
+behavior to score. Same failure mode as Music-domain VERITY scoring
+(see above) — listed separately because the inputs are DJ-specific
+rather than listener-specific.
+
+---
+
+## Licensing-aware recommendations
+
+Sonic recommendations that include rights metadata per track: can
+it be legally downloaded, remixed, redistributed, used commercially,
+used in a live set, streamed, monetized? Recommendation receipts
+extend to carry "rights traveling with the recommendation."
+
+**Activation condition:** A licensing data source exists (either a
+third-party rights API, or a creator-uploaded license tagging system
+within SoundKeep). Without one, "licensing-aware" reduces to "guessing
+about rights," which is worse than no claim.
+
+**Why deferred:** Rights data is the hard problem, not the receipt
+schema. Implementing licensing-aware recommendations against unknown
+rights would produce receipts that look authoritative but aren't
+grounded. Same discipline as the Ed25519 work — claims need evidence,
+including legal claims.
