@@ -465,3 +465,17 @@ each time.
 - Longer time windows than the ~30 minutes this test ran
 - Behavior under concurrent writes (single-replica)
 - Behavior under volume size pressure
+
+---
+
+## Follow-up observation (May 13, 15:33 EDT)
+
+3 days after test completion. All 4 agents (af611f1f, 7c9083e8, 8f6ee0a9,
+66b88383) still resolve with identical `created_at`, `scope_contract_id`,
+`ora_contract_id`. Sonic recommendation receipt hash unchanged. Service
+health reports `agents_indexed: 4`.
+
+This extends the observation window from ~30 minutes (controlled test)
+to ~6 days (continuous real-world uptime), but is not itself a controlled
+measurement — Railway lifecycle activity in the intervening window is
+unknown. Listed here as an observation, not a status advance.
