@@ -352,3 +352,39 @@ schema. Implementing licensing-aware recommendations against unknown
 rights would produce receipts that look authoritative but aren't
 grounded. Same discipline as the Ed25519 work — claims need evidence,
 including legal claims.
+
+---
+
+## OOBE / SAP autonomous-agent bounty (full workflow build)
+
+SURVIVOR is live on SAP mainnet as an agent (GTZNpo…Af5hx,
+did:sap:survivor-execution-agent, active), with the risk-screen tool
+published, stake funded, pricing set, and a funded escrow (9zK9…uw3r).
+The setup chain works end-to-end. What's deferred is the *autonomous
+workflow* the bounty actually rewards: trigger → execution → payment
+with no manual steps, Synapse RPC in the execution path, Synapse
+Sentinel used at least once, a real AI capability in the loop, and
+enough settled escrow volume to rank.
+
+Settlement architecture was mapped empirically: SettlementSecurity has
+three modes — SelfReport, CoSigned, DisputeWindow. The escrow was built
+as SelfReport (dispute_window 0, no co-signer). create_pending_settlement
+rejects SelfReport (InvalidSettlementSecurity 6099); direct settle_calls_v2
+on SelfReport returns InvalidAccount 6089 at escrow_v2.rs:333. The
+self-serviceable settlement path is a *new* DisputeWindow escrow
+(window > 0) settled via pending → finalize; CoSigned needs a second party.
+
+**Activation condition:** OOBE/SAP becomes a confirmed cashflow edge —
+either a re-opened bounty window with realistic runway, a paid OOBE
+engagement, or the SDK/IDL drift findings convert into a relationship
+worth building on. The autonomous-loop build is the bet; protocol
+plumbing is done.
+
+**Why deferred:** The bounty is volume-ranked on autonomous settled
+activity, not setup work. With ~4 days left, cracking one manual
+DisputeWindow settlement wouldn't make the agent competitive against
+entrants who built the full autonomous stack. Per doctrine — "model is
+table stakes, workflow is the bet" — and this is a workflow build behind
+an unconfirmed edge. Detailed receipts and SDK/IDL findings are in
+docs/OOBE_BOUNTY_ESCROW_CHAIN_2026_05_30.md. The agent stays live on
+mainnet; resume from autonomous-workflow requirements first, not plumbing.
