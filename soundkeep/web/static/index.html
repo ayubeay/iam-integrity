@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoundKeep</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0e1a; color: #e0e6f0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  .header { padding: 20px 32px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1e2a3a; }
+  .logo { font-size: 22px; font-weight: 700; color: #4fc3f7; letter-spacing: 2px; }
+  .logo span { color: #81d4fa; }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+
+  .sonic-panel { background: linear-gradient(135deg, #0d1f3c, #0a1628); border: 1px solid #1e3a5f; border-radius: 16px; padding: 24px; margin-bottom: 32px; display: flex; align-items: center; gap: 20px; }
+  .sonic-avatar { width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle, #4fc3f7, #0277bd); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 0 20px rgba(79,195,247,0.4); }
+  .sonic-info h3 { color: #4fc3f7; font-size: 18px; margin-bottom: 4px; }
+  .sonic-info p { color: #7b9ab8; font-size: 14px; }
+
+  .search-area { margin-bottom: 32px; }
+  .search-area label { display: block; color: #7b9ab8; font-size: 13px; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+  .search-row { display: flex; gap: 10px; }
+  .search-input { flex: 1; background: #0d1f3c; border: 1px solid #1e3a5f; border-radius: 10px; padding: 14px 18px; color: #e0e6f0; font-size: 16px; outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: #4fc3f7; }
+  .search-input::placeholder { color: #3a5a7a; }
+  .search-btn { background: #0277bd; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 15px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .search-btn:hover { background: #4fc3f7; color: #0a0e1a; }
+
+  .results { display: none; }
+  .results-label { color: #7b9ab8; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .track-card { background: #0d1f3c; border: 1px solid #1e3a5f; border-radius: 10px; padding: 14px 18px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; justify-content: space-between; }
+  .track-card:hover { border-color: #4fc3f7; background: #0f2540; }
+  .track-name { font-size: 15px; font-weight: 600; }
+  .track-meta { font-size: 13px; color: #7b9ab8; margin-top: 3px; }
+  .track-badge { background: #0277bd22; color: #4fc3f7; border: 1px solid #0277bd; border-radius: 6px; padding: 3px 10px; font-size: 12px; }
+
+  .pathway-section { display: none; margin-top: 32px; }
+  .pathway-header { margin-bottom: 20px; }
+  .pathway-header h2 { font-size: 20px; color: #4fc3f7; margin-bottom: 4px; }
+  .pathway-header p { color: #7b9ab8; font-size: 14px; }
+
+  .pathway-step { background: #0d1f3c; border: 1px solid #1e3a5f; border-radius: 12px; padding: 18px; margin-bottom: 12px; position: relative; }
+  .step-num { position: absolute; top: 18px; right: 18px; background: #0277bd33; color: #4fc3f7; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .step-artist { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .step-meta { font-size: 13px; color: #7b9ab8; margin-bottom: 10px; }
+  .step-why { background: #071525; border-left: 3px solid #4fc3f7; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 13px; color: #81d4fa; }
+  .step-why span { color: #7b9ab8; }
+
+  .anchor-card { background: linear-gradient(135deg, #0277bd22, #0d1f3c); border: 1px solid #0277bd; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .anchor-label { font-size: 12px; color: #4fc3f7; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .anchor-name { font-size: 20px; font-weight: 700; }
+  .anchor-meta { font-size: 14px; color: #7b9ab8; margin-top: 4px; }
+
+  .loading { text-align: center; color: #4fc3f7; padding: 40px; display: none; }
+  .error-msg { color: #ef5350; background: #1a0a0a; border: 1px solid #ef5350; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">SOUND<span>KEEP</span></div>
+</div>
+
+<div class="main">
+
+  <div class="sonic-panel">
+    <div class="sonic-avatar">🎵</div>
+    <div class="sonic-info">
+      <h3>Sonic — Your Music Agent</h3>
+      <p>Tell me an artist or genre. I'll map your next move.</p>
+    </div>
+  </div>
+
+  <div class="search-area">
+    <label>Search artist, track, or genre</label>
+    <div class="search-row">
+      <input class="search-input" id="searchInput" type="text" placeholder="e.g. Burna Boy, afrobeats, dancehall..." />
+      <button class="search-btn" onclick="doSearch()">Ask Sonic</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="results" id="resultsSection">
+    <div class="results-label">Select a track to generate pathway</div>
+    <div id="resultsList"></div>
+  </div>
+
+  <div class="loading" id="loading">⟳ Sonic is mapping your pathway...</div>
+
+  <div class="pathway-section" id="pathwaySection">
+    <div class="anchor-card" id="anchorCard"></div>
+    <div class="pathway-header">
+      <h2>🎵 Continuation Pathway</h2>
+      <p>Sonic mapped this set progression based on genre, energy, region, and set position.</p>
+    </div>
+    <div id="pathwaySteps"></div>
+  </div>
+
+</div>
+
+<script>
+async function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+
+  document.getElementById('errorMsg').style.display = 'none';
+  document.getElementById('pathwaySection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'none';
+
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+
+    if (!data.results || data.results.length === 0) {
+      document.getElementById('errorMsg').textContent = 'No tracks found. Try a different artist or genre.';
+      document.getElementById('errorMsg').style.display = 'block';
+      return;
+    }
+
+    const list = document.getElementById('resultsList');
+    list.innerHTML = '';
+    data.results.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'track-card';
+      card.innerHTML = `
+        <div>
+          <div class="track-name">${t.artist} — ${t.title}</div>
+          <div class="track-meta">${t.genre} · ${t.energy} energy · ${t.set_position}</div>
+        </div>
+        <div class="track-badge">${t.genre}</div>
+      `;
+      card.onclick = () => getPathway(t.track_id, t);
+      list.appendChild(card);
+    });
+
+    document.getElementById('resultsSection').style.display = 'block';
+  } catch(e) {
+    document.getElementById('errorMsg').textContent = 'Error connecting to Sonic. Try again.';
+    document.getElementById('errorMsg').style.display = 'block';
+  }
+}
+
+async function getPathway(trackId, anchor) {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('pathwaySection').style.display = 'none';
+
+  try {
+    const res = await fetch(`/api/pathway/${trackId}`);
+    const data = await res.json();
+
+    document.getElementById('loading').style.display = 'none';
+
+    document.getElementById('anchorCard').innerHTML = `
+      <div class="anchor-label">Starting from</div>
+      <div class="anchor-name">${data.anchor.artist} — ${data.anchor.title}</div>
+      <div class="anchor-meta">${data.anchor.genre} · ${data.anchor.energy} energy · ${data.anchor.region} · ${data.anchor.set_position}</div>
+    `;
+
+    const steps = document.getElementById('pathwaySteps');
+    steps.innerHTML = '';
+    data.pathway.forEach((step, i) => {
+      const t = step.track;
+      const div = document.createElement('div');
+      div.className = 'pathway-step';
+      div.innerHTML = `
+        <div class="step-num">${i+1}</div>
+        <div class="step-artist">${t.artist} — ${t.title}</div>
+        <div class="step-meta">${t.genre} · ${t.energy} energy · ${t.region} · ${t.set_position}</div>
+        <div class="step-why"><span>Why this: </span>${step.reasons.join(', ')}</div>
+      `;
+      steps.appendChild(div);
+    });
+
+    document.getElementById('pathwaySection').style.display = 'block';
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('errorMsg').textContent = 'Error generating pathway.';
+    document.getElementById('errorMsg').style.display = 'block';
+  }
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+</script>
+
+</body>
+</html>
