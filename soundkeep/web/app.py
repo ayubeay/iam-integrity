@@ -156,7 +156,7 @@ def pathway(track_id: str, steps: int = 5):
 
     return {"anchor": anchor, "pathway": pathway_result}
 
-@app.get("/api/pathway/dynamic")
+@app.get("/api/dynamic_pathway")
 def dynamic_pathway(artist: str, steps: int = 5):
     lastfm_tracks = lastfm_search(artist)
     if not lastfm_tracks:
