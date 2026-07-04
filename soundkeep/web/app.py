@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 import json, sys, os, requests
 from pathlib import Path
 from dotenv import load_dotenv
@@ -16,9 +15,7 @@ LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/"
 
 def lastfm_search(artist: str):
-    """Search Last.fm for artist top tracks"""
     try:
-        # Get artist top tracks
         res = requests.get(LASTFM_BASE, params={
             "method": "artist.gettoptracks",
             "artist": artist,
@@ -29,7 +26,6 @@ def lastfm_search(artist: str):
         data = res.json()
         tracks = data.get("toptracks", {}).get("track", [])
 
-        # Get artist info for tags/genre
         info_res = requests.get(LASTFM_BASE, params={
             "method": "artist.getinfo",
             "artist": artist,
@@ -40,15 +36,19 @@ def lastfm_search(artist: str):
         tags = info_data.get("artist", {}).get("tags", {}).get("tag", [])
         tag_names = [t["name"].lower() for t in tags[:5]] if tags else []
 
-        # Infer genre from tags
+        # Get canonical artist name from API response
+        canonical_artist = info_data.get("artist", {}).get("name", artist)
+
         genre = infer_genre(tag_names, artist)
         region = infer_region(tag_names, artist)
 
         results = []
         for i, track in enumerate(tracks):
+            # Fix: artist from canonical name, title from track.name
+            track_artist = track.get("artist", {}).get("name", canonical_artist) if isinstance(track.get("artist"), dict) else canonical_artist
             results.append({
                 "track_id": f"lfm_{artist.lower().replace(' ', '_')}_{i}",
-                "artist": track.get("name", artist),
+                "artist": track_artist,
                 "title": track.get("name", "Unknown"),
                 "genre": genre,
                 "energy": "medium",
@@ -66,7 +66,6 @@ def lastfm_search(artist: str):
         return []
 
 def infer_genre(tags, artist):
-    """Infer genre from Last.fm tags"""
     genre_map = {
         "afrobeats": "afrobeats", "afropop": "afrobeats", "afro": "afrobeats",
         "dancehall": "dancehall", "reggae": "dancehall", "ragga": "dancehall",
@@ -81,7 +80,6 @@ def infer_genre(tags, artist):
             if key in tag:
                 return val
 
-    # Artist-based fallback
     afrobeats_artists = ["burna boy", "wizkid", "davido", "tems", "rema", "ckay",
                           "omah lay", "asake", "ayra starr", "fireboy", "joeboy",
                           "kizz daniel", "mayorkun", "olamide", "phyno"]
@@ -96,7 +94,6 @@ def infer_genre(tags, artist):
     return "pop"
 
 def infer_region(tags, artist):
-    """Infer region from tags or artist"""
     nigerian_artists = ["burna boy", "wizkid", "davido", "tems", "rema", "ckay",
                          "omah lay", "asake", "ayra starr", "fireboy", "joeboy",
                          "kizz daniel", "mayorkun", "olamide", "phyno"]
@@ -121,18 +118,13 @@ def infer_region(tags, artist):
 
 @app.get("/api/search")
 def search(q: str):
-    # First search local seed
     tracks = load_tracks()
     q_lower = q.lower()
     local_matches = [t for t in tracks if
                      q_lower in t['artist'].lower() or
                      q_lower in t['title'].lower() or
                      q_lower in t['genre'].lower()]
-
-    # Then search Last.fm
     lastfm_results = lastfm_search(q) if LASTFM_API_KEY else []
-
-    # Combine, local first
     all_results = local_matches + [r for r in lastfm_results
                                     if r['track_id'] not in {t['track_id'] for t in local_matches}]
     return {"results": all_results[:8]}
@@ -140,13 +132,9 @@ def search(q: str):
 @app.get("/api/pathway/{track_id}")
 def pathway(track_id: str, steps: int = 5):
     tracks = load_tracks()
-
-    # Check if it's a Last.fm track (not in local seed)
     anchor = next((t for t in tracks if t['track_id'] == track_id), None)
-
     if not anchor:
-        # Rebuild from Last.fm data passed via track_id pattern
-        return {"error": "Track not in local seed — pathway uses local seed tracks"}
+        return {"error": "Track not in local seed"}
 
     pathway_result = []
     used_ids = {track_id}
@@ -162,11 +150,7 @@ def pathway(track_id: str, steps: int = 5):
         )
         best_score, best_reasons = scored[0][0]
         best = scored[0][1]
-        pathway_result.append({
-            "track": best,
-            "score": best_score,
-            "reasons": best_reasons
-        })
+        pathway_result.append({"track": best, "score": best_score, "reasons": best_reasons})
         used_ids.add(best['track_id'])
         current = best
 
@@ -174,7 +158,6 @@ def pathway(track_id: str, steps: int = 5):
 
 @app.get("/api/pathway/dynamic")
 def dynamic_pathway(artist: str, steps: int = 5):
-    """Generate pathway starting from any artist via Last.fm"""
     lastfm_tracks = lastfm_search(artist)
     if not lastfm_tracks:
         return {"error": "Artist not found"}
@@ -196,11 +179,7 @@ def dynamic_pathway(artist: str, steps: int = 5):
         )
         best_score, best_reasons = scored[0][0]
         best = scored[0][1]
-        pathway_result.append({
-            "track": best,
-            "score": best_score,
-            "reasons": best_reasons
-        })
+        pathway_result.append({"track": best, "score": best_score, "reasons": best_reasons})
         used_ids.add(best['track_id'])
         current = best
 
