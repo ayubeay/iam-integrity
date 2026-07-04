@@ -46,7 +46,6 @@
   .anchor-meta { font-size: 14px; color: #7b9ab8; margin-top: 4px; }
   .loading { text-align: center; color: #4fc3f7; padding: 40px; display: none; font-size: 16px; }
   .error-msg { color: #ef5350; background: #1a0a0a; border: 1px solid #ef5350; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: none; }
-  .source-tag { font-size: 11px; color: #4fc3f7; opacity: 0.6; margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -98,7 +97,7 @@ async function doSearch() {
     document.getElementById('loading').style.display = 'none';
 
     if (!data.results || data.results.length === 0) {
-      document.getElementById('errorMsg').textContent = 'Sonic couldn\'t find this artist yet. Try: Burna Boy, Wizkid, Vybz Kartel, Drake, or a genre like afrobeats.';
+      document.getElementById('errorMsg').textContent = 'Sonic couldn\'t find this artist yet. Try: Burna Boy, Wizkid, Vybz Kartel, or Drake.';
       document.getElementById('errorMsg').style.display = 'block';
       return;
     }
@@ -108,15 +107,14 @@ async function doSearch() {
     data.results.forEach(t => {
       const card = document.createElement('div');
       card.className = 'track-card';
-      const sourceTag = t.source === 'lastfm' ? '<span class="source-tag">via Last.fm</span>' : '';
       card.innerHTML = `
         <div>
-          <div class="track-name">${t.artist} — ${t.title}${sourceTag}</div>
+          <div class="track-name">${t.artist} — ${t.title}</div>
           <div class="track-meta">${t.genre} · ${t.energy} energy · ${t.set_position}</div>
         </div>
         <div class="track-badge">${t.genre}</div>
       `;
-      card.onclick = () => getPathway(t, q);
+      card.onclick = () => getPathway(t);
       list.appendChild(card);
     });
     document.getElementById('resultsSection').style.display = 'block';
@@ -127,15 +125,15 @@ async function doSearch() {
   }
 }
 
-async function getPathway(track, artistQuery) {
+async function getPathway(track) {
   document.getElementById('loading').style.display = 'block';
   document.getElementById('pathwaySection').style.display = 'none';
+  document.getElementById('errorMsg').style.display = 'none';
 
   try {
     let data;
     if (track.source === 'lastfm') {
-      // Use dynamic pathway for Last.fm tracks
-      const res = await fetch(`/api/pathway/dynamic?artist=${encodeURIComponent(artistQuery)}`);
+      const res = await fetch(`/api/pathway/dynamic?artist=${encodeURIComponent(track.artist)}`);
       data = await res.json();
     } else {
       const res = await fetch(`/api/pathway/${track.track_id}`);
@@ -143,6 +141,12 @@ async function getPathway(track, artistQuery) {
     }
 
     document.getElementById('loading').style.display = 'none';
+
+    if (data.error) {
+      document.getElementById('errorMsg').textContent = data.error;
+      document.getElementById('errorMsg').style.display = 'block';
+      return;
+    }
 
     document.getElementById('anchorCard').innerHTML = `
       <div class="anchor-label">Starting from</div>
@@ -168,7 +172,7 @@ async function getPathway(track, artistQuery) {
     document.getElementById('pathwaySection').style.display = 'block';
   } catch(e) {
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('errorMsg').textContent = 'Error generating pathway.';
+    document.getElementById('errorMsg').textContent = 'Error generating pathway. Try again.';
     document.getElementById('errorMsg').style.display = 'block';
   }
 }
