@@ -38,12 +38,18 @@
   .step-num { position: absolute; top: 18px; right: 18px; background: #0277bd33; color: #4fc3f7; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
   .step-artist { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
   .step-meta { font-size: 13px; color: #7b9ab8; margin-bottom: 10px; }
-  .step-why { background: #071525; border-left: 3px solid #4fc3f7; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 13px; color: #81d4fa; }
+  .step-why { background: #071525; border-left: 3px solid #4fc3f7; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 13px; color: #81d4fa; margin-bottom: 12px; }
   .step-why span { color: #7b9ab8; }
+  .listen-links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .listen-link { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; transition: opacity 0.2s; }
+  .listen-link:hover { opacity: 0.8; }
+  .listen-yt { background: #ff000022; color: #ff4444; border: 1px solid #ff444444; }
+  .listen-sp { background: #1db95422; color: #1db954; border: 1px solid #1db95444; }
+  .listen-am { background: #fc3c4422; color: #fc3c44; border: 1px solid #fc3c4444; }
   .anchor-card { background: linear-gradient(135deg, #0277bd22, #0d1f3c); border: 1px solid #0277bd; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
   .anchor-label { font-size: 12px; color: #4fc3f7; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-  .anchor-name { font-size: 20px; font-weight: 700; }
-  .anchor-meta { font-size: 14px; color: #7b9ab8; margin-top: 4px; }
+  .anchor-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .anchor-meta { font-size: 14px; color: #7b9ab8; margin-bottom: 12px; }
   .loading { text-align: center; color: #4fc3f7; padding: 40px; display: none; font-size: 16px; }
   .error-msg { color: #ef5350; background: #1a0a0a; border: 1px solid #ef5350; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: none; }
 </style>
@@ -83,6 +89,17 @@
   </div>
 </div>
 <script>
+function listenLinks(artist, title) {
+  const q = encodeURIComponent(`${artist} ${title}`);
+  return `
+    <div class="listen-links">
+      <a class="listen-link listen-yt" href="https://www.youtube.com/results?search_query=${q}" target="_blank">▶ YouTube</a>
+      <a class="listen-link listen-sp" href="https://open.spotify.com/search/${q}" target="_blank">▶ Spotify</a>
+      <a class="listen-link listen-am" href="https://music.apple.com/search?term=${q}" target="_blank">▶ Apple Music</a>
+    </div>
+  `;
+}
+
 async function doSearch() {
   const q = document.getElementById('searchInput').value.trim();
   if (!q) return;
@@ -152,6 +169,7 @@ async function getPathway(track) {
       <div class="anchor-label">Starting from</div>
       <div class="anchor-name">${data.anchor.artist} — ${data.anchor.title}</div>
       <div class="anchor-meta">${data.anchor.genre} · ${data.anchor.energy} energy · ${data.anchor.region} · ${data.anchor.set_position}</div>
+      ${listenLinks(data.anchor.artist, data.anchor.title)}
     `;
 
     const steps = document.getElementById('pathwaySteps');
@@ -165,6 +183,7 @@ async function getPathway(track) {
         <div class="step-artist">${t.artist} — ${t.title}</div>
         <div class="step-meta">${t.genre} · ${t.energy} energy · ${t.region} · ${t.set_position}</div>
         <div class="step-why"><span>Why this: </span>${step.reasons.join(', ')}</div>
+        ${listenLinks(t.artist, t.title)}
       `;
       steps.appendChild(div);
     });
