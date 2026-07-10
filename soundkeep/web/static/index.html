@@ -1,480 +1,508 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="night">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SoundKeep — Your AI Music Pathway Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #050816;
-  --bg2: #070B1D;
-  --bg3: #0B1227;
-  --card: #0B1227;
-  --card2: #111B35;
-  --border: #1B2A4E;
-  --border2: #243B67;
-  --blue: #2EA8FF;
-  --blue2: #1877D2;
-  --blue3: #1565c0;
-  --glow: #53B7FF;
-  --text: #F2F6FF;
-  --text2: #8CA3C7;
-  --text3: #46608C;
-  --green: #1db954;
-  --red: #ff4444;
-  --apple: #fc3c44;
+  --sk-bg:            #050810;
+  --sk-bg-raised:     #0A1120;
+  --sk-card:          #0D1526;
+  --sk-card-2:        #111B35;
+  --sk-border:        #1C2B4A;
+  --sk-border-bright: #2A4070;
+  --sk-accent:        #2E7CF6;
+  --sk-accent-bright: #53A8FF;
+  --sk-accent-deep:   #1B4FD8;
+  --sk-text:          #F2F6FF;
+  --sk-text-2:        #9FB2D6;
+  --sk-text-3:        #5E7099;
+  --sk-positive:      #34D399;
+  --sk-glow:          0 0 24px rgba(46,124,246,.35);
+  --sk-glow-soft:     0 0 12px rgba(46,124,246,.20);
+  --sk-card-shadow:   0 4px 24px rgba(0,0,0,.45);
+  --sk-radius:        14px;
+  --sk-radius-lg:     20px;
+  --sk-ambient:       rgba(46,124,246,.08);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; line-height: 1.6; }
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; background: rgba(6,8,16,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(26,42,69,0.6); }
-.nav-logo { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: 3px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
-.nav-logo::before { content: ''; width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(24,119,210,0.75); background: radial-gradient(circle, var(--blue) 0%, var(--blue) 20%, rgba(24,119,210,0.15) 26%, transparent 42%); box-shadow: 0 0 10px rgba(46,168,255,0.3), inset 0 0 6px rgba(46,168,255,0.15); flex-shrink: 0; }
-.nav-logo span { color: var(--text); }
-.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
-.nav-links a { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-.nav-links a:hover { color: var(--blue); }
-.nav-cta { background: var(--blue2) !important; color: white !important; padding: 8px 20px; border-radius: 8px; font-weight: 600 !important; }
-.nav-cta:hover { background: var(--blue) !important; color: var(--bg) !important; }
-.hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 120px 40px 80px; text-align: center; position: relative; overflow: hidden; }
-.hero::before { content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 800px; height: 800px; background: radial-gradient(circle, rgba(79,195,247,0.07) 0%, transparent 70%); pointer-events: none; }
-.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(79,195,247,0.08); border: 1px solid rgba(79,195,247,0.2); border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: var(--blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
-.hero-eyebrow::before { content: ''; width: 6px; height: 6px; background: var(--blue); border-radius: 50%; box-shadow: 0 0 8px var(--blue); }
-.hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(38px, 6vw, 70px); font-weight: 700; line-height: 1.15; letter-spacing: -1px; max-width: 900px; margin-bottom: 28px; }
-.hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--blue), var(--glow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.hero-sub { font-size: clamp(16px, 2vw, 19px); color: var(--text2); max-width: 620px; margin-bottom: 52px; line-height: 1.8; }
-.hero-actions { display: flex; gap: 16px; align-items: center; margin-bottom: 72px; flex-wrap: wrap; justify-content: center; }
-.btn-primary { background: var(--blue2); color: white; border: none; border-radius: 12px; padding: 16px 36px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 40px rgba(2,119,189,0.35); }
-.btn-primary:hover { background: var(--blue); color: var(--bg); transform: translateY(-2px); }
-.btn-secondary { background: transparent; color: var(--text2); border: 1px solid var(--border2); border-radius: 12px; padding: 16px 36px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-.btn-secondary:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-2px); }
-.hero-dashboard { width: 100%; max-width: 1080px; background: var(--card); border: 1px solid var(--border2); border-radius: 20px; overflow: hidden; box-shadow: 0 0 0 1px rgba(79,195,247,0.08), 0 40px 120px rgba(0,0,0,0.6), 0 0 80px rgba(79,195,247,0.06); }
-.dashboard-bar { background: #080d1a; padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
-.dot { width: 12px; height: 12px; border-radius: 50%; }
-.dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
-.dash-url { flex: 1; background: var(--bg3); border-radius: 6px; padding: 5px 12px; font-size: 12px; color: var(--text3); text-align: center; }
-.dashboard-inner { padding: 28px; display: grid; grid-template-columns: 200px 1fr 260px; gap: 20px; min-height: 360px; }
-.dash-sidebar { display: flex; flex-direction: column; gap: 4px; }
-.dash-logo-sm { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 2px; margin-bottom: 18px; display: flex; align-items: center; gap: 7px; }
-.dash-logo-sm::before { content: ''; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid rgba(24,119,210,0.7); background: radial-gradient(circle, var(--blue) 0%, var(--blue) 20%, rgba(24,119,210,0.12) 26%, transparent 42%); box-shadow: 0 0 6px rgba(46,168,255,0.25); }
-.dash-nav-item { padding: 8px 12px; border-radius: 8px; font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; }
-.dash-nav-item.active { background: rgba(79,195,247,0.1); color: var(--blue); }
-.dash-main { display: flex; flex-direction: column; gap: 16px; }
-.dash-featured { background: linear-gradient(135deg, #0a1a35, #061020); border: 1px solid var(--border2); border-radius: 14px; padding: 22px; position: relative; overflow: hidden; flex: 1; }
-.dash-featured::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(79,195,247,0.1), transparent); border-radius: 50%; }
-.feat-eyebrow { font-size: 10px; color: var(--blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-.feat-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-.feat-sub { font-size: 12px; color: var(--text2); margin-bottom: 18px; }
-.feat-btn { background: var(--blue2); color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
-.dash-tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.dash-track { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
-.track-thumb { width: 34px; height: 34px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-.track-info-sm { flex: 1; min-width: 0; }
-.track-name-sm { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.track-meta-sm { font-size: 11px; color: var(--text2); }
-.track-bpm { font-size: 10px; color: var(--blue); font-weight: 600; }
-.dash-agent { background: linear-gradient(135deg, #071a30, #060d1c); border: 1px solid var(--border2); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.agent-header { display: flex; align-items: center; gap: 10px; }
-.agent-orb { width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle, var(--blue), var(--blue2)); display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 20px rgba(79,195,247,0.35); flex-shrink: 0; }
-.agent-name { font-size: 14px; font-weight: 700; color: var(--blue); }
-.agent-desc { font-size: 11px; color: var(--text2); }
-.agent-next { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
-.agent-next-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-.agent-next-track { display: flex; align-items: center; gap: 10px; }
-.agent-play { width: 26px; height: 26px; background: var(--blue2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
-.agent-track-name { font-size: 13px; font-weight: 600; }
-.agent-track-meta { font-size: 11px; color: var(--text2); }
-.token-panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
-.token-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.token-val { font-size: 22px; font-weight: 700; }
-.token-change { font-size: 11px; color: var(--green); }
-section { padding: 96px 40px; }
-.section-inner { max-width: 1080px; margin: 0 auto; }
-.section-eyebrow { font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-.section-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
-.section-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 4vw, 46px); font-weight: 700; line-height: 1.2; margin-bottom: 14px; }
-.section-sub { font-size: 17px; color: var(--text2); max-width: 540px; line-height: 1.7; margin-bottom: 56px; }
-.sonic-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.sonic-card { background: linear-gradient(145deg, var(--card2), var(--card)); border: 1px solid var(--border); border-radius: 16px; padding: 30px; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(83,183,255,0.06); }
-.sonic-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--blue), transparent); opacity: 0; transition: opacity 0.3s; }
-.sonic-card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: inset 0 1px 0 rgba(83,183,255,0.1), 0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(46,168,255,0.06); }
-.sonic-card:hover::before { opacity: 1; }
-.sonic-card-num { font-family: 'Space Grotesk', sans-serif; font-size: 44px; font-weight: 700; color: rgba(79,195,247,0.1); line-height: 1; margin-bottom: 14px; }
-.sonic-card-icon { font-size: 26px; margin-bottom: 14px; }
-.sonic-card-title { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
-.sonic-card-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
-.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.why-card { background: linear-gradient(145deg, var(--card2), var(--card)); border: 1px solid var(--border); border-radius: 14px; padding: 24px; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; box-shadow: inset 0 1px 0 rgba(83,183,255,0.05); }
-.why-card:hover { border-color: rgba(79,195,247,0.3); background: linear-gradient(135deg, var(--card), #0d1f3c); }
-.why-icon { font-size: 24px; margin-bottom: 12px; }
-.why-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.why-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
-#demo { background: var(--bg2); }
-.demo-wrap { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(79,195,247,0.05); }
-.demo-bar { background: #080d1a; padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
-.demo-url { flex: 1; background: var(--bg3); border-radius: 6px; padding: 5px 12px; font-size: 12px; color: var(--text3); text-align: center; }
-.demo-inner { padding: 36px; }
-.sonic-panel { background: linear-gradient(135deg, #0d1f3c, #0a1628); border: 1px solid var(--border2); border-radius: 16px; padding: 22px; margin-bottom: 26px; display: flex; align-items: center; gap: 18px; }
-.sonic-avatar { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle, var(--blue), var(--blue2)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 0 22px rgba(79,195,247,0.38); }
-.sonic-info h3 { color: var(--blue); font-size: 16px; margin-bottom: 3px; }
-.sonic-info p { color: var(--text2); font-size: 13px; }
-.search-area { margin-bottom: 26px; }
-.search-label { display: block; color: var(--text3); font-size: 11px; margin-bottom: 8px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
-.search-row { display: flex; gap: 10px; }
-.search-input { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px; padding: 13px 18px; color: var(--text); font-size: 15px; outline: none; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
-.search-input:focus { border-color: var(--blue); }
-.search-input::placeholder { color: var(--text3); }
-.search-btn { background: var(--blue2); color: white; border: none; border-radius: 10px; padding: 13px 26px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: 'Inter', sans-serif; box-shadow: 0 0 20px rgba(2,119,189,0.28); }
-.search-btn:hover { background: var(--blue); color: var(--bg); }
-.results { display: none; }
-.results-label { color: var(--text3); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
-.track-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 13px 18px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; justify-content: space-between; }
-.track-card:hover { border-color: var(--blue); background: #0d1f3c; }
-.track-name { font-size: 14px; font-weight: 600; }
-.track-meta { font-size: 12px; color: var(--text2); margin-top: 3px; }
-.track-badge { background: rgba(79,195,247,0.08); color: var(--blue); border: 1px solid rgba(79,195,247,0.2); border-radius: 6px; padding: 3px 10px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
-.loading { text-align: center; color: var(--blue); padding: 36px; display: none; font-size: 15px; }
-.error-msg { color: #ef5350; background: rgba(239,83,80,0.08); border: 1px solid rgba(239,83,80,0.25); border-radius: 8px; padding: 12px 16px; margin-top: 10px; display: none; font-size: 13px; }
-.pathway-section { display: none; margin-top: 26px; }
-.pathway-header { margin-bottom: 18px; }
-.pathway-header h2 { font-size: 18px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
-.pathway-header p { font-size: 13px; color: var(--text2); }
-.anchor-card { background: linear-gradient(135deg, rgba(2,119,189,0.1), var(--card)); border: 1px solid rgba(79,195,247,0.28); border-radius: 14px; padding: 20px; margin-bottom: 18px; }
-.anchor-label { font-size: 10px; color: var(--blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
-.anchor-name { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
-.anchor-meta { font-size: 13px; color: var(--text2); margin-bottom: 13px; }
-.pathway-step { background: var(--card); border: 1px solid var(--border); border-radius: 13px; padding: 17px; margin-bottom: 10px; position: relative; transition: border-color 0.2s; }
-.pathway-step:hover { border-color: var(--border2); }
-.step-num { position: absolute; top: 17px; right: 17px; background: rgba(79,195,247,0.1); color: var(--blue); border-radius: 50%; width: 27px; height: 27px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-.step-artist { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-.step-meta { font-size: 12px; color: var(--text2); margin-bottom: 9px; }
-.step-why { background: rgba(7,21,37,0.8); border-left: 3px solid var(--blue); padding: 7px 12px; border-radius: 0 6px 6px 0; font-size: 12px; color: #81d4fa; margin-bottom: 11px; }
-.step-why span { color: var(--text2); }
-.listen-links { display: flex; gap: 8px; flex-wrap: wrap; }
-.listen-link { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; transition: opacity 0.2s, transform 0.2s; letter-spacing: 0.5px; }
-.listen-link:hover { opacity: 0.8; transform: translateY(-1px); }
-.listen-yt { background: rgba(255,68,68,0.1); color: var(--red); border: 1px solid rgba(255,68,68,0.22); }
-.listen-sp { background: rgba(29,185,84,0.1); color: var(--green); border: 1px solid rgba(29,185,84,0.22); }
-.listen-am { background: rgba(252,60,68,0.1); color: var(--apple); border: 1px solid rgba(252,60,68,0.22); }
-.showcase { background: var(--bg2); }
-.showcase-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; align-items: end; }
-.showcase-phone { background: var(--card); border: 1px solid var(--border2); border-radius: 32px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(79,195,247,0.05); transition: transform 0.3s; }
-.showcase-phone:hover { transform: translateY(-8px); }
-.showcase-phone.center { transform: scale(1.06); }
-.showcase-phone.center:hover { transform: scale(1.06) translateY(-8px); }
-.phone-bar { background: #060810; height: 38px; display: flex; align-items: center; justify-content: center; }
-.phone-notch { width: 76px; height: 18px; background: #060810; border-radius: 0 0 14px 14px; }
-.phone-screen { background: var(--bg2); padding: 14px; min-height: 300px; }
-.phone-search { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 11px; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-.phone-track { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-.phone-track-thumb { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
-.phone-track-name { font-size: 11px; font-weight: 600; }
-.phone-track-meta { font-size: 10px; color: var(--text2); }
-.phone-why { background: rgba(7,21,37,0.8); border-left: 2px solid var(--blue); padding: 4px 7px; border-radius: 0 4px 4px 0; font-size: 9px; color: #81d4fa; margin-top: 3px; }
-.phone-title-sm { font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 9px; letter-spacing: 1px; text-transform: uppercase; }
-footer { background: #040608; border-top: 1px solid var(--border); padding: 56px 40px 36px; }
-.footer-inner { max-width: 1080px; margin: 0 auto; }
-.footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 44px; flex-wrap: wrap; gap: 28px; }
-.footer-logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: 3px; margin-bottom: 7px; display: flex; align-items: center; gap: 9px; }
-.footer-logo::before { content: ''; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(24,119,210,0.7); background: radial-gradient(circle, var(--blue) 0%, var(--blue) 20%, rgba(24,119,210,0.12) 26%, transparent 42%); box-shadow: 0 0 8px rgba(46,168,255,0.25), inset 0 0 5px rgba(46,168,255,0.12); }
-.footer-tagline { font-size: 13px; color: var(--text2); }
-.footer-links { display: flex; gap: 24px; list-style: none; flex-wrap: wrap; align-items: center; }
-.footer-links a { color: var(--text2); text-decoration: none; font-size: 13px; transition: color 0.2s; }
-.footer-links a:hover { color: var(--blue); }
-.footer-bottom { border-top: 1px solid var(--border); padding-top: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-.footer-copy { font-size: 12px; color: var(--text3); }
-@media (max-width: 900px) {
-  nav { padding: 14px 20px; }
-  .nav-links { display: none; }
-  .hero { padding: 100px 20px 56px; }
-  section { padding: 60px 20px; }
-  .sonic-cards { grid-template-columns: 1fr; }
-  .why-grid { grid-template-columns: repeat(2, 1fr); }
-  .dashboard-inner { grid-template-columns: 1fr; }
-  .dash-sidebar, .dash-agent { display: none; }
-  .showcase-grid { grid-template-columns: 1fr; }
-  .showcase-phone { max-width: 300px; margin: 0 auto; }
-  .showcase-phone.center { transform: none; }
-  footer { padding: 40px 20px; }
-  .footer-top { flex-direction: column; }
-  .demo-inner { padding: 18px; }
+[data-theme="day"] {
+  --sk-bg:            #EAF4FF;
+  --sk-bg-raised:     #F3F8FF;
+  --sk-card:          #FFFFFF;
+  --sk-card-2:        #F3F8FF;
+  --sk-border:        #D3E3F8;
+  --sk-border-bright: #AFC9EE;
+  --sk-text:          #0F172A;
+  --sk-text-2:        #3B4C6B;
+  --sk-text-3:        #6B7FA3;
+  --sk-card-shadow:   0 4px 20px rgba(15,40,90,.08);
+  --sk-ambient:       rgba(46,124,246,.10);
 }
-@media (max-width: 600px) {
-  .why-grid { grid-template-columns: 1fr; }
-  .search-row { flex-direction: column; }
-  .hero-actions { flex-direction: column; }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Inter',-apple-system,sans-serif;
+  color:var(--sk-text);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, var(--sk-ambient), transparent 60%),
+    var(--sk-bg);
+  -webkit-font-smoothing:antialiased;
+  transition:background .35s ease, color .35s ease;
+}
+::selection { background:rgba(46,124,246,.35); }
+.wrap { max-width:1180px; margin:0 auto; padding:0 28px; }
+
+/* ── Nav ─────────────────────────────── */
+nav {
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--sk-bg-raised) 82%, transparent);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--sk-border);
+}
+.nav-inner { display:flex; align-items:center; justify-content:space-between; height:64px; }
+.sk-logo { display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
+.sk-logo-mark {
+  width:24px; height:24px; border-radius:50%;
+  border:2px solid var(--sk-accent-deep);
+  display:grid; place-items:center;
+  box-shadow:inset 0 0 8px rgba(46,124,246,.25);
+}
+.sk-logo-dot {
+  width:8px; height:8px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, var(--sk-accent-bright), var(--sk-accent));
+  box-shadow:var(--sk-glow-soft);
+}
+.sk-logo-word { color:var(--sk-text); font-family:'Space Grotesk'; font-weight:600; letter-spacing:.18em; font-size:15px; }
+.nav-links { display:flex; align-items:center; gap:28px; }
+.nav-links a { color:var(--sk-text-2); text-decoration:none; font-size:14.5px; font-weight:500; transition:color .2s; }
+.nav-links a:hover { color:var(--sk-text); }
+.nav-links a:focus-visible, .btn:focus-visible, .session-toggle:focus-visible { outline:2px solid var(--sk-accent); outline-offset:3px; border-radius:6px; }
+
+/* Session toggle */
+.session-toggle {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  color:var(--sk-text-2); border-radius:999px;
+  padding:7px 14px; font-size:13px; font-weight:500;
+  cursor:pointer; font-family:inherit;
+  transition:border-color .2s, color .2s;
+}
+.session-toggle:hover { border-color:var(--sk-border-bright); color:var(--sk-text); }
+
+/* ── Buttons ─────────────────────────── */
+.btn { display:inline-flex; align-items:center; gap:8px; border-radius:12px; font-size:15px; font-weight:600; padding:13px 26px; cursor:pointer; text-decoration:none; font-family:inherit; border:0; transition:box-shadow .2s ease, transform .15s ease, border-color .2s, background .2s; }
+.btn-primary {
+  background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep));
+  color:#fff;
+  box-shadow:var(--sk-glow-soft), 0 2px 10px rgba(0,0,0,.4);
+}
+.btn-primary:hover { box-shadow:var(--sk-glow); transform:translateY(-1px); }
+.btn-secondary { background:transparent; color:var(--sk-text); border:1px solid var(--sk-border-bright); font-weight:500; }
+.btn-secondary:hover { border-color:var(--sk-accent); background:rgba(46,124,246,.06); }
+.btn-sm { padding:9px 20px; font-size:14px; }
+
+/* ── Hero ────────────────────────────── */
+.hero { padding:110px 0 120px; text-align:center; position:relative; }
+.hero::after { content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(900px 420px at 50% 20%, transparent 55%, rgba(0,0,0,.22)); }
+[data-theme="day"] .hero::after { display:none; }
+.pill {
+  display:inline-flex; align-items:center; gap:9px;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  border-radius:999px; padding:9px 18px; margin-bottom:36px;
+  font-size:12.5px; font-weight:600; letter-spacing:.16em;
+  color:var(--sk-text-3); text-transform:uppercase;
+}
+.pill-dot {
+  width:9px; height:9px; border-radius:50%; flex-shrink:0;
+  background:radial-gradient(circle at 35% 35%, var(--sk-accent-bright), var(--sk-accent));
+  box-shadow:0 0 6px rgba(83,168,255,.6), 0 0 14px rgba(46,124,246,.35);
+  animation:sk-breathe 2.6s ease-in-out infinite;
+}
+@keyframes sk-breathe {
+  0%,100% { opacity:.72; transform:scale(1); }
+  50%     { opacity:1;   transform:scale(1.15); }
+}
+.hero h1 {
+  font-family:'Space Grotesk'; font-weight:700;
+  font-size:clamp(38px, 6vw, 70px);
+  line-height:1.1; letter-spacing:-0.015em;
+  max-width:900px; margin:0 auto 28px;
+}
+.hero h1 em {
+  font-style:normal;
+  background:linear-gradient(120deg, var(--sk-accent-deep), var(--sk-accent) 55%, var(--sk-accent-bright));
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; color:transparent;
+}
+.hero-sub { font-size:clamp(16px,2vw,19px); color:var(--sk-text-2); max-width:620px; margin:0 auto 52px; line-height:1.8; }
+.hero-cta { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+
+/* ── Sections ────────────────────────── */
+section { padding:100px 0; }
+.eyebrow { display:flex; align-items:center; gap:12px; color:var(--sk-accent); font-size:13px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; margin-bottom:20px; }
+.eyebrow::before { content:''; width:32px; height:1px; background:var(--sk-accent); }
+h2 { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,4.4vw,48px); letter-spacing:-0.01em; margin-bottom:18px; }
+.section-sub { color:var(--sk-text-2); font-size:17px; line-height:1.75; max-width:560px; margin-bottom:56px; }
+
+/* Cards */
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.grid-3-lg { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.sk-card {
+  background:var(--sk-card);
+  border:1px solid var(--sk-border);
+  border-radius:var(--sk-radius);
+  box-shadow:var(--sk-card-shadow), inset 0 1px 0 rgba(255,255,255,.03);
+  padding:32px 28px;
+  transition:border-color .2s ease, transform .2s ease;
+}
+.sk-card:hover { border-color:var(--sk-border-bright); transform:translateY(-2px); }
+.step-num { font-family:'Space Grotesk'; font-size:34px; font-weight:700; color:var(--sk-card-2); -webkit-text-stroke:1px var(--sk-border-bright); margin-bottom:22px; }
+[data-theme="day"] .step-num { color:var(--sk-card-2); -webkit-text-stroke:1px var(--sk-border-bright); }
+.card-icon { width:38px; height:38px; border-radius:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); display:grid; place-items:center; margin-bottom:20px; font-size:17px; }
+.sk-card h3 { font-family:'Space Grotesk'; font-size:19px; font-weight:600; margin-bottom:12px; }
+.sk-card p { color:var(--sk-text-2); font-size:14.5px; line-height:1.7; }
+
+/* ── Demo section ────────────────────── */
+.demo-frame {
+  background:var(--sk-card);
+  border:1px solid var(--sk-border);
+  border-radius:var(--sk-radius-lg);
+  box-shadow:var(--sk-card-shadow);
+  overflow:hidden;
+}
+.demo-chrome { display:flex; align-items:center; gap:8px; padding:14px 18px; background:var(--sk-card-2); border-bottom:1px solid var(--sk-border); }
+.chrome-dot { width:11px; height:11px; border-radius:50%; }
+.chrome-dot:nth-child(1){background:#ff5f57;} .chrome-dot:nth-child(2){background:#febc2e;} .chrome-dot:nth-child(3){background:#28c840;}
+.chrome-url { flex:1; text-align:center; color:var(--sk-text-3); font-size:12.5px; }
+.demo-body { padding:34px; }
+.agent-card {
+  display:flex; align-items:center; gap:18px;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  border-radius:var(--sk-radius); padding:22px 24px; margin-bottom:26px;
+}
+.agent-orb {
+  width:52px; height:52px; border-radius:50%; flex-shrink:0;
+  border:2px solid var(--sk-accent-deep);
+  display:grid; place-items:center;
+  box-shadow:var(--sk-glow-soft), inset 0 0 10px rgba(46,124,246,.2);
+}
+.agent-orb-dot {
+  width:16px; height:16px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, var(--sk-accent-bright), var(--sk-accent));
+  box-shadow:0 0 10px rgba(83,168,255,.55);
+  animation:sk-breathe 2.6s ease-in-out infinite;
+}
+.agent-card h4 { font-family:'Space Grotesk'; font-size:17px; margin-bottom:5px; }
+.agent-card p { color:var(--sk-text-2); font-size:14px; }
+.demo-label { color:var(--sk-text-3); font-size:11.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; margin-bottom:12px; }
+.demo-row { display:flex; gap:14px; }
+.demo-input {
+  flex:1; background:var(--sk-bg-raised); border:1px solid var(--sk-border);
+  border-radius:12px; padding:14px 18px; color:var(--sk-text);
+  font-family:inherit; font-size:15px; transition:border-color .2s;
+}
+.demo-input::placeholder { color:var(--sk-text-3); }
+.demo-input:focus { outline:none; border-color:var(--sk-accent); box-shadow:var(--sk-glow-soft); }
+
+/* ── Experience section ──────────────── */
+.exp-grid { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:22px; align-items:start; }
+.panel-label { color:var(--sk-text-3); font-size:11.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; margin-bottom:16px; }
+.track-row {
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  border-radius:12px; padding:14px 16px; margin-bottom:12px;
+  transition:border-color .2s;
+}
+.track-row:hover { border-color:var(--sk-border-bright); }
+.track-row.active { border-color:var(--sk-accent); }
+.track-title { font-size:14.5px; font-weight:600; margin-bottom:4px; }
+.track-meta { color:var(--sk-text-2); font-size:12.5px; margin-bottom:7px; }
+.track-why { display:flex; align-items:center; gap:8px; color:var(--sk-accent-bright); font-size:12px; }
+.track-why::before { content:''; width:3px; height:14px; border-radius:2px; background:var(--sk-accent); }
+[data-theme="day"] .track-why { color:var(--sk-accent-deep); }
+.player { text-align:center; padding:36px 28px; }
+.player-art {
+  width:120px; height:120px; border-radius:24px; margin:18px auto 24px;
+  background:radial-gradient(circle at 32% 28%, var(--sk-accent-bright), var(--sk-accent-deep) 75%);
+  box-shadow:var(--sk-glow), inset 0 2px 12px rgba(255,255,255,.18);
+  display:grid; place-items:center; font-size:40px;
+}
+.player h4 { font-family:'Space Grotesk'; font-size:18px; margin-bottom:5px; }
+.player .artist { color:var(--sk-text-2); font-size:14px; margin-bottom:22px; }
+.progress { height:4px; border-radius:2px; background:var(--sk-card-2); margin-bottom:8px; overflow:hidden; }
+.progress-fill { width:41%; height:100%; border-radius:2px; background:linear-gradient(90deg, var(--sk-accent-deep), var(--sk-accent-bright)); }
+.time-row { display:flex; justify-content:space-between; color:var(--sk-text-3); font-size:12px; margin-bottom:22px; }
+.controls { display:flex; align-items:center; justify-content:center; gap:22px; }
+.ctrl { color:var(--sk-text-2); font-size:18px; cursor:pointer; background:none; border:0; transition:color .2s; }
+.ctrl:hover { color:var(--sk-text); }
+.ctrl-play {
+  width:52px; height:52px; border-radius:50%; font-size:18px; color:#fff;
+  background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep));
+  box-shadow:var(--sk-glow-soft); border:0; cursor:pointer;
+  transition:box-shadow .2s, transform .15s;
+}
+.ctrl-play:hover { box-shadow:var(--sk-glow); transform:translateY(-1px); }
+.lib-tabs { display:flex; gap:8px; margin-bottom:16px; }
+.lib-tab { padding:7px 15px; border-radius:999px; font-size:12.5px; font-weight:600; color:var(--sk-text-2); background:transparent; border:1px solid transparent; cursor:pointer; font-family:inherit; }
+.lib-tab.active { background:var(--sk-accent); color:#fff; }
+.lib-row { display:flex; align-items:center; gap:13px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:12px; padding:12px 14px; margin-bottom:11px; }
+.lib-thumb { width:38px; height:38px; border-radius:9px; flex-shrink:0; display:grid; place-items:center; font-size:16px; }
+.lib-row h5 { font-size:13.5px; font-weight:600; margin-bottom:2px; }
+.lib-row span { color:var(--sk-text-2); font-size:12px; }
+
+/* ── Footer ──────────────────────────── */
+footer { border-top:1px solid var(--sk-border); background:var(--sk-bg-raised); padding:56px 0 40px; }
+.footer-top { display:flex; justify-content:space-between; align-items:flex-start; gap:32px; flex-wrap:wrap; margin-bottom:44px; }
+.footer-tag { color:var(--sk-text-2); font-size:14px; margin-top:14px; }
+.footer-links { display:flex; gap:26px; flex-wrap:wrap; }
+.footer-links a { color:var(--sk-text-2); text-decoration:none; font-size:14px; transition:color .2s; }
+.footer-links a:hover { color:var(--sk-text); }
+.footer-bottom { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; color:var(--sk-text-3); font-size:13px; }
+
+/* ── Responsive & motion ─────────────── */
+@media (max-width: 940px) {
+  .grid-3, .grid-3-lg, .exp-grid { grid-template-columns:1fr; }
+  .nav-links a:not(.btn) { display:none; }
+  .hero { padding:80px 0 90px; }
+  section { padding:72px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill-dot, .agent-orb-dot { animation:none; }
+  html { scroll-behavior:auto; }
+  .sk-card, .btn { transition:none; }
 }
 </style>
+</head>
 <body>
+
 <nav>
-  <div class="nav-logo">SOUND<span>KEEP</span></div>
-  <ul class="nav-links">
-    <li><a href="#sonic">How It Works</a></li>
-    <li><a href="#why">Why SoundKeep</a></li>
-    <li><a href="#demo">Try Demo</a></li>
-    <li><a href="#demo" class="nav-cta">Ask Sonic</a></li>
-  </ul>
+  <div class="wrap nav-inner">
+    <a class="sk-logo" href="#">
+      <span class="sk-logo-mark"><span class="sk-logo-dot"></span></span>
+      <span class="sk-logo-word">SOUNDKEEP</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How It Works</a>
+      <a href="#why">Why SoundKeep</a>
+      <a href="#demo">Try Demo</a>
+      <button class="session-toggle" id="sessionToggle" aria-label="Switch session theme">
+        <span id="sessionIcon">🌙</span><span id="sessionLabel">Night Session</span>
+      </button>
+      <a href="#demo" class="btn btn-primary btn-sm">Ask Sonic</a>
+    </div>
+  </div>
 </nav>
 
-<section class="hero">
-  <div class="hero-eyebrow">AI Music Pathway Engine</div>
-  <h1>Find the next song before the crowd <em>loses the feeling.</em></h1>
-  <p class="hero-sub">SoundKeep uses genre, energy, region, era, and set position to map intelligent listening pathways from any artist or track. Start with one song. Let Sonic show you what comes next.</p>
-  <div class="hero-actions">
-    <a href="#demo" class="btn-primary">🎵 Ask Sonic</a>
-    <a href="#sonic" class="btn-secondary">Learn how it works →</a>
-  </div>
-  <div class="hero-dashboard">
-    <div class="dashboard-bar">
-      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
-      <div class="dash-url">soundkeep-production.up.railway.app</div>
-    </div>
-    <div class="dashboard-inner">
-      <div class="dash-sidebar">
-        <div class="dash-logo-sm">SOUNDKEEP</div>
-        <div class="dash-nav-item active">🏠 Home</div>
-        <div class="dash-nav-item">🔍 Discover</div>
-        <div class="dash-nav-item">📚 Library</div>
-        <div class="dash-nav-item">🎛 DJ Crates</div>
-        <div class="dash-nav-item">⬇️ Downloads</div>
-        <div class="dash-nav-item">🤖 Agents</div>
-      </div>
-      <div class="dash-main">
-        <div class="dash-featured">
-          <div class="feat-eyebrow">Early Access</div>
-          <div class="feat-title">Underground Sounds Vol. 7</div>
-          <div class="feat-sub">Exclusive tracks. Early drops. For real supporters.</div>
-          <button class="feat-btn">Explore Drop</button>
-        </div>
-        <div class="dash-tracks">
-          <div class="dash-track"><div class="track-thumb" style="background:linear-gradient(135deg,#0d2a4a,#1565c0)">🎵</div><div class="track-info-sm"><div class="track-name-sm">Essence (feat. Tems)</div><div class="track-meta-sm">Wizkid</div><div class="track-bpm">95 BPM · 8A</div></div></div>
-          <div class="dash-track"><div class="track-thumb" style="background:linear-gradient(135deg,#1a0d3a,#6a1b9a)">🎶</div><div class="track-info-sm"><div class="track-name-sm">Last Last</div><div class="track-meta-sm">Burna Boy</div><div class="track-bpm">98 BPM · 9A</div></div></div>
-          <div class="dash-track"><div class="track-thumb" style="background:linear-gradient(135deg,#0d3a1a,#1b5e20)">🎸</div><div class="track-info-sm"><div class="track-name-sm">Fever</div><div class="track-meta-sm">Vybz Kartel</div><div class="track-bpm">104 BPM · 6B</div></div></div>
-          <div class="dash-track"><div class="track-thumb" style="background:linear-gradient(135deg,#3a1a0d,#bf360c)">🎤</div><div class="track-info-sm"><div class="track-name-sm">God's Plan</div><div class="track-meta-sm">Drake</div><div class="track-bpm">77 BPM · 4A</div></div></div>
-        </div>
-      </div>
-      <div class="dash-agent">
-        <div class="agent-header"><div class="agent-orb">🎵</div><div><div class="agent-name">Sonic</div><div class="agent-desc">Your AI music agent scouting the best tracks for you.</div></div></div>
-        <div class="agent-next"><div class="agent-next-label">Next Recommendation</div><div class="agent-next-track"><div class="agent-play">▶</div><div><div class="agent-track-name">Temperature</div><div class="agent-track-meta">Sean Paul · Dancehall · Build</div></div></div></div>
-        <div class="token-panel"><div class="token-label">SoundKeep Token</div><div class="token-val">1,250.75</div><div class="token-change">+12.3% this month</div></div>
-      </div>
+<header class="hero">
+  <div class="wrap">
+    <div class="pill"><span class="pill-dot"></span>AI Music Pathway Engine</div>
+    <h1>Find the next song before the crowd <em>loses the feeling.</em></h1>
+    <p class="hero-sub">SoundKeep uses genre, energy, region, era, and set position to map intelligent listening pathways from any artist or track. Start with one song. Let Sonic show you what comes next.</p>
+    <div class="hero-cta">
+      <a href="#demo" class="btn btn-primary">♫&nbsp; Ask Sonic</a>
+      <a href="#how" class="btn btn-secondary">Learn how it works →</a>
     </div>
   </div>
-</section>
-<section id="sonic">
-  <div class="section-inner">
-    <div class="section-eyebrow">How It Works</div>
-    <h2 class="section-title">What Sonic does for you</h2>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">How It Works</div>
+    <h2>What Sonic does for you</h2>
     <p class="section-sub">Not random recommendations. Intentional pathways with reasoning behind every step.</p>
-    <div class="sonic-cards">
-      <div class="sonic-card"><div class="sonic-card-num">01</div><div class="sonic-card-icon">🔍</div><div class="sonic-card-title">Discover</div><div class="sonic-card-desc">Start from any artist, track, or genre. Sonic queries millions of tracks to find your anchor point instantly — no account needed.</div></div>
-      <div class="sonic-card"><div class="sonic-card-num">02</div><div class="sonic-card-icon">🗺</div><div class="sonic-card-title">Map the Pathway</div><div class="sonic-card-desc">Generate an intelligent continuation — not "people who liked X also liked Y", but reasoned transitions based on genre, energy, region, era, and set position.</div></div>
-      <div class="sonic-card"><div class="sonic-card-num">03</div><div class="sonic-card-icon">▶️</div><div class="sonic-card-title">Listen Anywhere</div><div class="sonic-card-desc">Every recommendation links out to YouTube, Spotify, and Apple Music. SoundKeep decides what plays next. You choose where.</div></div>
+    <div class="grid-3">
+      <div class="sk-card">
+        <div class="step-num">01</div>
+        <div class="card-icon">🔍</div>
+        <h3>Discover</h3>
+        <p>Start from any artist, track, or genre. Sonic queries millions of tracks to find your anchor point instantly — no account needed.</p>
+      </div>
+      <div class="sk-card">
+        <div class="step-num">02</div>
+        <div class="card-icon">🗺️</div>
+        <h3>Map the Pathway</h3>
+        <p>Generate an intelligent continuation — not "people who liked X also liked Y", but reasoned transitions based on genre, energy, region, era, and set position.</p>
+      </div>
+      <div class="sk-card">
+        <div class="step-num">03</div>
+        <div class="card-icon">▶️</div>
+        <h3>Listen Anywhere</h3>
+        <p>Every recommendation links out to YouTube, Spotify, and Apple Music. SoundKeep decides what plays next. You choose where.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="why" style="background: var(--bg2);">
-  <div class="section-inner">
-    <div class="section-eyebrow">The Difference</div>
-    <h2 class="section-title">Built for flow, not algorithms</h2>
+<section id="why" style="background:var(--sk-bg-raised); border-top:1px solid var(--sk-border); border-bottom:1px solid var(--sk-border);">
+  <div class="wrap">
+    <div class="eyebrow">Why SoundKeep</div>
+    <h2>Built for flow, not algorithms</h2>
     <p class="section-sub">Every pathway decision is explainable. Sonic shows you why — not just what.</p>
-    <div class="why-grid">
-      <div class="why-card"><div class="why-icon">🎸</div><div class="why-title">Genre-aware</div><div class="why-desc">Understands Afrobeats, Dancehall, Hip-Hop, R&B, Soca, Amapiano, and the bridges between them.</div></div>
-      <div class="why-card"><div class="why-icon">⚡</div><div class="why-title">Energy-aware</div><div class="why-desc">Tracks energy level across the set — warm-up, build, peak, wind-down — and matches accordingly.</div></div>
-      <div class="why-card"><div class="why-icon">🌍</div><div class="why-title">Regional awareness</div><div class="why-desc">Knows the difference between Nigerian Afrobeats and Jamaican Dancehall. Regional bridges feel natural, not forced.</div></div>
-      <div class="why-card"><div class="why-icon">📅</div><div class="why-title">Era matching</div><div class="why-desc">Classic to contemporary, 2000s to 2020s — Sonic keeps your pathway temporally coherent.</div></div>
-      <div class="why-card"><div class="why-icon">🎛</div><div class="why-title">Set position logic</div><div class="why-desc">Knows when to stay in warm-up, when to build, when to peak, and when to wind down. Designed with DJs in mind.</div></div>
-      <div class="why-card"><div class="why-icon">🔗</div><div class="why-title">Artist relationships</div><div class="why-desc">Understands which artists bridge naturally — Afrobeats into Dancehall, Hip-Hop into R&B — and explains every connection.</div></div>
+    <div class="grid-3-lg">
+      <div class="sk-card">
+        <div class="card-icon">🎸</div>
+        <h3>Genre-aware</h3>
+        <p>Understands Afrobeats, Dancehall, Hip-Hop, R&amp;B, Soca, Amapiano, and the bridges between them.</p>
+      </div>
+      <div class="sk-card">
+        <div class="card-icon">⚡</div>
+        <h3>Energy-aware</h3>
+        <p>Tracks energy level across the set — warm-up, build, peak, wind-down — and matches accordingly.</p>
+      </div>
+      <div class="sk-card">
+        <div class="card-icon">🌍</div>
+        <h3>Regional awareness</h3>
+        <p>Knows the difference between Nigerian Afrobeats and Jamaican Dancehall. Regional bridges feel natural, not forced.</p>
+      </div>
+      <div class="sk-card">
+        <div class="card-icon">📅</div>
+        <h3>Era matching</h3>
+        <p>Classic to contemporary, 2000s to 2020s — Sonic keeps your pathway temporally coherent.</p>
+      </div>
+      <div class="sk-card">
+        <div class="card-icon">🎛️</div>
+        <h3>Set position logic</h3>
+        <p>Knows when to stay in warm-up, when to build, when to peak, and when to wind down. Designed with DJs in mind.</p>
+      </div>
+      <div class="sk-card">
+        <div class="card-icon">🔗</div>
+        <h3>Artist relationships</h3>
+        <p>Understands which artists bridge naturally — Afrobeats into Dancehall, Hip-Hop into R&amp;B — and explains every connection.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <section id="demo">
-  <div class="section-inner">
-    <div class="section-eyebrow">Live Demo</div>
-    <h2 class="section-title">Try Sonic right now</h2>
+  <div class="wrap">
+    <div class="eyebrow">Live Demo</div>
+    <h2>Try Sonic right now</h2>
     <p class="section-sub">Search any artist. Get your pathway in seconds.</p>
-    <div class="demo-wrap">
-      <div class="demo-bar">
-        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
-        <div class="demo-url">soundkeep-production.up.railway.app — Live</div>
+    <div class="demo-frame">
+      <div class="demo-chrome">
+        <span class="chrome-dot"></span><span class="chrome-dot"></span><span class="chrome-dot"></span>
+        <span class="chrome-url">soundkeep-production.up.railway.app — Live</span>
       </div>
-      <div class="demo-inner">
-        <div class="sonic-panel">
-          <div class="sonic-avatar">🎵</div>
-          <div class="sonic-info"><h3>Sonic — Your Music Agent</h3><p>Tell me an artist or genre. I'll map your next move.</p></div>
-        </div>
-        <div class="search-area">
-          <label class="search-label">Search any artist, track, or genre</label>
-          <div class="search-row">
-            <input class="search-input" id="searchInput" type="text" placeholder="e.g. Wizkid, Vybz Kartel, hip-hop, dancehall..." />
-            <button class="search-btn" onclick="doSearch()">Ask Sonic</button>
+      <div class="demo-body">
+        <div class="agent-card">
+          <div class="agent-orb"><span class="agent-orb-dot"></span></div>
+          <div>
+            <h4>Sonic — Your Music Agent</h4>
+            <p>Tell me an artist or genre. I'll map your next move.</p>
           </div>
-          <div class="error-msg" id="errorMsg"></div>
         </div>
-        <div class="results" id="resultsSection">
-          <div class="results-label">Select a track to generate pathway</div>
-          <div id="resultsList"></div>
-        </div>
-        <div class="loading" id="loading">⟳ Sonic is mapping your pathway...</div>
-        <div class="pathway-section" id="pathwaySection">
-          <div class="anchor-card" id="anchorCard"></div>
-          <div class="pathway-header"><h2>🎵 Continuation Pathway</h2><p>Sonic mapped this set progression based on genre, energy, region, and set position.</p></div>
-          <div id="pathwaySteps"></div>
+        <div class="demo-label">Search any artist, track, or genre</div>
+        <div class="demo-row">
+          <input class="demo-input" type="text" placeholder="e.g. Wizkid, Vybz Kartel, hip-hop, dancehall…" aria-label="Search any artist, track, or genre">
+          <button class="btn btn-primary">Ask Sonic</button>
         </div>
       </div>
     </div>
   </div>
 </section>
-<section class="showcase" id="showcase">
-  <div class="section-inner">
-    <div class="section-eyebrow">Experience</div>
-    <h2 class="section-title">Built for every listener</h2>
+
+<section id="experience" style="background:var(--sk-bg-raised); border-top:1px solid var(--sk-border);">
+  <div class="wrap">
+    <div class="eyebrow">Experience</div>
+    <h2>Built for every listener</h2>
     <p class="section-sub">DJs, curators, and music lovers who care about flow — not random recommendations.</p>
-    <div class="showcase-grid">
-      <div class="showcase-phone">
-        <div class="phone-bar"><div class="phone-notch"></div></div>
-        <div class="phone-screen">
-          <div class="phone-title-sm">Discover</div>
-          <div class="phone-search">🔍 Search artists, tracks...</div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#0d2a4a,#1565c0)">🎵</div><div><div class="phone-track-name">Wizkid — Essence</div><div class="phone-track-meta">afrobeats · medium · warm-up</div><div class="phone-why">Starting point selected</div></div></div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#1a0d3a,#4a148c)">🎶</div><div><div class="phone-track-name">Burna Boy — Last Last</div><div class="phone-track-meta">afrobeats · medium · warm-up</div><div class="phone-why">same genre · same region · 2020s</div></div></div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#0d3a0d,#1b5e20)">🎤</div><div><div class="phone-track-name">Vybz Kartel — Fever</div><div class="phone-track-meta">dancehall · high · build</div><div class="phone-why">natural bridge · energy builds</div></div></div>
+    <div class="exp-grid">
+
+      <div class="sk-card">
+        <div class="panel-label">Discover</div>
+        <div class="track-row active">
+          <div class="track-title">Wizkid — Essence</div>
+          <div class="track-meta">afrobeats · medium · warm-up</div>
+          <div class="track-why">Starting point selected</div>
+        </div>
+        <div class="track-row">
+          <div class="track-title">Burna Boy — Last Last</div>
+          <div class="track-meta">afrobeats · medium · warm-up</div>
+          <div class="track-why">same genre · same region · 2020s</div>
+        </div>
+        <div class="track-row" style="margin-bottom:0;">
+          <div class="track-title">Vybz Kartel — Fever</div>
+          <div class="track-meta">dancehall · high · build</div>
+          <div class="track-why">natural bridge · energy builds</div>
         </div>
       </div>
-      <div class="showcase-phone center">
-        <div class="phone-bar"><div class="phone-notch"></div></div>
-        <div class="phone-screen" style="text-align:center;padding:22px 14px;">
-          <div style="font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">Playing From</div>
-          <div style="font-size:11px;color:var(--blue);margin-bottom:4px;">Afrobeats Pathway</div>
-          <div style="width:110px;height:110px;background:linear-gradient(135deg,#0d1f3c,#1565c0);border-radius:16px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:44px;box-shadow:0 0 28px rgba(79,195,247,0.3);">🎵</div>
-          <div style="font-size:15px;font-weight:700;margin-bottom:3px;">Essence (feat. Tems)</div>
-          <div style="font-size:11px;color:var(--text2);margin-bottom:18px;">Wizkid</div>
-          <div style="background:var(--bg3);border-radius:4px;height:3px;margin-bottom:7px;"><div style="background:var(--blue);height:3px;border-radius:4px;width:40%;box-shadow:0 0 8px var(--blue);"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:18px;"><span>2:34</span><span>6:15</span></div>
-          <div style="display:flex;justify-content:center;align-items:center;gap:22px;font-size:18px;">
-            <span style="color:var(--text2);">⏮</span>
-            <div style="width:42px;height:42px;background:var(--blue2);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(2,119,189,0.5);">⏸</div>
-            <span style="color:var(--text2);">⏭</span>
-          </div>
+
+      <div class="sk-card player">
+        <div class="panel-label">Playing From — Afrobeats Pathway</div>
+        <div class="player-art">♫</div>
+        <h4>Essence (feat. Tems)</h4>
+        <div class="artist">Wizkid</div>
+        <div class="progress"><div class="progress-fill"></div></div>
+        <div class="time-row"><span>2:34</span><span>6:15</span></div>
+        <div class="controls">
+          <button class="ctrl" aria-label="Previous track">⏮</button>
+          <button class="ctrl-play" aria-label="Pause">⏸</button>
+          <button class="ctrl" aria-label="Next track">⏭</button>
         </div>
       </div>
-      <div class="showcase-phone">
-        <div class="phone-bar"><div class="phone-notch"></div></div>
-        <div class="phone-screen">
-          <div class="phone-title-sm">My Library</div>
-          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-            <div style="background:var(--blue2);color:white;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;">Tracks</div>
-            <div style="background:var(--bg3);color:var(--text2);border-radius:6px;padding:3px 9px;font-size:10px;">Artists</div>
-            <div style="background:var(--bg3);color:var(--text2);border-radius:6px;padding:3px 9px;font-size:10px;">Crates</div>
-          </div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#0d2a4a,#1565c0)">🎵</div><div><div class="phone-track-name">Essence (feat. Tems)</div><div class="phone-track-meta">Wizkid · afrobeats</div></div></div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#1a0d3a,#4a148c)">🎶</div><div><div class="phone-track-name">Last Last</div><div class="phone-track-meta">Burna Boy · afrobeats</div></div></div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#0d3a0d,#1b5e20)">🎤</div><div><div class="phone-track-name">Fever</div><div class="phone-track-meta">Vybz Kartel · dancehall</div></div></div>
-          <div class="phone-track"><div class="phone-track-thumb" style="background:linear-gradient(135deg,#3a1a0d,#bf360c)">🎸</div><div><div class="phone-track-name">God's Plan</div><div class="phone-track-meta">Drake · hip-hop</div></div></div>
+
+      <div class="sk-card">
+        <div class="panel-label">My Library</div>
+        <div class="lib-tabs">
+          <button class="lib-tab active">Tracks</button>
+          <button class="lib-tab">Artists</button>
+          <button class="lib-tab">Crates</button>
         </div>
+        <div class="lib-row"><div class="lib-thumb" style="background:#12305e;">🎵</div><div><h5>Essence (feat. Tems)</h5><span>Wizkid · afrobeats</span></div></div>
+        <div class="lib-row"><div class="lib-thumb" style="background:#3b1f63;">🎧</div><div><h5>Last Last</h5><span>Burna Boy · afrobeats</span></div></div>
+        <div class="lib-row"><div class="lib-thumb" style="background:#1b4a2e;">🎤</div><div><h5>Fever</h5><span>Vybz Kartel · dancehall</span></div></div>
+        <div class="lib-row" style="margin-bottom:0;"><div class="lib-thumb" style="background:#5e2a12;">🎙️</div><div><h5>God's Plan</h5><span>Drake · hip-hop</span></div></div>
       </div>
+
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-inner">
+  <div class="wrap">
     <div class="footer-top">
-      <div><div class="footer-logo">SOUNDKEEP</div><div class="footer-tagline">Your AI Music Pathway Engine</div></div>
-      <ul class="footer-links">
-        <li><a href="#sonic">How It Works</a></li>
-        <li><a href="#demo">Try Demo</a></li>
-        <li><a href="https://github.com/ayubeay" target="_blank">GitHub</a></li>
-        <li><a href="#">Privacy</a></li>
-        <li><a href="#">Terms</a></li>
-      </ul>
+      <div>
+        <span class="sk-logo">
+          <span class="sk-logo-mark"><span class="sk-logo-dot"></span></span>
+          <span class="sk-logo-word">SOUNDKEEP</span>
+        </span>
+        <div class="footer-tag">Your AI Music Pathway Engine</div>
+      </div>
+      <div class="footer-links">
+        <a href="#how">How It Works</a>
+        <a href="#demo">Try Demo</a>
+        <a href="#">GitHub</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-copy">© 2026 SoundKeep · Powered by vLOID Technologies</div>
-      <div style="font-size:12px;color:var(--text3);">Built for DJs, curators, and listeners who care about flow.</div>
+      <span>© 2026 SoundKeep · Powered by vLOID Technologies</span>
+      <span>Built for DJs, curators, and listeners who care about flow.</span>
     </div>
   </div>
 </footer>
 
 <script>
-function listenLinks(artist, title) {
-  const q = encodeURIComponent(artist + ' ' + title);
-  return '<div class="listen-links"><a class="listen-link listen-yt" href="https://www.youtube.com/results?search_query=' + q + '" target="_blank">▶ YouTube</a><a class="listen-link listen-sp" href="https://open.spotify.com/search/' + q + '" target="_blank">▶ Spotify</a><a class="listen-link listen-am" href="https://music.apple.com/search?term=' + q + '" target="_blank">▶ Apple Music</a></div>';
-}
-async function doSearch() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  document.getElementById('errorMsg').style.display = 'none';
-  document.getElementById('pathwaySection').style.display = 'none';
-  document.getElementById('resultsSection').style.display = 'none';
-  document.getElementById('loading').style.display = 'block';
-  try {
-    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
-    const data = await res.json();
-    document.getElementById('loading').style.display = 'none';
-    if (!data.results || data.results.length === 0) {
-      document.getElementById('errorMsg').textContent = "Sonic couldn't find this artist yet. Try: Burna Boy, Wizkid, Vybz Kartel, or Drake.";
-      document.getElementById('errorMsg').style.display = 'block';
-      return;
-    }
-    const list = document.getElementById('resultsList');
-    list.innerHTML = '';
-    data.results.forEach(function(t) {
-      const card = document.createElement('div');
-      card.className = 'track-card';
-      card.innerHTML = '<div><div class="track-name">' + t.artist + ' — ' + t.title + '</div><div class="track-meta">' + t.genre + ' · ' + t.energy + ' energy · ' + t.set_position + '</div></div><div class="track-badge">' + t.genre + '</div>';
-      card.onclick = function() { getPathway(t); };
-      list.appendChild(card);
-    });
-    document.getElementById('resultsSection').style.display = 'block';
-  } catch(e) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('errorMsg').textContent = 'Error connecting to Sonic. Try again.';
-    document.getElementById('errorMsg').style.display = 'block';
-  }
-}
-async function getPathway(track) {
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('pathwaySection').style.display = 'none';
-  document.getElementById('errorMsg').style.display = 'none';
-  try {
-    let data;
-    if (track.source === 'lastfm') {
-      const res = await fetch('/api/dynamic_pathway?artist=' + encodeURIComponent(track.artist));
-      data = await res.json();
-    } else {
-      const res = await fetch('/api/pathway/' + track.track_id);
-      data = await res.json();
-    }
-    document.getElementById('loading').style.display = 'none';
-    if (data.error) {
-      document.getElementById('errorMsg').textContent = data.error;
-      document.getElementById('errorMsg').style.display = 'block';
-      return;
-    }
-    document.getElementById('anchorCard').innerHTML = '<div class="anchor-label">Starting from</div><div class="anchor-name">' + data.anchor.artist + ' — ' + data.anchor.title + '</div><div class="anchor-meta">' + data.anchor.genre + ' · ' + data.anchor.energy + ' energy · ' + data.anchor.region + ' · ' + data.anchor.set_position + '</div>' + listenLinks(data.anchor.artist, data.anchor.title);
-    const steps = document.getElementById('pathwaySteps');
-    steps.innerHTML = '';
-    data.pathway.forEach(function(step, i) {
-      const t = step.track;
-      const div = document.createElement('div');
-      div.className = 'pathway-step';
-      div.innerHTML = '<div class="step-num">' + (i+1) + '</div><div class="step-artist">' + t.artist + ' — ' + t.title + '</div><div class="step-meta">' + t.genre + ' · ' + t.energy + ' energy · ' + t.region + ' · ' + t.set_position + '</div><div class="step-why"><span>Why this: </span>' + step.reasons.join(', ') + '</div>' + listenLinks(t.artist, t.title);
-      steps.appendChild(div);
-    });
-    document.getElementById('pathwaySection').style.display = 'block';
-    document.getElementById('demo').scrollIntoView({behavior: 'smooth', block: 'start'});
-  } catch(e) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('errorMsg').textContent = 'Error generating pathway. Try again.';
-    document.getElementById('errorMsg').style.display = 'block';
-  }
-}
-document.getElementById('searchInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') doSearch(); });
+// Day Session / Night Session — in-memory state (swap to localStorage on the live site)
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('sessionToggle');
+  var icon = document.getElementById('sessionIcon');
+  var label = document.getElementById('sessionLabel');
+  var session = 'night';
+  btn.addEventListener('click', function () {
+    session = (session === 'night') ? 'day' : 'night';
+    root.setAttribute('data-theme', session);
+    icon.textContent = (session === 'night') ? '🌙' : '☀️';
+    label.textContent = (session === 'night') ? 'Night Session' : 'Day Session';
+  });
+})();
 </script>
+
 </body>
 </html>
