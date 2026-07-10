@@ -7,3 +7,6 @@ apply_patch*.py
 mint_agent_PATCH_*.py
 apply_*.py
 test_listen_history.json
+.DS_Store
+soundkeep/.env
+soundkeep/__pycache__/
