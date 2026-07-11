@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --sk-bg:            #04060C;
+  --sk-bg:            #050810;
   --sk-bg-raised:     #0A1120;
   --sk-card:          #0D1526;
   --sk-card-2:        #111B35;
@@ -17,16 +17,16 @@
   --sk-accent:        #2E7CF6;
   --sk-accent-bright: #53A8FF;
   --sk-accent-deep:   #1B4FD8;
-  --sk-text:          #F7FAFF;
+  --sk-text:          #F2F6FF;
   --sk-text-2:        #9FB2D6;
   --sk-text-3:        #5E7099;
   --sk-positive:      #34D399;
   --sk-glow:          0 0 24px rgba(46,124,246,.35);
   --sk-glow-soft:     0 0 12px rgba(46,124,246,.20);
-  --sk-card-shadow:   0 6px 22px rgba(0,0,0,.36);
+  --sk-card-shadow:   0 4px 24px rgba(0,0,0,.45);
   --sk-radius:        14px;
   --sk-radius-lg:     20px;
-  --sk-ambient:       rgba(46,124,246,.13);
+  --sk-ambient:       rgba(46,124,246,.08);
 }
 [data-theme="day"] {
   --sk-bg:            #EAF4FF;
@@ -38,8 +38,8 @@
   --sk-text:          #0F172A;
   --sk-text-2:        #3B4C6B;
   --sk-text-3:        #6B7FA3;
-  --sk-card-shadow:   0 4px 18px rgba(15,40,90,.06);
-  --sk-ambient:       rgba(46,124,246,.14);
+  --sk-card-shadow:   0 4px 20px rgba(15,40,90,.08);
+  --sk-ambient:       rgba(46,124,246,.10);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -48,23 +48,10 @@ body {
   font-family:'Inter',-apple-system,sans-serif;
   color:var(--sk-text);
   background:
-    radial-gradient(1300px 640px at 50% -8%, var(--sk-ambient), transparent 62%),
+    radial-gradient(1200px 600px at 50% -10%, var(--sk-ambient), transparent 60%),
     var(--sk-bg);
   -webkit-font-smoothing:antialiased;
   transition:background .35s ease, color .35s ease;
-}
-/* Film grain — barely visible, kills flatness */
-body::before {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:2;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity:.028;
-}
-[data-theme="day"] body::before { opacity:.015; }
-[data-theme="day"] body {
-  background:
-    radial-gradient(1300px 640px at 50% -8%, var(--sk-ambient), transparent 62%),
-    radial-gradient(900px 500px at 85% 110%, rgba(83,168,255,.08), transparent 60%),
-    var(--sk-bg);
 }
 ::selection { background:rgba(46,124,246,.35); }
 .wrap { max-width:1180px; margin:0 auto; padding:0 28px; }
@@ -76,23 +63,18 @@ nav {
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--sk-border);
 }
-.nav-inner { display:flex; align-items:center; justify-content:space-between; height:68px; }
+.nav-inner { display:flex; align-items:center; justify-content:space-between; height:64px; }
 .sk-logo { display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
 .sk-logo-mark {
   width:24px; height:24px; border-radius:50%;
-  background:
-    radial-gradient(circle at 32% 26%, rgba(83,168,255,.28), transparent 55%),
-    conic-gradient(from 210deg, #0C1D42, #1B4FD8 38%, #123068 62%, #0C1D42);
-  box-shadow:
-    inset 0 1px 2px rgba(255,255,255,.16),
-    inset 0 -1px 3px rgba(0,0,0,.55),
-    0 0 10px rgba(46,124,246,.25);
+  border:2px solid var(--sk-accent-deep);
   display:grid; place-items:center;
+  box-shadow:inset 0 0 8px rgba(46,124,246,.25);
 }
 .sk-logo-dot {
-  width:9px; height:9px; border-radius:50%;
-  background:radial-gradient(circle at 35% 28%, #D6EBFF 0%, var(--sk-accent-bright) 38%, var(--sk-accent) 72%, var(--sk-accent-deep) 100%);
-  box-shadow:0 0 7px rgba(83,168,255,.65), 0 0 15px rgba(46,124,246,.3);
+  width:8px; height:8px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, var(--sk-accent-bright), var(--sk-accent));
+  box-shadow:var(--sk-glow-soft);
 }
 .sk-logo-word { color:var(--sk-text); font-family:'Space Grotesk'; font-weight:600; letter-spacing:.18em; font-size:15px; }
 .nav-links { display:flex; align-items:center; gap:28px; }
@@ -112,13 +94,13 @@ nav {
 .session-toggle:hover { border-color:var(--sk-border-bright); color:var(--sk-text); }
 
 /* ── Buttons ─────────────────────────── */
-.btn { display:inline-flex; align-items:center; gap:8px; border-radius:13px; font-size:15px; font-weight:600; padding:13px 26px; cursor:pointer; text-decoration:none; font-family:inherit; border:0; transition:box-shadow .2s ease, transform .15s ease, border-color .2s, background .2s; }
+.btn { display:inline-flex; align-items:center; gap:8px; border-radius:12px; font-size:15px; font-weight:600; padding:13px 26px; cursor:pointer; text-decoration:none; font-family:inherit; border:0; transition:box-shadow .2s ease, transform .15s ease, border-color .2s, background .2s; }
 .btn-primary {
   background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep));
   color:#fff;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 10px rgba(46,124,246,.16), 0 3px 12px rgba(0,0,0,.28);
+  box-shadow:var(--sk-glow-soft), 0 2px 10px rgba(0,0,0,.4);
 }
-.btn-primary:hover { box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 18px rgba(46,124,246,.3), 0 4px 14px rgba(0,0,0,.3); transform:translateY(-1px); }
+.btn-primary:hover { box-shadow:var(--sk-glow); transform:translateY(-1px); }
 .btn-secondary { background:transparent; color:var(--sk-text); border:1px solid var(--sk-border-bright); font-weight:500; }
 .btn-secondary:hover { border-color:var(--sk-accent); background:rgba(46,124,246,.06); }
 .btn-sm { padding:9px 20px; font-size:14px; }
@@ -130,25 +112,20 @@ nav {
 [data-theme="day"] .hero::after { display:none; }
 .pill {
   display:inline-flex; align-items:center; gap:9px;
-  background:color-mix(in srgb, var(--sk-card) 78%, transparent);
-  backdrop-filter:blur(10px);
-  border:1px solid color-mix(in srgb, var(--sk-border) 70%, transparent);
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
   border-radius:999px; padding:9px 18px; margin-bottom:36px;
   font-size:12.5px; font-weight:600; letter-spacing:.16em;
   color:var(--sk-text-3); text-transform:uppercase;
 }
 .pill-dot {
   width:9px; height:9px; border-radius:50%; flex-shrink:0;
-  background:radial-gradient(circle at 38% 30%, #FFFFFF 0%, #BFE0FF 22%, var(--sk-accent-bright) 48%, var(--sk-accent) 85%);
-  box-shadow:
-    inset 0 -1px 2px rgba(11,32,80,.4),
-    0 0 5px rgba(83,168,255,.5),
-    0 0 12px rgba(46,124,246,.28);
-  animation:sk-breathe 3s ease-in-out infinite;
+  background:radial-gradient(circle at 35% 35%, var(--sk-accent-bright), var(--sk-accent));
+  box-shadow:0 0 6px rgba(83,168,255,.6), 0 0 14px rgba(46,124,246,.35);
+  animation:sk-breathe 2.6s ease-in-out infinite;
 }
 @keyframes sk-breathe {
-  0%,100% { opacity:.78; transform:scale(1); }
-  50%     { opacity:1;   transform:scale(1.1); }
+  0%,100% { opacity:.72; transform:scale(1); }
+  50%     { opacity:1;   transform:scale(1.15); }
 }
 .hero h1 {
   font-family:'Space Grotesk'; font-weight:700;
@@ -158,15 +135,9 @@ nav {
 }
 .hero h1 em {
   font-style:normal;
-  background:linear-gradient(178deg,
-    #1B3F91 0%,
-    #1B4FD8 28%,
-    #2E7CF6 58%,
-    #53A8FF 86%,
-    #8CC6FF 100%);
+  background:linear-gradient(120deg, var(--sk-accent-deep), var(--sk-accent) 55%, var(--sk-accent-bright));
   -webkit-background-clip:text; background-clip:text;
   -webkit-text-fill-color:transparent; color:transparent;
-  filter:drop-shadow(0 4px 26px rgba(46,124,246,.30));
 }
 .hero-sub { font-size:clamp(16px,2vw,19px); color:var(--sk-text-2); max-width:620px; margin:0 auto 52px; line-height:1.8; }
 .hero-cta { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
@@ -185,11 +156,11 @@ h2 { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,4.4vw,48
   background:var(--sk-card);
   border:1px solid var(--sk-border);
   border-radius:var(--sk-radius);
-  box-shadow:var(--sk-card-shadow), inset 0 1px 0 rgba(255,255,255,.045);
+  box-shadow:var(--sk-card-shadow), inset 0 1px 0 rgba(255,255,255,.03);
   padding:32px 28px;
   transition:border-color .2s ease, transform .2s ease;
 }
-.sk-card:hover { border-color:var(--sk-border-bright); transform:translateY(-1px); }
+.sk-card:hover { border-color:var(--sk-border-bright); transform:translateY(-2px); }
 .step-num { font-family:'Space Grotesk'; font-size:34px; font-weight:700; color:var(--sk-card-2); -webkit-text-stroke:1px var(--sk-border-bright); margin-bottom:22px; }
 [data-theme="day"] .step-num { color:var(--sk-card-2); -webkit-text-stroke:1px var(--sk-border-bright); }
 .card-icon { width:38px; height:38px; border-radius:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); display:grid; place-items:center; margin-bottom:20px; font-size:17px; }
@@ -200,7 +171,7 @@ h2 { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,4.4vw,48
 .demo-frame {
   background:var(--sk-card);
   border:1px solid var(--sk-border);
-  border-radius:18px;
+  border-radius:var(--sk-radius-lg);
   box-shadow:var(--sk-card-shadow);
   overflow:hidden;
 }
@@ -216,20 +187,15 @@ h2 { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,4.4vw,48
 }
 .agent-orb {
   width:52px; height:52px; border-radius:50%; flex-shrink:0;
-  background:
-    radial-gradient(circle at 32% 26%, rgba(83,168,255,.25), transparent 55%),
-    conic-gradient(from 210deg, #0C1D42, #1B4FD8 38%, #123068 62%, #0C1D42);
+  border:2px solid var(--sk-accent-deep);
   display:grid; place-items:center;
-  box-shadow:
-    inset 0 2px 3px rgba(255,255,255,.14),
-    inset 0 -2px 5px rgba(0,0,0,.5),
-    var(--sk-glow-soft);
+  box-shadow:var(--sk-glow-soft), inset 0 0 10px rgba(46,124,246,.2);
 }
 .agent-orb-dot {
   width:16px; height:16px; border-radius:50%;
-  background:radial-gradient(circle at 35% 28%, #D6EBFF 0%, var(--sk-accent-bright) 38%, var(--sk-accent) 75%);
-  box-shadow:0 0 10px rgba(83,168,255,.5);
-  animation:sk-breathe 3.6s ease-in-out infinite;
+  background:radial-gradient(circle at 35% 35%, var(--sk-accent-bright), var(--sk-accent));
+  box-shadow:0 0 10px rgba(83,168,255,.55);
+  animation:sk-breathe 2.6s ease-in-out infinite;
 }
 .agent-card h4 { font-family:'Space Grotesk'; font-size:17px; margin-bottom:5px; }
 .agent-card p { color:var(--sk-text-2); font-size:14px; }
@@ -242,62 +208,6 @@ h2 { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(30px,4.4vw,48
 }
 .demo-input::placeholder { color:var(--sk-text-3); }
 .demo-input:focus { outline:none; border-color:var(--sk-accent); box-shadow:var(--sk-glow-soft); }
-
-/* Demo live results & pathway */
-.error-msg { display:none; color:#ff7b72; font-size:14px; margin-top:14px; }
-.demo-loading { display:none; color:var(--sk-accent-bright); font-size:14px; margin-top:22px; }
-.results-block { display:none; margin-top:26px; }
-.results-label, .anchor-label { color:var(--sk-text-3); font-size:11.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; margin-bottom:14px; }
-.result-card {
-  display:flex; align-items:center; justify-content:space-between; gap:14px;
-  background:var(--sk-card-2); border:1px solid var(--sk-border);
-  border-radius:12px; padding:15px 18px; margin-bottom:12px; cursor:pointer;
-  transition:border-color .2s, transform .15s;
-}
-.result-card:hover { border-color:var(--sk-accent); transform:translateY(-1px); }
-.result-name { font-size:15px; font-weight:600; margin-bottom:4px; }
-.result-meta { color:var(--sk-text-2); font-size:13px; }
-.result-badge {
-  flex-shrink:0; font-size:11.5px; font-weight:600; letter-spacing:.06em;
-  color:var(--sk-accent-bright); background:rgba(46,124,246,.12);
-  border:1px solid var(--sk-border-bright); border-radius:999px; padding:5px 13px;
-  text-transform:uppercase;
-}
-[data-theme="day"] .result-badge { color:var(--sk-accent-deep); }
-.pathway-block { display:none; margin-top:30px; }
-.anchor-card {
-  background:var(--sk-card-2); border:1px solid var(--sk-accent);
-  border-radius:var(--sk-radius); padding:22px 24px; margin-bottom:26px;
-  box-shadow:var(--sk-glow-soft);
-}
-.anchor-name { font-family:'Space Grotesk'; font-size:19px; font-weight:600; margin-bottom:6px; }
-.anchor-meta { color:var(--sk-text-2); font-size:13.5px; }
-.pathway-header h3 { font-family:'Space Grotesk'; font-size:21px; margin-bottom:8px; }
-.pathway-header p { color:var(--sk-text-2); font-size:14px; margin-bottom:22px; }
-.pathway-step {
-  position:relative; background:var(--sk-card-2); border:1px solid var(--sk-border);
-  border-radius:var(--sk-radius); padding:20px 22px 20px 58px; margin-bottom:14px;
-  transition:border-color .2s;
-}
-.pathway-step:hover { border-color:var(--sk-border-bright); }
-.pathway-step .p-num {
-  position:absolute; left:20px; top:22px;
-  font-family:'Space Grotesk'; font-size:15px; font-weight:700;
-  color:var(--sk-accent-bright);
-}
-.p-artist { font-size:15.5px; font-weight:600; margin-bottom:5px; }
-.p-meta { color:var(--sk-text-2); font-size:13px; margin-bottom:9px; }
-.p-why { display:flex; align-items:flex-start; gap:8px; color:var(--sk-accent-bright); font-size:12.5px; line-height:1.55; margin-bottom:12px; }
-.p-why::before { content:''; flex-shrink:0; width:3px; align-self:stretch; border-radius:2px; background:var(--sk-accent); }
-[data-theme="day"] .p-why { color:var(--sk-accent-deep); }
-.listen-links { display:flex; gap:10px; flex-wrap:wrap; }
-.listen-link {
-  font-size:12px; font-weight:600; text-decoration:none;
-  color:var(--sk-text-2); background:var(--sk-bg-raised);
-  border:1px solid var(--sk-border); border-radius:999px; padding:6px 14px;
-  transition:border-color .2s, color .2s;
-}
-.listen-link:hover { border-color:var(--sk-accent); color:var(--sk-text); }
 
 /* ── Experience section ──────────────── */
 .exp-grid { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:22px; align-items:start; }
@@ -487,22 +397,8 @@ footer { border-top:1px solid var(--sk-border); background:var(--sk-bg-raised); 
         </div>
         <div class="demo-label">Search any artist, track, or genre</div>
         <div class="demo-row">
-          <input class="demo-input" id="searchInput" type="text" placeholder="e.g. Wizkid, Vybz Kartel, hip-hop, dancehall…" aria-label="Search any artist, track, or genre">
-          <button class="btn btn-primary" id="askSonicBtn">Ask Sonic</button>
-        </div>
-        <div class="error-msg" id="errorMsg"></div>
-        <div class="demo-loading" id="loading">⟳ Sonic is mapping your pathway…</div>
-        <div class="results-block" id="resultsSection">
-          <div class="results-label">Select a track to generate pathway</div>
-          <div id="resultsList"></div>
-        </div>
-        <div class="pathway-block" id="pathwaySection">
-          <div class="anchor-card" id="anchorCard"></div>
-          <div class="pathway-header">
-            <h3>♫ Continuation Pathway</h3>
-            <p>Sonic mapped this set progression based on genre, energy, region, and set position.</p>
-          </div>
-          <div id="pathwaySteps"></div>
+          <input class="demo-input" type="text" placeholder="e.g. Wizkid, Vybz Kartel, hip-hop, dancehall…" aria-label="Search any artist, track, or genre">
+          <button class="btn btn-primary">Ask Sonic</button>
         </div>
       </div>
     </div>
@@ -606,135 +502,6 @@ footer { border-top:1px solid var(--sk-border); background:var(--sk-bg-raised); 
     label.textContent = (session === 'night') ? 'Night Session' : 'Day Session';
   });
 })();
-
-// ── Sonic live wiring ─────────────────────────────────────────
-// When served from web/static on the SoundKeep service, API_BASE is ''
-// (same-origin relative /api/... calls). Opened standalone, it falls
-// back to the production URL — this needs CORS enabled server-side.
-const API_BASE = location.hostname.endsWith('railway.app')
-  ? ''
-  : 'https://soundkeep-production.up.railway.app';
-
-const $ = (id) => document.getElementById(id);
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
-
-function listenLinks(artist, title) {
-  const q = encodeURIComponent(`${artist} ${title}`);
-  return `
-    <div class="listen-links">
-      <a class="listen-link" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">▶ YouTube</a>
-      <a class="listen-link" href="https://open.spotify.com/search/${q}" target="_blank" rel="noopener">▶ Spotify</a>
-      <a class="listen-link" href="https://music.apple.com/search?term=${q}" target="_blank" rel="noopener">▶ Apple Music</a>
-    </div>
-  `;
-}
-
-function showError(msg) {
-  $('loading').style.display = 'none';
-  $('errorMsg').textContent = msg;
-  $('errorMsg').style.display = 'block';
-}
-
-async function doSearch() {
-  const q = $('searchInput').value.trim();
-  if (!q) return;
-
-  $('errorMsg').style.display = 'none';
-  $('pathwaySection').style.display = 'none';
-  $('resultsSection').style.display = 'none';
-  $('loading').style.display = 'block';
-
-  try {
-    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}`);
-    const data = await res.json();
-    $('loading').style.display = 'none';
-
-    if (!data.results || data.results.length === 0) {
-      showError("Sonic couldn't find this artist yet. Try: Burna Boy, Wizkid, Vybz Kartel, or Drake.");
-      return;
-    }
-
-    const list = $('resultsList');
-    list.innerHTML = '';
-    data.results.forEach((t) => {
-      const card = document.createElement('div');
-      card.className = 'result-card';
-      card.setAttribute('role', 'button');
-      card.setAttribute('tabindex', '0');
-      card.innerHTML = `
-        <div>
-          <div class="result-name">${esc(t.artist)} — ${esc(t.title)}</div>
-          <div class="result-meta">${esc(t.genre)} · ${esc(t.energy)} energy · ${esc(t.set_position)}</div>
-        </div>
-        <div class="result-badge">${esc(t.genre)}</div>
-      `;
-      const go = () => getPathway(t);
-      card.onclick = go;
-      card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
-      list.appendChild(card);
-    });
-    $('resultsSection').style.display = 'block';
-  } catch (e) {
-    showError('Error connecting to Sonic. Try again.');
-  }
-}
-
-async function getPathway(track) {
-  $('loading').style.display = 'block';
-  $('pathwaySection').style.display = 'none';
-  $('errorMsg').style.display = 'none';
-
-  try {
-    let data;
-    if (track.source === 'lastfm') {
-      const res = await fetch(`${API_BASE}/api/dynamic_pathway?artist=${encodeURIComponent(track.artist)}`);
-      data = await res.json();
-    } else {
-      const res = await fetch(`${API_BASE}/api/pathway/${encodeURIComponent(track.track_id)}`);
-      data = await res.json();
-    }
-
-    $('loading').style.display = 'none';
-
-    if (data.error) { showError(data.error); return; }
-
-    $('anchorCard').innerHTML = `
-      <div class="anchor-label">Starting from</div>
-      <div class="anchor-name">${esc(data.anchor.artist)} — ${esc(data.anchor.title)}</div>
-      <div class="anchor-meta">${esc(data.anchor.genre)} · ${esc(data.anchor.energy)} energy · ${esc(data.anchor.region)} · ${esc(data.anchor.set_position)}</div>
-      ${listenLinks(data.anchor.artist, data.anchor.title)}
-    `;
-
-    const steps = $('pathwaySteps');
-    steps.innerHTML = '';
-    data.pathway.forEach((step, i) => {
-      const t = step.track;
-      const div = document.createElement('div');
-      div.className = 'pathway-step';
-      div.innerHTML = `
-        <div class="p-num">${String(i + 1).padStart(2, '0')}</div>
-        <div class="p-artist">${esc(t.artist)} — ${esc(t.title)}</div>
-        <div class="p-meta">${esc(t.genre)} · ${esc(t.energy)} energy · ${esc(t.region)} · ${esc(t.set_position)}</div>
-        <div class="p-why"><span>Why this:&nbsp;</span>${esc(step.reasons.join(', '))}</div>
-        ${listenLinks(t.artist, t.title)}
-      `;
-      steps.appendChild(div);
-    });
-
-    $('pathwaySection').style.display = 'block';
-    $('pathwaySection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  } catch (e) {
-    showError('Error generating pathway. Try again.');
-  }
-}
-
-$('askSonicBtn').addEventListener('click', doSearch);
-$('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
 </script>
 
 </body>
