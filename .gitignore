@@ -10,3 +10,15 @@ test_listen_history.json
 .DS_Store
 soundkeep/.env
 soundkeep/__pycache__/
+
+# macOS
+.DS_Store
+
+# Local secrets
+.env
+**/.env
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
