@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SoundKeep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sk-bg:            #04060C;
+  --sk-bg-raised:     #0A1120;
+  --sk-card:          #0D1526;
+  --sk-card-2:        #111B35;
+  --sk-border:        #1C2B4A;
+  --sk-border-bright: #2A4070;
+  --sk-accent:        #2E7CF6;
+  --sk-accent-bright: #53A8FF;
+  --sk-accent-deep:   #1B4FD8;
+  --sk-text:          #F7FAFF;
+  --sk-text-2:        #9FB2D6;
+  --sk-text-3:        #5E7099;
+  --sk-positive:      #34D399;
+  --sk-glow-soft:     0 0 12px rgba(46,124,246,.20);
+  --sk-card-shadow:   0 6px 22px rgba(0,0,0,.36);
+  --sk-radius:        14px;
+  --sk-ambient:       rgba(46,124,246,.13);
+}
+[data-theme="day"] {
+  --sk-bg:            #EAF4FF;
+  --sk-bg-raised:     #F3F8FF;
+  --sk-card:          #FFFFFF;
+  --sk-card-2:        #F3F8FF;
+  --sk-border:        #D3E3F8;
+  --sk-border-bright: #AFC9EE;
+  --sk-text:          #0F172A;
+  --sk-text-2:        #3B4C6B;
+  --sk-text-3:        #6B7FA3;
+  --sk-card-shadow:   0 4px 18px rgba(15,40,90,.06);
+  --sk-ambient:       rgba(46,124,246,.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Inter',-apple-system,sans-serif;
+  color:var(--sk-text);
+  background:
+    radial-gradient(1000px 500px at 50% -10%, var(--sk-ambient), transparent 62%),
+    var(--sk-bg);
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;
+  transition:background .3s, color .3s;
+}
+button { font-family:inherit; }
+
+/* ── Layout: sidebar desktop / bottom nav mobile ── */
+.app { display:grid; grid-template-columns:230px 1fr; min-height:100dvh; }
+.sidebar {
+  background:var(--sk-bg-raised); border-right:1px solid var(--sk-border);
+  padding:22px 16px; position:sticky; top:0; height:100dvh;
+  display:flex; flex-direction:column; gap:6px;
+}
+.main { padding:22px clamp(16px, 3vw, 36px) 96px; max-width:860px; width:100%; margin:0 auto; }
+
+.sk-logo { display:flex; align-items:center; gap:10px; margin-bottom:26px; padding:0 8px; }
+.sk-logo-mark {
+  width:26px; height:26px; border-radius:50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(83,168,255,.28), transparent 55%),
+    conic-gradient(from 210deg, #0C1D42, #1B4FD8 38%, #123068 62%, #0C1D42);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.16), inset 0 -1px 3px rgba(0,0,0,.55), 0 0 10px rgba(46,124,246,.25);
+  display:grid; place-items:center; flex-shrink:0;
+}
+.sk-logo-dot {
+  width:9px; height:9px; border-radius:50%;
+  background:radial-gradient(circle at 35% 28%, #D6EBFF 0%, var(--sk-accent-bright) 38%, var(--sk-accent) 72%);
+  box-shadow:0 0 7px rgba(83,168,255,.6);
+}
+.sk-logo-word { font-family:'Space Grotesk'; font-weight:600; letter-spacing:.16em; font-size:13.5px; }
+
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; border-radius:11px; border:0; background:transparent;
+  color:var(--sk-text-2); font-size:14.5px; font-weight:500; cursor:pointer;
+  text-align:left; width:100%; transition:background .15s, color .15s;
+}
+.nav-item:hover { color:var(--sk-text); background:var(--sk-card); }
+.nav-item.active { background:var(--sk-accent); color:#fff; }
+.nav-item .ni { font-size:16px; width:20px; text-align:center; }
+.sidebar-foot { margin-top:auto; }
+
+.topbar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:24px; }
+.view-title { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(22px,4vw,30px); }
+.session-toggle {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  color:var(--sk-text-2); border-radius:999px;
+  padding:8px 14px; font-size:12.5px; font-weight:500; cursor:pointer;
+  transition:border-color .2s, color .2s; white-space:nowrap;
+}
+.session-toggle:hover { border-color:var(--sk-border-bright); color:var(--sk-text); }
+#mobileTheme { display:none; }
+
+/* mobile bottom nav */
+.bottomnav { display:none; }
+@media (max-width: 860px) {
+  .app { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  #mobileTheme { display:inline-flex; }
+  .main { padding:18px 16px calc(84px + env(safe-area-inset-bottom)); }
+  .bottomnav {
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:color-mix(in srgb, var(--sk-bg-raised) 92%, transparent);
+    backdrop-filter:blur(14px);
+    border-top:1px solid var(--sk-border);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .bn-item {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:0; color:var(--sk-text-3); font-size:10.5px; font-weight:600;
+    padding:6px 2px; cursor:pointer; min-height:44px;
+  }
+  .bn-item .ni { font-size:19px; }
+  .bn-item.active { color:var(--sk-accent-bright); }
+}
+
+/* ── Shared components ── */
+.card {
+  background:var(--sk-card); border:1px solid var(--sk-border);
+  border-radius:var(--sk-radius); box-shadow:var(--sk-card-shadow), inset 0 1px 0 rgba(255,255,255,.045);
+  padding:20px;
+}
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border-radius:13px; font-size:14.5px; font-weight:600; padding:12px 22px;
+  cursor:pointer; border:0; min-height:44px;
+  transition:box-shadow .2s, transform .15s, border-color .2s, background .2s;
+}
+.btn-primary {
+  background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep)); color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 10px rgba(46,124,246,.16), 0 3px 12px rgba(0,0,0,.28);
+}
+.btn-primary:hover { box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 18px rgba(46,124,246,.3); transform:translateY(-1px); }
+.btn-ghost { background:transparent; color:var(--sk-text); border:1px solid var(--sk-border-bright); font-weight:500; }
+.btn-ghost:hover { border-color:var(--sk-accent); background:rgba(46,124,246,.06); }
+.btn-sm { padding:8px 14px; font-size:13px; border-radius:10px; min-height:36px; }
+
+.input {
+  width:100%; background:var(--sk-bg-raised); border:1px solid var(--sk-border);
+  border-radius:12px; padding:14px 16px; color:var(--sk-text);
+  font-family:inherit; font-size:15px; transition:border-color .2s; min-height:48px;
+}
+.input::placeholder { color:var(--sk-text-3); }
+.input:focus { outline:none; border-color:var(--sk-accent); box-shadow:var(--sk-glow-soft); }
+
+.label { color:var(--sk-text-3); font-size:11px; font-weight:600; letter-spacing:.15em; text-transform:uppercase; margin-bottom:12px; }
+.badge {
+  display:inline-flex; font-size:11px; font-weight:600; letter-spacing:.05em;
+  color:var(--sk-accent-bright); background:rgba(46,124,246,.12);
+  border:1px solid var(--sk-border-bright); border-radius:999px; padding:4px 11px;
+  flex-shrink:0;
+}
+[data-theme="day"] .badge { color:var(--sk-accent-deep); }
+
+.track-card {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  border-radius:12px; padding:14px 15px; margin-bottom:11px;
+  transition:border-color .2s;
+}
+.track-card.clickable { cursor:pointer; }
+.track-card.clickable:hover { border-color:var(--sk-accent); }
+.tc-name { font-size:14.5px; font-weight:600; margin-bottom:4px; }
+.tc-meta { color:var(--sk-text-2); font-size:12.5px; line-height:1.5; }
+.tc-why { display:flex; gap:8px; color:var(--sk-accent-bright); font-size:12px; margin-top:8px; line-height:1.5; }
+.tc-why::before { content:''; flex-shrink:0; width:3px; border-radius:2px; background:var(--sk-accent); }
+[data-theme="day"] .tc-why { color:var(--sk-accent-deep); }
+.tc-actions { display:flex; gap:8px; flex-shrink:0; }
+.icon-btn {
+  width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
+  background:var(--sk-bg-raised); border:1px solid var(--sk-border);
+  color:var(--sk-text-2); font-size:15px; cursor:pointer; transition:border-color .2s, color .2s;
+}
+.icon-btn:hover { border-color:var(--sk-accent); color:var(--sk-text); }
+.icon-btn.saved { color:var(--sk-accent-bright); border-color:var(--sk-accent); }
+
+.listen-links { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.listen-link {
+  font-size:11.5px; font-weight:600; text-decoration:none;
+  color:var(--sk-text-2); background:var(--sk-bg-raised);
+  border:1px solid var(--sk-border); border-radius:999px; padding:6px 13px;
+  transition:border-color .2s, color .2s; min-height:30px; display:inline-flex; align-items:center;
+}
+.listen-link:hover { border-color:var(--sk-accent); color:var(--sk-text); }
+
+.empty {
+  text-align:center; padding:48px 20px; color:var(--sk-text-2);
+  border:1px dashed var(--sk-border); border-radius:var(--sk-radius);
+}
+.empty .e-icon { font-size:30px; margin-bottom:12px; }
+.empty h4 { font-family:'Space Grotesk'; color:var(--sk-text); margin-bottom:6px; font-size:16px; }
+.empty p { font-size:13.5px; line-height:1.6; max-width:320px; margin:0 auto 16px; }
+
+.loading { display:none; align-items:center; gap:10px; color:var(--sk-accent-bright); font-size:14px; padding:18px 0; }
+.spinner {
+  width:16px; height:16px; border-radius:50%;
+  border:2px solid var(--sk-border-bright); border-top-color:var(--sk-accent-bright);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.error-box { display:none; color:#ff8a80; font-size:13.5px; padding:14px 16px; background:rgba(255,90,80,.07); border:1px solid rgba(255,90,80,.25); border-radius:12px; margin:14px 0; }
+
+.toast {
+  position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px);
+  background:var(--sk-card-2); border:1px solid var(--sk-border-bright);
+  color:var(--sk-text); font-size:13.5px; font-weight:500;
+  padding:11px 20px; border-radius:999px; box-shadow:var(--sk-card-shadow);
+  opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:60;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+@media (min-width:861px) { .toast { bottom:32px; } }
+
+.view { display:none; }
+.view.active { display:block; }
+.anchor-card { border-color:var(--sk-accent) !important; box-shadow:var(--sk-glow-soft); }
+.p-num { font-family:'Space Grotesk'; font-weight:700; font-size:13px; color:var(--sk-accent-bright); margin-bottom:6px; }
+.section-gap { margin-top:26px; }
+.agent-row { display:flex; align-items:center; gap:16px; }
+.agent-orb {
+  width:48px; height:48px; border-radius:50%; flex-shrink:0;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(83,168,255,.25), transparent 55%),
+    conic-gradient(from 210deg, #0C1D42, #1B4FD8 38%, #123068 62%, #0C1D42);
+  display:grid; place-items:center;
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.14), inset 0 -2px 5px rgba(0,0,0,.5), var(--sk-glow-soft);
+}
+.agent-orb-dot {
+  width:14px; height:14px; border-radius:50%;
+  background:radial-gradient(circle at 35% 28%, #D6EBFF, var(--sk-accent-bright) 38%, var(--sk-accent) 75%);
+  box-shadow:0 0 9px rgba(83,168,255,.5);
+  animation:breathe 3s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{opacity:.78; transform:scale(1);} 50%{opacity:1; transform:scale(1.1);} }
+.tabs { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+.tab {
+  padding:8px 16px; border-radius:999px; font-size:12.5px; font-weight:600;
+  color:var(--sk-text-2); background:transparent; border:1px solid var(--sk-border); cursor:pointer; min-height:36px;
+}
+.tab.active { background:var(--sk-accent); color:#fff; border-color:var(--sk-accent); }
+.crate-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.crate-title { font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
+.artist-group { margin-bottom:20px; }
+.row-gap { display:flex; gap:10px; }
+@media (prefers-reduced-motion: reduce) { .agent-orb-dot, .spinner { animation:none; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sk-logo">
+      <span class="sk-logo-mark"><span class="sk-logo-dot"></span></span>
+      <span class="sk-logo-word">SOUNDKEEP</span>
+    </div>
+    <button class="nav-item" data-nav="home"><span class="ni">⌂</span>Home</button>
+    <button class="nav-item" data-nav="search"><span class="ni">⌕</span>Search</button>
+    <button class="nav-item" data-nav="library"><span class="ni">▤</span>Library</button>
+    <button class="nav-item" data-nav="saved"><span class="ni">♫</span>Pathways</button>
+    <div class="sidebar-foot">
+      <button class="session-toggle" data-toggle-theme style="width:100%; justify-content:center;">
+        <span data-theme-icon>🌙</span><span data-theme-label>Night Session</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="view-title" id="viewTitle">Home</div>
+      <button class="session-toggle" data-toggle-theme id="mobileTheme">
+        <span data-theme-icon>🌙</span><span data-theme-label>Night Session</span>
+      </button>
+    </div>
+
+    <!-- HOME -->
+    <section class="view" id="view-home">
+      <div class="card" style="margin-bottom:18px;">
+        <div class="agent-row">
+          <div class="agent-orb"><span class="agent-orb-dot"></span></div>
+          <div>
+            <div style="font-family:'Space Grotesk'; font-weight:600; font-size:16px; margin-bottom:4px;">Sonic — Your Music Agent</div>
+            <div style="color:var(--sk-text-2); font-size:13.5px;">Tell me an artist or genre. I'll map your next move.</div>
+          </div>
+        </div>
+        <div class="row-gap" style="margin-top:18px;">
+          <input class="input" id="homeSearch" placeholder="e.g. Wizkid, dancehall, Burna Boy…">
+          <button class="btn btn-primary" id="homeGo">Ask Sonic</button>
+        </div>
+      </div>
+      <div class="label">Recent Pathway</div>
+      <div id="homeRecent"></div>
+    </section>
+
+    <!-- SEARCH / PATHWAY -->
+    <section class="view" id="view-search">
+      <div class="row-gap" style="margin-bottom:6px;">
+        <input class="input" id="searchInput" placeholder="Search any artist, track, or genre…">
+        <button class="btn btn-primary" id="searchGo">Ask Sonic</button>
+      </div>
+      <div class="error-box" id="searchError"></div>
+      <div class="loading" id="searchLoading"><span class="spinner"></span>Sonic is mapping…</div>
+
+      <div id="resultsWrap" style="display:none;" class="section-gap">
+        <div class="label">Select an anchor track</div>
+        <div id="resultsList"></div>
+      </div>
+
+      <div id="pathwayWrap" style="display:none;" class="section-gap">
+        <div class="label">Starting From</div>
+        <div class="track-card anchor-card" id="anchorCard"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:18px 0 14px;">
+          <div class="label" style="margin:0;">Continuation Pathway</div>
+          <button class="btn btn-ghost btn-sm" id="savePathwayBtn">＋ Save Pathway</button>
+        </div>
+        <div id="pathwaySteps"></div>
+      </div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section class="view" id="view-library">
+      <div class="tabs">
+        <button class="tab active" data-libtab="tracks">Tracks</button>
+        <button class="tab" data-libtab="artists">Artists</button>
+        <button class="tab" data-libtab="crates">Crates</button>
+      </div>
+      <div id="libContent"></div>
+    </section>
+
+    <!-- SAVED PATHWAYS -->
+    <section class="view" id="view-saved">
+      <div id="savedContent"></div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottomnav">
+  <button class="bn-item" data-nav="home"><span class="ni">⌂</span>Home</button>
+  <button class="bn-item" data-nav="search"><span class="ni">⌕</span>Search</button>
+  <button class="bn-item" data-nav="library"><span class="ni">▤</span>Library</button>
+  <button class="bn-item" data-nav="saved"><span class="ni">♫</span>Pathways</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* SoundKeep /app — P1 shell + P2 Sonic core */
+const API = ''; // same-origin
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* storage (namespaced sk_*, account-migration-ready) */
+const store = {
+  get(k, fb) { try { const v = localStorage.getItem('sk_' + k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } },
+  set(k, v)  { try { localStorage.setItem('sk_' + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* theme */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-icon]').forEach(el => el.textContent = t === 'night' ? '🌙' : '☀️');
+  document.querySelectorAll('[data-theme-label]').forEach(el => el.textContent = t === 'night' ? 'Night Session' : 'Day Session');
+  store.set('session', t);
+}
+document.querySelectorAll('[data-toggle-theme]').forEach(b =>
+  b.addEventListener('click', () =>
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'night' ? 'day' : 'night'))
+);
+applyTheme(store.get('session', 'night'));
+
+/* toast */
+let toastTimer;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* router */
+const TITLES = { home:'Home', search:'Search', library:'Library', saved:'Pathways' };
+function nav(view) { location.hash = view; }
+function renderRoute() {
+  const view = (location.hash || '#home').slice(1).split('/')[0];
+  const v = TITLES[view] ? view : 'home';
+  document.querySelectorAll('.view').forEach(el => el.classList.toggle('active', el.id === 'view-' + v));
+  document.querySelectorAll('[data-nav]').forEach(el => el.classList.toggle('active', el.dataset.nav === v));
+  $('viewTitle').textContent = TITLES[v];
+  if (v === 'library') renderLibrary();
+  if (v === 'saved') renderSaved();
+  if (v === 'home') renderHome();
+}
+document.querySelectorAll('[data-nav]').forEach(el => el.addEventListener('click', () => nav(el.dataset.nav)));
+window.addEventListener('hashchange', renderRoute);
+
+/* helpers */
+function trackMeta(t) {
+  const bits = [t.genre, t.energy ? t.energy + ' energy' : null, t.bpm_range ? t.bpm_range + ' BPM' : null, t.region, t.set_position].filter(Boolean);
+  return bits.map(esc).join(' · ');
+}
+function listenLinks(artist, title) {
+  const q = encodeURIComponent(artist + ' ' + title);
+  return '<div class="listen-links">' +
+    '<a class="listen-link" href="https://www.youtube.com/results?search_query=' + q + '" target="_blank" rel="noopener">▶ YouTube</a>' +
+    '<a class="listen-link" href="https://open.spotify.com/search/' + q + '" target="_blank" rel="noopener">▶ Spotify</a>' +
+    '<a class="listen-link" href="https://music.apple.com/search?term=' + q + '" target="_blank" rel="noopener">▶ Apple Music</a>' +
+  '</div>';
+}
+const trackKey = (t) => (t.artist + '::' + t.title).toLowerCase();
+
+/* library actions */
+function inLibrary(t) { return store.get('library', []).some(x => trackKey(x) === trackKey(t)); }
+function toggleLibrary(t) {
+  let lib = store.get('library', []);
+  if (inLibrary(t)) { lib = lib.filter(x => trackKey(x) !== trackKey(t)); toast('Removed from library'); }
+  else { lib.unshift(t); toast('Saved to library'); }
+  store.set('library', lib);
+}
+
+/* search + pathway (P2 core) */
+let currentPathway = null;
+
+async function doSearch(q) {
+  q = (q || '').trim();
+  if (!q) return;
+  nav('search');
+  $('searchInput').value = q;
+  $('searchError').style.display = 'none';
+  $('pathwayWrap').style.display = 'none';
+  $('resultsWrap').style.display = 'none';
+  $('searchLoading').style.display = 'flex';
+  try {
+    const res = await fetch(API + '/api/search?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    $('searchLoading').style.display = 'none';
+    if (!data.results || !data.results.length) {
+      showSearchError("Sonic couldn't find that yet. Try: Wizkid, Burna Boy, Vybz Kartel, Drake — or a genre like dancehall.");
+      return;
+    }
+    const list = $('resultsList'); list.innerHTML = '';
+    data.results.forEach(t => {
+      const el = document.createElement('div');
+      el.className = 'track-card clickable';
+      el.innerHTML = '<div>' +
+          '<div class="tc-name">' + esc(t.artist) + ' — ' + esc(t.title) + '</div>' +
+          '<div class="tc-meta">' + trackMeta(t) + '</div>' +
+        '</div>' +
+        '<span class="badge">' + esc(t.genre || '') + '</span>';
+      el.onclick = () => getPathway(t);
+      list.appendChild(el);
+    });
+    $('resultsWrap').style.display = 'block';
+  } catch (e) {
+    $('searchLoading').style.display = 'none';
+    showSearchError('Error reaching Sonic. Check your connection and try again.');
+  }
+}
+function showSearchError(msg) { const e = $('searchError'); e.textContent = msg; e.style.display = 'block'; }
+
+async function getPathway(track) {
+  $('searchLoading').style.display = 'flex';
+  $('pathwayWrap').style.display = 'none';
+  $('searchError').style.display = 'none';
+  $('resultsWrap').style.display = 'none';
+  try {
+    let data;
+    if (track.source === 'lastfm') {
+      data = await (await fetch(API + '/api/dynamic_pathway?artist=' + encodeURIComponent(track.artist))).json();
+    } else {
+      data = await (await fetch(API + '/api/pathway/' + encodeURIComponent(track.track_id))).json();
+    }
+    $('searchLoading').style.display = 'none';
+    if (data.error) { showSearchError(data.error); return; }
+    currentPathway = { anchor: data.anchor, pathway: data.pathway, savedAt: null };
+    renderPathway(currentPathway);
+    store.set('recent_pathway', currentPathway);
+  } catch (e) {
+    $('searchLoading').style.display = 'none';
+    showSearchError('Error generating pathway. Try again.');
+  }
+}
+
+function trackCardInner(t, opts) {
+  opts = opts || {};
+  const saved = inLibrary(t);
+  return '<div style="min-width:0;">' +
+      (opts.num ? '<div class="p-num">' + opts.num + '</div>' : '') +
+      '<div class="tc-name">' + esc(t.artist) + ' — ' + esc(t.title) + '</div>' +
+      '<div class="tc-meta">' + trackMeta(t) + '</div>' +
+      (opts.why ? '<div class="tc-why"><span>' + esc(opts.why) + '</span></div>' : '') +
+      listenLinks(t.artist, t.title) +
+    '</div>' +
+    '<div class="tc-actions">' +
+      '<button class="icon-btn ' + (saved ? 'saved' : '') + '" data-libtoggle title="' + (saved ? 'Remove from library' : 'Save to library') + '">' + (saved ? '♥' : '♡') + '</button>' +
+    '</div>';
+}
+function bindLibToggle(el, t, onchange) {
+  const btn = el.querySelector('[data-libtoggle]');
+  if (!btn) return;
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    toggleLibrary(t);
+    btn.classList.toggle('saved');
+    btn.textContent = btn.classList.contains('saved') ? '♥' : '♡';
+    if (onchange) onchange();
+  };
+}
+
+function renderPathway(data) {
+  const a = $('anchorCard');
+  a.innerHTML = trackCardInner(data.anchor);
+  bindLibToggle(a, data.anchor);
+
+  const steps = $('pathwaySteps'); steps.innerHTML = '';
+  data.pathway.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'track-card';
+    el.innerHTML = trackCardInner(s.track, { num: String(i + 1).padStart(2, '0'), why: 'Why this: ' + (s.reasons || []).join(', ') });
+    bindLibToggle(el, s.track);
+    steps.appendChild(el);
+  });
+  $('pathwayWrap').style.display = 'block';
+  $('pathwayWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+$('savePathwayBtn').onclick = () => {
+  if (!currentPathway) return;
+  const saved = store.get('pathways', []);
+  saved.unshift(Object.assign({}, currentPathway, { savedAt: new Date().toISOString() }));
+  store.set('pathways', saved);
+  toast('Pathway saved');
+};
+
+$('searchGo').onclick = () => doSearch($('searchInput').value);
+$('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch($('searchInput').value); });
+$('homeGo').onclick = () => doSearch($('homeSearch').value);
+$('homeSearch').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch($('homeSearch').value); });
+
+/* HOME */
+function renderHome() {
+  const r = store.get('recent_pathway', null);
+  const el = $('homeRecent');
+  if (!r || !r.anchor) {
+    el.innerHTML = '<div class="empty">' +
+      '<div class="e-icon">♫</div><h4>No pathways yet</h4>' +
+      '<p>Search an artist you actually play and Sonic will map your next move.</p>' +
+      '<button class="btn btn-primary btn-sm" onclick="nav(\'search\')">Start a search</button>' +
+    '</div>';
+    return;
+  }
+  el.innerHTML = '<div class="track-card clickable" id="recentCard">' +
+    '<div style="min-width:0;">' +
+      '<div class="tc-name">' + esc(r.anchor.artist) + ' — ' + esc(r.anchor.title) + '</div>' +
+      '<div class="tc-meta">' + r.pathway.length + ' transitions · ' + trackMeta(r.anchor) + '</div>' +
+      '<div class="tc-why"><span>Tap to reopen this pathway</span></div>' +
+    '</div><span class="badge">Recent</span></div>';
+  $('recentCard').onclick = () => { nav('search'); currentPathway = r; renderPathway(r); };
+}
+
+/* LIBRARY */
+let libTab = 'tracks';
+document.querySelectorAll('[data-libtab]').forEach(t =>
+  t.addEventListener('click', () => {
+    libTab = t.dataset.libtab;
+    document.querySelectorAll('[data-libtab]').forEach(x => x.classList.toggle('active', x === t));
+    renderLibrary();
+  })
+);
+
+function emptyState(icon, title, text, cta) {
+  return '<div class="empty"><div class="e-icon">' + icon + '</div><h4>' + title + '</h4><p>' + text + '</p>' + (cta || '') + '</div>';
+}
+
+function renderLibrary() {
+  const el = $('libContent');
+  const lib = store.get('library', []);
+
+  if (libTab === 'tracks') {
+    if (!lib.length) {
+      el.innerHTML = emptyState('♡', 'Your library is empty', 'Save tracks from any pathway with the heart button — they live here.',
+        '<button class="btn btn-primary btn-sm" onclick="nav(\'search\')">Find tracks</button>');
+      return;
+    }
+    el.innerHTML = '';
+    const crates = store.get('crates', []);
+    lib.forEach(t => {
+      const c = document.createElement('div');
+      c.className = 'track-card';
+      c.innerHTML = trackCardInner(t);
+      if (crates.length) {
+        const addBtn = document.createElement('button');
+        addBtn.className = 'icon-btn'; addBtn.title = 'Add to crate'; addBtn.textContent = '▦';
+        addBtn.onclick = (e) => { e.stopPropagation(); addToCratePrompt(t); };
+        c.querySelector('.tc-actions').appendChild(addBtn);
+      }
+      bindLibToggle(c, t, () => setTimeout(renderLibrary, 150));
+      el.appendChild(c);
+    });
+    return;
+  }
+
+  if (libTab === 'artists') {
+    if (!lib.length) { el.innerHTML = emptyState('🎤', 'No artists yet', 'Artists appear here automatically as you save tracks.'); return; }
+    const groups = {};
+    lib.forEach(t => { (groups[t.artist] = groups[t.artist] || []).push(t); });
+    el.innerHTML = '';
+    Object.keys(groups).sort().forEach(artist => {
+      const g = document.createElement('div');
+      g.className = 'artist-group';
+      g.innerHTML = '<div class="crate-head"><div class="crate-title">' + esc(artist) + '</div><span class="badge">' + groups[artist].length + ' track' + (groups[artist].length > 1 ? 's' : '') + '</span></div>';
+      groups[artist].forEach(t => {
+        const c = document.createElement('div');
+        c.className = 'track-card';
+        c.innerHTML = trackCardInner(t);
+        bindLibToggle(c, t, () => setTimeout(renderLibrary, 150));
+        g.appendChild(c);
+      });
+      el.appendChild(g);
+    });
+    return;
+  }
+
+  /* crates */
+  const crates = store.get('crates', []);
+  let html = '<div class="row-gap" style="margin-bottom:16px;">' +
+    '<input class="input" id="newCrateName" placeholder="New crate name (e.g. Warm-up, Peak Hour)…">' +
+    '<button class="btn btn-primary" id="newCrateBtn">Create</button>' +
+  '</div>';
+  if (!crates.length) {
+    html += emptyState('▦', 'No crates yet', 'Crates are how DJs organize sets — warm-up, build, peak. Create one, then add tracks from Library → Tracks.');
+  }
+  el.innerHTML = html;
+  $('newCrateBtn').onclick = () => {
+    const name = $('newCrateName').value.trim();
+    if (!name) return;
+    const cs = store.get('crates', []);
+    cs.unshift({ id: Date.now().toString(36), name: name, tracks: [] });
+    store.set('crates', cs);
+    toast('Crate created');
+    renderLibrary();
+  };
+  crates.forEach(crate => {
+    const box = document.createElement('div');
+    box.className = 'card'; box.style.marginBottom = '14px';
+    box.innerHTML = '<div class="crate-head">' +
+        '<div class="crate-title">' + esc(crate.name) + '</div>' +
+        '<div style="display:flex; gap:8px; align-items:center;">' +
+          '<span class="badge">' + crate.tracks.length + ' tracks</span>' +
+          '<button class="icon-btn" data-delcrate title="Delete crate">✕</button>' +
+        '</div>' +
+      '</div><div data-cratetracks></div>';
+    const wrap = box.querySelector('[data-cratetracks]');
+    if (!crate.tracks.length) {
+      wrap.innerHTML = '<div style="color:var(--sk-text-3); font-size:12.5px;">Empty — add tracks from Library → Tracks using ▦.</div>';
+    } else {
+      crate.tracks.forEach((t, ti) => {
+        const c = document.createElement('div');
+        c.className = 'track-card';
+        c.innerHTML = '<div style="min-width:0;"><div class="tc-name">' + esc(t.artist) + ' — ' + esc(t.title) + '</div><div class="tc-meta">' + trackMeta(t) + '</div></div>' +
+          '<button class="icon-btn" data-removetrack title="Remove from crate">✕</button>';
+        c.querySelector('[data-removetrack]').onclick = () => {
+          const cs = store.get('crates', []);
+          const target = cs.find(x => x.id === crate.id);
+          if (target) { target.tracks.splice(ti, 1); store.set('crates', cs); renderLibrary(); }
+        };
+        wrap.appendChild(c);
+      });
+    }
+    box.querySelector('[data-delcrate]').onclick = () => {
+      store.set('crates', store.get('crates', []).filter(c => c.id !== crate.id));
+      toast('Crate deleted');
+      renderLibrary();
+    };
+    el.appendChild(box);
+  });
+}
+
+function addToCratePrompt(t) {
+  const crates = store.get('crates', []);
+  if (!crates.length) { toast('Create a crate first (Library → Crates)'); return; }
+  const names = crates.map((c, i) => (i + 1) + '. ' + c.name).join('\n');
+  const pick = prompt('Add to which crate?\n' + names + '\n\nEnter number:');
+  const idx = parseInt(pick, 10) - 1;
+  if (isNaN(idx) || !crates[idx]) return;
+  if (crates[idx].tracks.some(x => trackKey(x) === trackKey(t))) { toast('Already in that crate'); return; }
+  crates[idx].tracks.push(t);
+  store.set('crates', crates);
+  toast('Added to ' + crates[idx].name);
+}
+
+/* SAVED PATHWAYS */
+function renderSaved() {
+  const el = $('savedContent');
+  const saved = store.get('pathways', []);
+  if (!saved.length) {
+    el.innerHTML = emptyState('♫', 'No saved pathways', 'Generate a pathway in Search and hit "Save Pathway" — your sets live here.',
+      '<button class="btn btn-primary btn-sm" onclick="nav(\'search\')">Build one</button>');
+    return;
+  }
+  el.innerHTML = '';
+  saved.forEach((p, idx) => {
+    const c = document.createElement('div');
+    c.className = 'track-card clickable';
+    const d = p.savedAt ? new Date(p.savedAt).toLocaleDateString() : '';
+    c.innerHTML = '<div style="min-width:0;">' +
+        '<div class="tc-name">' + esc(p.anchor.artist) + ' — ' + esc(p.anchor.title) + '</div>' +
+        '<div class="tc-meta">' + p.pathway.length + ' transitions · saved ' + d + '</div>' +
+      '</div>' +
+      '<div class="tc-actions">' +
+        '<button class="icon-btn" data-delsaved title="Delete">✕</button>' +
+      '</div>';
+    c.onclick = () => { nav('search'); currentPathway = p; renderPathway(p); };
+    c.querySelector('[data-delsaved]').onclick = (e) => {
+      e.stopPropagation();
+      const arr = store.get('pathways', []); arr.splice(idx, 1); store.set('pathways', arr);
+      toast('Pathway deleted');
+      renderSaved();
+    };
+    el.appendChild(c);
+  });
+}
+
+renderRoute();
+</script>
+</body>
+</html>

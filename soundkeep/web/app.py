@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import json, sys, os, requests
 from pathlib import Path
 from dotenv import load_dotenv
@@ -184,5 +185,10 @@ def dynamic_pathway(artist: str, steps: int = 5):
         current = best
 
     return {"anchor": anchor, "pathway": pathway_result}
+
+
+@app.get("/app")
+def serve_app():
+    return FileResponse(str(Path(__file__).parent / "static" / "app.html"))
 
 app.mount("/", StaticFiles(directory=str(Path(__file__).parent / "static"), html=True), name="static")
