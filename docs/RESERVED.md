@@ -388,3 +388,33 @@ table stakes, workflow is the bet" — and this is a workflow build behind
 an unconfirmed edge. Detailed receipts and SDK/IDL findings are in
 docs/OOBE_BOUNTY_ESCROW_CHAIN_2026_05_30.md. The agent stays live on
 mainnet; resume from autonomous-workflow requirements first, not plumbing.
+
+---
+
+## HELIX Execution Ecosystem (full reserve document)
+
+**What it is:** The complete platform-architecture reserve for HELIX as a
+truthful execution environment: Marketplace (discovery), Workspace
+(collaboration), Execution Rooms (governed work unit), Helix Verified
+(execution-based identity), Contribution Economy, Agent Collaboration
+Layer, and the module relationships (RACER, HELIXCAN, HelixAtlas,
+HelixMeter, Helixwap, HelixShield, vLOID/VERITY/IAM). Includes phased
+adoption sequence (Phase 0 internal proof through Phase 5 enterprise),
+explicit non-goals, initial wedge candidates, and ethical execution
+doctrine (10 principles).
+
+Canonical document: **docs/reserve/helix-execution-ecosystem-reserve.md**
+
+Independent Level 2 global architecture reserve. No Momentum Sniper
+dependency; no live-trade prerequisite; grants no execution authority.
+
+**Activation condition:** Tier 1 products (API Connect, SoundKeep, POI
+Engine) generate the internal proof artifacts (deployments, receipts,
+verification records) required for Phase 0, AND an initial wedge is
+selected per section 25 of the reserve document.
+
+**Why deferred:** Launching an empty network inverts the adoption
+sequence. The marketplace derives its identity from shipped products
+("built by people who actually shipped AI systems"). Per Hexagram 5
+(Waiting, Jul 14 oracle): recording the architecture now while
+implementation waits for the right cashflow, wedge, and execution window.
