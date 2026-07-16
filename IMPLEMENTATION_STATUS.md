@@ -23,19 +23,24 @@ Last full audit: **2026-07-15** (this file's baseline).
   `api-connect-data` mounted at /data
 - **Operational state:** live; canary consumer (poi-engine) passed 2-day
   validation (2,260 requests, 71% cache hit rate, 0 consumer failures)
-- **Implemented:** cache-first provider router, helius/jupiter-v3 provider,
-  sqlite cache on volume, execution receipts (JSONL on volume), Prometheus
-  telemetry at /v1/metrics (per-provider latency, classified error
-  distributions, 429 pressure, circuit state), provider health circuit
-  breaker, graceful shutdown, admin endpoints, 7 router tests
-- **Known gaps:** single provider; token_price only (OHLCV next); no
-  alerting on metrics; equities/ETF asset class not supported
+- **Implemented:** cache-first provider router, helius/jupiter-v3 provider
+  (token_price), GeckoTerminal provider (normalized crypto OHLCV, 5m/4h,
+  pool-resolved so arbitrary mints work — added 2026-07-16), sqlite cache on
+  volume, execution receipts (JSONL on volume), Prometheus telemetry at
+  /v1/metrics (per-provider latency, classified error distributions, 429
+  pressure, circuit state), provider health circuit breaker, graceful
+  shutdown, admin endpoints, 15 tests
+- **Known gaps:** one provider per data type (no OHLCV fallback provider
+  yet); intervals deliberately narrow (5m/4h only); no alerting on metrics;
+  equities/ETF asset class not supported (deliberate — see HELIX-JANUS note)
 - **Data/logs:** /data/cache.db, /data/provider_call_receipts.jsonl (Railway
   volume); Railway deploy/HTTP logs
 - **Consumers:** poi-engine (production). Future: Momentum Sniper (OHLCV),
   HELIX-JANUS (only after deliberate equities extension), Backpack (dormant)
-- **Next milestone:** normalized crypto OHLCV contract + endpoint
-- **Verified:** 2026-07-15 (live probes)
+- **Next milestone:** first OHLCV consumer integration (Momentum Sniper
+  evaluation; poi-engine synthetic-candle replacement)
+- **Verified:** 2026-07-16 (OHLCV endpoint built + tested; live verification
+  pending deploy)
 
 ## 🟢 poi-engine — production
 
