@@ -418,3 +418,42 @@ sequence. The marketplace derives its identity from shipped products
 ("built by people who actually shipped AI systems"). Per Hexagram 5
 (Waiting, Jul 14 oracle): recording the architecture now while
 implementation waits for the right cashflow, wedge, and execution window.
+
+---
+
+## HELIX Project Lifecycle Exchange (canonical module reserve)
+
+**What it is:** HELIX Marketplace module treating projects as living
+execution assets moving through observable lifecycle states (Idea ->
+Building -> Production -> Dormant -> Revived -> Archived), with immutable
+receipts on every transition, evidence-based resurrection (cofounder joins,
+funding milestone, customer prepays), and a dormant-project exchange
+searchable by execution readiness. "Execution paused," never "project
+died." Canonical document: **docs/reserve/helix-project-lifecycle-exchange.md**
+
+**Activation condition:** HELIX Workspace operational + active Marketplace
+builder community + mature receipts + VERITY/IAM integrated + lifecycle
+transitions authenticatable by execution evidence.
+
+**Why deferred:** Extends a platform that is itself reserved (HELIX
+ecosystem reserve). Not an MVP feature by its own definition.
+
+---
+
+## Continuous Adversarial Security Graph (canonical module reserve)
+
+**What it is:** HelixShield/HelixAtlas/vLOID extension: living attack
+surface graph of every execution entry point, attack surface receipts per
+deployment, assumed-breach execution mode with containment receipts,
+continuous adversarial agents (ADVERSARY-X, INSIDER, SUPPLYCHAIN,
+PROMPT-INJECTOR, ...), dormant infrastructure discovery, security impact
+forecasting, blast-radius visualization with replay. Canonical document:
+**docs/reserve/continuous-adversarial-security-graph.md**
+
+**Activation condition:** HelixShield exists as a real policy engine with
+execution receipts flowing; a production system whose attack surface
+justifies continuous modeling.
+
+**Why deferred:** Extends unbuilt HelixShield infrastructure. The doctrine
+(security as observable, receipt-driven, simulation-backed) is captured;
+implementation waits for the substrate.
