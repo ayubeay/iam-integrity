@@ -268,6 +268,59 @@ button { font-family:inherit; }
 }
 .provider-opt:hover { border-color:var(--sk-accent); }
 .provider-opt.active { border-color:var(--sk-accent); box-shadow:var(--sk-glow-soft); }
+.miniplayer {
+  display:none; position:fixed; left:12px; right:12px; z-index:45;
+  bottom:calc(74px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb, var(--sk-card-2) 94%, transparent);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--sk-border-bright); border-radius:14px;
+  box-shadow:var(--sk-card-shadow);
+  padding:10px 12px; align-items:center; gap:12px; cursor:pointer;
+}
+.miniplayer.show { display:flex; }
+@media (min-width:861px) { .miniplayer { left:auto; right:24px; bottom:24px; width:340px; } }
+.mp-info { min-width:0; flex:1; }
+.mp-name { font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mp-pos { color:var(--sk-text-3); font-size:11.5px; margin-top:2px; }
+.mp-next {
+  width:38px; height:38px; border-radius:50%; border:0; cursor:pointer; flex-shrink:0;
+  background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep)); color:#fff;
+  font-size:15px; box-shadow:inset 0 1px 0 rgba(255,255,255,.25);
+}
+.session-hero {
+  text-align:center; padding:28px 20px;
+}
+.session-pos {
+  font-family:'Space Grotesk'; font-weight:700; font-size:13px;
+  color:var(--sk-accent-bright); letter-spacing:.14em; text-transform:uppercase; margin-bottom:16px;
+}
+.session-art {
+  width:110px; height:110px; border-radius:24px; margin:0 auto 20px;
+  background:radial-gradient(circle at 32% 28%, var(--sk-accent-bright), var(--sk-accent-deep) 75%);
+  box-shadow:0 0 24px rgba(46,124,246,.35), inset 0 2px 12px rgba(255,255,255,.18);
+  display:grid; place-items:center; font-size:38px; color:#fff;
+}
+.session-title { font-family:'Space Grotesk'; font-weight:700; font-size:21px; margin-bottom:5px; }
+.session-artist { color:var(--sk-text-2); font-size:14.5px; margin-bottom:14px; }
+.session-controls { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:22px; }
+.sc-btn {
+  width:48px; height:48px; border-radius:50%; display:grid; place-items:center;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  color:var(--sk-text-2); font-size:17px; cursor:pointer; transition:border-color .2s, color .2s;
+}
+.sc-btn:hover { border-color:var(--sk-accent); color:var(--sk-text); }
+.sc-btn:disabled { opacity:.35; cursor:default; }
+.sc-play {
+  width:62px; height:62px; border-radius:50%; border:0; cursor:pointer;
+  background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep)); color:#fff; font-size:21px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 18px rgba(46,124,246,.3);
+  transition:box-shadow .2s, transform .15s;
+}
+.sc-play:hover { transform:translateY(-1px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 0 26px rgba(46,124,246,.42); }
+.session-progress { display:flex; gap:5px; margin:22px auto 0; max-width:320px; }
+.sp-seg { flex:1; height:4px; border-radius:2px; background:var(--sk-card-2); border:1px solid var(--sk-border); }
+.sp-seg.done { background:var(--sk-accent-deep); border-color:var(--sk-accent-deep); }
+.sp-seg.current { background:linear-gradient(90deg, var(--sk-accent-deep), var(--sk-accent-bright)); border-color:var(--sk-accent); }
 @media (prefers-reduced-motion: reduce) { .agent-orb-dot, .spinner { animation:none; } }
 </style>
 </head>
@@ -337,7 +390,10 @@ button { font-family:inherit; }
         <div class="track-card anchor-card" id="anchorCard"></div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:18px 0 14px;">
           <div class="label" style="margin:0;">Continuation Pathway</div>
-          <button class="btn btn-ghost btn-sm" id="savePathwayBtn">＋ Save Pathway</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm" id="savePathwayBtn">＋ Save Pathway</button>
+            <button class="btn btn-primary btn-sm" id="startSessionBtn">▶ Start Session</button>
+          </div>
         </div>
         <div id="pathwaySteps"></div>
       </div>
@@ -356,6 +412,11 @@ button { font-family:inherit; }
     <!-- SAVED PATHWAYS -->
     <section class="view" id="view-saved">
       <div id="savedContent"></div>
+    </section>
+
+    <!-- SESSION (Now Playing) -->
+    <section class="view" id="view-session">
+      <div id="sessionContent"></div>
     </section>
   </main>
 </div>
@@ -378,6 +439,13 @@ button { font-family:inherit; }
     </div>
     <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:14px;" onclick="closeProviderModal()">Cancel</button>
   </div>
+</div>
+<div class="miniplayer" id="miniplayer" onclick="nav('session')">
+  <div class="mp-info">
+    <div class="mp-name" id="mpName"></div>
+    <div class="mp-pos" id="mpPos"></div>
+  </div>
+  <button class="mp-next" id="mpNext" title="Next transition">⏭</button>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -415,7 +483,7 @@ function toast(msg) {
 }
 
 /* router */
-const TITLES = { home:'Home', search:'Search', library:'Library', saved:'Pathways' };
+const TITLES = { home:'Home', search:'Search', library:'Library', saved:'Pathways', session:'Session' };
 function nav(view) { location.hash = view; }
 function renderRoute() {
   const view = (location.hash || '#home').slice(1).split('/')[0];
@@ -426,6 +494,7 @@ function renderRoute() {
   if (v === 'library') renderLibrary();
   if (v === 'saved') renderSaved();
   if (v === 'home') renderHome();
+  if (v === 'session') renderSession();
 }
 document.querySelectorAll('[data-nav]').forEach(el => el.addEventListener('click', () => nav(el.dataset.nav)));
 window.addEventListener('hashchange', renderRoute);
@@ -786,7 +855,100 @@ document.querySelectorAll('[data-provider]').forEach(b =>
 );
 $('providerModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeProviderModal(); });
 
+/* SESSION (P3) — pathway as navigable set */
+function getSession() { return store.get('active_session', null); }
+function setSession(s) { store.set('active_session', s); updateMiniplayer(); }
+
+function sessionTracks(s) {
+  return [{ track: s.anchor, reasons: ['Starting point'] }].concat(s.pathway);
+}
+
+function startSession() {
+  if (!currentPathway) return;
+  setSession({ anchor: currentPathway.anchor, pathway: currentPathway.pathway, idx: 0, startedAt: new Date().toISOString() });
+  nav('session');
+  toast('Session started');
+}
+$('startSessionBtn').onclick = startSession;
+
+function sessionStep(delta) {
+  const s = getSession(); if (!s) return;
+  const total = sessionTracks(s).length;
+  const ni = s.idx + delta;
+  if (ni < 0 || ni >= total) return;
+  s.idx = ni;
+  setSession(s);
+  renderSession();
+}
+
+function endSession() {
+  store.set('active_session', null);
+  updateMiniplayer();
+  nav('home');
+  toast('Session ended');
+}
+
+function renderSession() {
+  const el = $('sessionContent');
+  const s = getSession();
+  if (!s) {
+    el.innerHTML = emptyState('♫', 'No active session', 'Generate a pathway in Search and hit "Start Session" to run it as a set.',
+      '<button class="btn btn-primary btn-sm" onclick="nav(\'search\')">Build a pathway</button>');
+    updateMiniplayer();
+    return;
+  }
+  const tracks = sessionTracks(s);
+  const cur = tracks[s.idx];
+  const t = cur.track;
+  const next = tracks[s.idx + 1];
+  const segs = tracks.map((_, i) =>
+    '<div class="sp-seg ' + (i < s.idx ? 'done' : i === s.idx ? 'current' : '') + '"></div>').join('');
+  el.innerHTML =
+    '<div class="card session-hero">' +
+      '<div class="session-pos">Track ' + (s.idx + 1) + ' of ' + tracks.length + '</div>' +
+      '<div class="session-art">♫</div>' +
+      '<div class="session-title">' + esc(t.title) + '</div>' +
+      '<div class="session-artist">' + esc(t.artist) + '</div>' +
+      '<div class="tc-meta">' + trackMeta(t) + '</div>' +
+      '<div class="tc-why" style="justify-content:center; max-width:420px; margin:12px auto 0;"><span>' +
+        (s.idx === 0 ? 'Starting point — your anchor' : 'Why this: ' + esc((cur.reasons || []).join(', '))) +
+      '</span></div>' +
+      '<div class="session-controls">' +
+        '<button class="sc-btn" onclick="sessionStep(-1)" ' + (s.idx === 0 ? 'disabled' : '') + '>⏮</button>' +
+        '<button class="sc-play play-btn" data-play-artist="' + esc(t.artist) + '" data-play-title="' + esc(t.title) + '">▶</button>' +
+        '<button class="sc-btn" onclick="sessionStep(1)" ' + (s.idx === tracks.length - 1 ? 'disabled' : '') + '>⏭</button>' +
+      '</div>' +
+      '<div class="session-progress">' + segs + '</div>' +
+    '</div>' +
+    (next ?
+      '<div class="label" style="margin-top:22px;">Up Next</div>' +
+      '<div class="track-card clickable" onclick="sessionStep(1)">' +
+        '<div style="min-width:0;">' +
+          '<div class="tc-name">' + esc(next.track.artist) + ' — ' + esc(next.track.title) + '</div>' +
+          '<div class="tc-meta">' + trackMeta(next.track) + '</div>' +
+          '<div class="tc-why"><span>' + esc((next.reasons || []).join(', ')) + '</span></div>' +
+        '</div><span class="badge">Next</span></div>'
+      : '<div class="empty" style="margin-top:22px;"><div class="e-icon">\ud83c\udfc1</div><h4>End of pathway</h4><p>The set is complete. Save it or build the next one.</p></div>') +
+    '<button class="btn btn-ghost btn-sm" style="width:100%; margin-top:18px;" onclick="endSession()">End Session</button>';
+  updateMiniplayer();
+}
+
+function updateMiniplayer() {
+  const s = getSession();
+  const mp = $('miniplayer');
+  const inSession = (location.hash || '').indexOf('session') !== -1;
+  if (!s || inSession) { mp.classList.remove('show'); return; }
+  const tracks = sessionTracks(s);
+  const t = tracks[s.idx].track;
+  $('mpName').textContent = t.artist + ' — ' + t.title;
+  $('mpPos').textContent = 'Session · track ' + (s.idx + 1) + ' of ' + tracks.length;
+  mp.classList.add('show');
+}
+$('mpNext').addEventListener('click', (e) => { e.stopPropagation(); sessionStep(1); const s = getSession(); if (s) toast('Next: track ' + (s.idx + 1)); });
+window.addEventListener('hashchange', updateMiniplayer);
+
 renderRoute();
+updateMiniplayer();
 </script>
 </body>
 </html>
