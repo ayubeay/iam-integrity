@@ -250,6 +250,24 @@ button { font-family:inherit; }
 .crate-title { font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
 .artist-group { margin-bottom:20px; }
 .row-gap { display:flex; gap:10px; }
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:70;
+  background:rgba(2,4,10,.66); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.modal-card {
+  background:var(--sk-card); border:1px solid var(--sk-border-bright);
+  border-radius:16px; box-shadow:var(--sk-card-shadow);
+  padding:24px; width:100%; max-width:340px;
+}
+.provider-opt {
+  width:100%; padding:13px 16px; border-radius:12px; text-align:left;
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  color:var(--sk-text); font-size:14.5px; font-weight:600; cursor:pointer;
+  transition:border-color .2s; min-height:48px;
+}
+.provider-opt:hover { border-color:var(--sk-accent); }
+.provider-opt.active { border-color:var(--sk-accent); box-shadow:var(--sk-glow-soft); }
 @media (prefers-reduced-motion: reduce) { .agent-orb-dot, .spinner { animation:none; } }
 </style>
 </head>
@@ -278,6 +296,7 @@ button { font-family:inherit; }
       <button class="session-toggle" data-toggle-theme id="mobileTheme">
         <span data-theme-icon>🌙</span><span data-theme-label>Night Session</span>
       </button>
+      <button class="icon-btn" onclick="openProviderModal()" title="Playback source" style="flex-shrink:0;">⚙</button>
     </div>
 
     <!-- HOME -->
@@ -348,6 +367,18 @@ button { font-family:inherit; }
   <button class="bn-item" data-nav="saved"><span class="ni">♫</span>Pathways</button>
 </nav>
 
+<div class="modal-overlay" id="providerModal">
+  <div class="modal-card">
+    <div style="font-family:'Space Grotesk'; font-weight:600; font-size:17px; margin-bottom:6px;">Playback source</div>
+    <div style="color:var(--sk-text-2); font-size:13px; margin-bottom:18px;">Sonic decides what plays next. You choose where it plays. Change anytime with ⚙.</div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="provider-opt" data-provider="youtube">▶ YouTube</button>
+      <button class="provider-opt" data-provider="spotify">▶ Spotify</button>
+      <button class="provider-opt" data-provider="apple">▶ Apple Music</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:14px;" onclick="closeProviderModal()">Cancel</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -404,14 +435,33 @@ function trackMeta(t) {
   const bits = [t.genre, t.energy ? t.energy + ' energy' : null, t.bpm_range ? t.bpm_range + ' BPM' : null, t.region, t.set_position].filter(Boolean);
   return bits.map(esc).join(' · ');
 }
+const PROVIDERS = {
+  youtube: { name: 'YouTube',     url: (a,t) => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(a + ' ' + t) },
+  spotify: { name: 'Spotify',     url: (a,t) => 'https://open.spotify.com/search/' + encodeURIComponent(a + ' ' + t) },
+  apple:   { name: 'Apple Music', url: (a,t) => 'https://music.apple.com/search?term=' + encodeURIComponent(a + ' ' + t) }
+};
+let pendingPlay = null;
+function playTrack(artist, title) {
+  const p = store.get('provider', null);
+  if (!p || !PROVIDERS[p]) { pendingPlay = { artist: artist, title: title }; openProviderModal(); return; }
+  window.open(PROVIDERS[p].url(artist, title), '_blank', 'noopener');
+}
+function openProviderModal() {
+  const cur = store.get('provider', null);
+  document.querySelectorAll('[data-provider]').forEach(b =>
+    b.classList.toggle('active', b.dataset.provider === cur));
+  $('providerModal').style.display = 'flex';
+}
+function closeProviderModal() { $('providerModal').style.display = 'none'; pendingPlay = null; }
 function listenLinks(artist, title) {
-  const q = encodeURIComponent(artist + ' ' + title);
   return '<div class="listen-links">' +
-    '<a class="listen-link" href="https://www.youtube.com/results?search_query=' + q + '" target="_blank" rel="noopener">▶ YouTube</a>' +
-    '<a class="listen-link" href="https://open.spotify.com/search/' + q + '" target="_blank" rel="noopener">▶ Spotify</a>' +
-    '<a class="listen-link" href="https://music.apple.com/search?term=' + q + '" target="_blank" rel="noopener">▶ Apple Music</a>' +
+    '<button class="listen-link play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '">▶ Play</button>' +
   '</div>';
 }
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.play-btn');
+  if (btn) { e.stopPropagation(); playTrack(btn.dataset.playArtist, btn.dataset.playTitle); }
+});
 const trackKey = (t) => (t.artist + '::' + t.title).toLowerCase();
 
 /* library actions */
@@ -725,6 +775,16 @@ function renderSaved() {
     el.appendChild(c);
   });
 }
+
+document.querySelectorAll('[data-provider]').forEach(b =>
+  b.addEventListener('click', () => {
+    store.set('provider', b.dataset.provider);
+    $('providerModal').style.display = 'none';
+    toast('Playing via ' + PROVIDERS[b.dataset.provider].name);
+    if (pendingPlay) { playTrack(pendingPlay.artist, pendingPlay.title); pendingPlay = null; }
+  })
+);
+$('providerModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeProviderModal(); });
 
 renderRoute();
 </script>
