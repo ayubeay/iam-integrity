@@ -37,10 +37,11 @@ Last full audit: **2026-07-15** (this file's baseline).
   volume); Railway deploy/HTTP logs
 - **Consumers:** poi-engine (production). Future: Momentum Sniper (OHLCV),
   HELIX-JANUS (only after deliberate equities extension), Backpack (dormant)
-- **Next milestone:** first OHLCV consumer integration (Momentum Sniper
-  evaluation; poi-engine synthetic-candle replacement)
-- **Verified:** 2026-07-16 (OHLCV endpoint built + tested; live verification
-  pending deploy)
+- **Next milestone:** first OHLCV consumer integration (poi-engine
+  synthetic-candle replacement, then Momentum Sniper evaluation)
+- **Verified:** 2026-07-16 (OHLCV live-verified in production: GeckoTerminal
+  provider, pool resolution, real 4h candles served, cache hit confirmed at
+  0ms on repeat, receipts + telemetry active)
 
 ## 🟢 poi-engine — production
 
