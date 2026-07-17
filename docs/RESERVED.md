@@ -495,3 +495,43 @@ One-line index; each file carries its own activation doctrine:
 
 Staging additions same session (reserves-2026-07-16.md items 14-15):
 Founder Attention & Execution Allocation Layer; AI Capability Registry.
+
+---
+
+## Jul 17 canonical batch — doctrine + placement reserves (index)
+
+Eight formal documents promoted directly to canonical:
+
+- **Hidden Asset Discovery Engine** — docs/reserve/hidden-asset-discovery-engine.md.
+  Zircon capability: secondary outputs (waste heat, idle compute, empty
+  routes, unused data) surfaced as economic opportunities before new
+  investment. Includes HelixHash Router lineage cross-reference.
+- **Recalculation Doctrine** — docs/reserve/recalculation-doctrine.md.
+  Constitutional principle: temporary route failure ≠ destination failure;
+  recalculate, don't loop. Governs OROS/KONIGO/HelixAtlas/VERITY/IAM/DRIFT.
+- **Adaptive Execution Layer** — docs/reserve/adaptive-execution-layer.md.
+  Stability is the default, adaptation is earned: evidence-gated, governed,
+  receipted behavior change. Four states: stable / observation / candidate
+  / approved.
+- **Proof Before Promotion Doctrine** — docs/reserve/proof-before-promotion.md.
+  Evidence ladder (idea -> hypothesis -> prototype -> benchmark ->
+  independent verification -> production -> track record); claims inherit
+  the highest COMPLETED stage. "Show me the receipt."
+- **API Trust & Exposure Model** — docs/reserve/api-trust-exposure-model.md.
+  APIs as execution boundaries; governance separated from transport; future
+  classes: Trusted / Agent / Receipt / Policy / Continuity APIs.
+- **Capital Admissibility Framework** — docs/reserve/capital-admissibility-framework.md.
+  Capital as governed execution resource; milestone -> verification ->
+  release -> receipt; execution precedes valuation.
+- **Execution Placement Engine** — docs/reserve/execution-placement-engine.md.
+  "Execution follows admissibility" generalizing "compute follows energy";
+  placement as multidimensional mission optimization.
+- **Regime Evidence Engine** — docs/reserve/regime-evidence-engine.md.
+  Diagnose WHY performance changed (regime shift vs edge decay vs execution
+  degradation vs data anomaly); generalizes MomentumSniper's manual
+  criterion discipline.
+
+Staging (reserves-2026-07-17.md): HelixHash Router reinforcement +
+history-recovery action; Sonic Discovery Confidence Engine (routed to
+SoundKeep reserved architecture); doctrine-trio linkage note (candidate
+consolidated Execution Doctrine under LITMUS).
