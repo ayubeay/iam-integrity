@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#04060C">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>SoundKeep — Your AI Music Pathway Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -382,7 +385,7 @@ footer { border-top:1px solid var(--sk-border); background:var(--sk-bg-raised); 
       <button class="session-toggle" id="sessionToggle" aria-label="Switch session theme">
         <span id="sessionIcon">🌙</span><span id="sessionLabel">Night Session</span>
       </button>
-      <a href="#demo" class="btn btn-primary btn-sm">Ask Sonic</a>
+      <a href="/app" class="btn btn-primary btn-sm">Open App</a>
     </div>
   </div>
 </nav>
@@ -580,8 +583,8 @@ footer { border-top:1px solid var(--sk-border); background:var(--sk-bg-raised); 
         <a href="#how">How It Works</a>
         <a href="#demo">Try Demo</a>
         <a href="#">GitHub</a>
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -737,5 +740,12 @@ $('askSonicBtn').addEventListener('click', doSearch);
 $('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
 </script>
 
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(function(r){ console.log('SW registered, scope:', r.scope); })
+    .catch(function(e){ console.warn('SW registration failed:', e); });
+}
+</script>
 </body>
 </html>
