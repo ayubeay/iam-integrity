@@ -321,7 +321,61 @@ button { font-family:inherit; }
 .sp-seg { flex:1; height:4px; border-radius:2px; background:var(--sk-card-2); border:1px solid var(--sk-border); }
 .sp-seg.done { background:var(--sk-accent-deep); border-color:var(--sk-accent-deep); }
 .sp-seg.current { background:linear-gradient(90deg, var(--sk-accent-deep), var(--sk-accent-bright)); border-color:var(--sk-accent); }
-@media (prefers-reduced-motion: reduce) { .agent-orb-dot, .spinner { animation:none; } }
+/* ── P3.5 home identity surfaces ── */
+.home-grid { display:grid; grid-template-columns:1.7fr 1fr; gap:16px; margin-bottom:20px; }
+@media (max-width:860px) { .home-grid { grid-template-columns:1fr; } }
+.drop-hero {
+  position:relative; overflow:hidden; border-radius:var(--sk-radius);
+  border:1px solid var(--sk-border-bright);
+  background:
+    linear-gradient(100deg, rgba(6,10,24,.96) 0%, rgba(6,10,24,.86) 34%, rgba(6,10,24,.30) 62%, rgba(6,10,24,.08) 100%),
+    url('/img/hero-drop.jpg') right center / cover no-repeat,
+    #0A1226;
+  box-shadow:var(--sk-card-shadow);
+  padding:30px 26px; min-height:240px;
+  display:flex; flex-direction:column; justify-content:center;
+}
+[data-theme="day"] .drop-hero {
+  background:
+    linear-gradient(100deg, rgba(8,14,32,.94) 0%, rgba(8,14,32,.82) 34%, rgba(8,14,32,.28) 62%, rgba(8,14,32,.06) 100%),
+    url('/img/hero-drop.jpg') right center / cover no-repeat,
+    #0A1226;
+}
+[data-theme="day"] .drop-hero .drop-title, [data-theme="day"] .drop-hero .drop-desc { color:#F2F6FF; }
+[data-theme="day"] .drop-hero .drop-desc { color:#C9D8F2; }
+.drop-label {
+  color:var(--sk-accent-bright); font-size:11px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:12px;
+}
+[data-theme="day"] .drop-label { color:var(--sk-accent-deep); }
+.drop-title { font-family:'Space Grotesk'; font-weight:700; font-size:clamp(22px,3.4vw,30px); line-height:1.15; margin-bottom:10px; max-width:300px; color:#F7FAFF; }
+.drop-desc { color:#C9D8F2; font-size:13.5px; line-height:1.65; max-width:290px; margin-bottom:20px; }
+.agent-card { display:flex; flex-direction:column; gap:14px; }
+.agent-orb-lg {
+  position:relative; width:64px; height:64px; border-radius:50%; flex-shrink:0;
+  border:3px solid var(--sk-accent-bright);
+  background:radial-gradient(circle, rgba(46,124,246,.10), transparent 65%);
+  box-shadow:
+    0 0 18px rgba(83,168,255,.55),
+    0 0 36px rgba(46,124,246,.30),
+    inset 0 0 16px rgba(83,168,255,.35);
+  animation:orb-pulse 3.2s ease-in-out infinite;
+}
+.agent-orb-lg::after {
+  content:''; position:absolute; inset:9px; border-radius:50%;
+  border:1.5px solid rgba(83,168,255,.35);
+  box-shadow:inset 0 0 10px rgba(46,124,246,.25);
+}
+@keyframes orb-pulse {
+  0%,100% { box-shadow:0 0 18px rgba(83,168,255,.55), 0 0 36px rgba(46,124,246,.30), inset 0 0 16px rgba(83,168,255,.35); }
+  50%     { box-shadow:0 0 24px rgba(83,168,255,.7),  0 0 48px rgba(46,124,246,.42), inset 0 0 20px rgba(83,168,255,.45); }
+}
+.next-rec {
+  background:var(--sk-card-2); border:1px solid var(--sk-border);
+  border-radius:12px; padding:13px 14px;
+}
+.next-rec .label { margin-bottom:8px; }
+@media (prefers-reduced-motion: reduce) { .agent-orb-dot, .spinner, .agent-orb-lg { animation:none; } }
 </style>
 </head>
 <body>
@@ -354,19 +408,34 @@ button { font-family:inherit; }
 
     <!-- HOME -->
     <section class="view" id="view-home">
-      <div class="card" style="margin-bottom:18px;">
-        <div class="agent-row">
-          <div class="agent-orb"><span class="agent-orb-dot"></span></div>
-          <div>
-            <div style="font-family:'Space Grotesk'; font-weight:600; font-size:16px; margin-bottom:4px;">Sonic — Your Music Agent</div>
-            <div style="color:var(--sk-text-2); font-size:13.5px;">Tell me an artist or genre. I'll map your next move.</div>
-          </div>
-        </div>
-        <div class="row-gap" style="margin-top:18px;">
-          <input class="input" id="homeSearch" placeholder="e.g. Wizkid, dancehall, Burna Boy…">
+      <div class="card" style="margin-bottom:16px; padding:16px 18px;">
+        <div class="row-gap">
+          <input class="input" id="homeSearch" placeholder="Search tracks, artists, genres…">
           <button class="btn btn-primary" id="homeGo">Ask Sonic</button>
         </div>
       </div>
+
+      <div class="home-grid">
+        <div class="drop-hero">
+          <div class="drop-label">Early Access · Sonic Curated</div>
+          <div class="drop-title" id="dropTitle"></div>
+          <div class="drop-desc" id="dropDesc"></div>
+          <div><button class="btn btn-primary" id="exploreDropBtn">Explore Drop</button></div>
+        </div>
+
+        <div class="card agent-card">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="agent-orb-lg"></div>
+            <div>
+              <div style="font-family:'Space Grotesk'; font-weight:600; font-size:16px;">Sonic</div>
+              <div style="color:var(--sk-text-2); font-size:12.5px; line-height:1.5;">Your AI music agent scouting the best transitions for you.</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="askSonicBtn2" style="width:100%;">Ask Sonic</button>
+          <div class="next-rec" id="nextRec"></div>
+        </div>
+      </div>
+
       <div class="label">Recent Pathway</div>
       <div id="homeRecent"></div>
     </section>
@@ -661,8 +730,56 @@ $('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSea
 $('homeGo').onclick = () => doSearch($('homeSearch').value);
 $('homeSearch').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch($('homeSearch').value); });
 
+/* HOME — identity surfaces */
+const DROPS = [
+  { title: 'Island Heat Vol. 1',
+    desc: 'Dancehall into Afrobeats and back — regional bridges that never break the energy.',
+    query: 'Vybz Kartel' },
+  { title: 'Underground Sounds Vol. 1',
+    desc: 'A Sonic-curated route through rising Afrobeats, Amapiano, and Alté — mapped as one continuous set.',
+    query: 'Asake' },
+  { title: 'Golden Era Bridges',
+    desc: 'Hip-Hop into R&B, 2000s into now — era-coherent transitions Sonic can explain.',
+    query: 'Drake' }
+];
+// Underground Sounds Vol. 7 (mockup) is RESERVED for the upgrade tier — see docs/soundkeep-reserved-architecture.md
+function currentDrop() { return DROPS[0]; }
+function nextRecommendation() {
+  const s = getSession();
+  if (s) {
+    const tr = sessionTracks(s);
+    if (s.idx + 1 < tr.length) return { t: tr[s.idx + 1].track, label: 'Up next in your session' };
+  }
+  const r = store.get('recent_pathway', null);
+  if (r && r.pathway && r.pathway.length) return { t: r.pathway[0].track, label: 'From your recent pathway' };
+  return null;
+}
+function renderAgentCard() {
+  const el = $('nextRec');
+  const rec = nextRecommendation();
+  if (!rec) {
+    el.innerHTML = '<div class="label">Next Recommendation</div>' +
+      '<div style="color:var(--sk-text-3); font-size:12.5px; line-height:1.55;">Run a search and Sonic starts scouting your next move.</div>';
+    return;
+  }
+  el.innerHTML = '<div class="label">Next Recommendation</div>' +
+    '<div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">' +
+      '<div style="min-width:0;">' +
+        '<div class="tc-name" style="font-size:13.5px;">' + esc(rec.t.artist) + ' — ' + esc(rec.t.title) + '</div>' +
+        '<div class="tc-meta" style="font-size:11.5px;">' + esc(rec.label) + '</div>' +
+      '</div>' +
+      '<button class="mp-next play-btn" data-play-artist="' + esc(rec.t.artist) + '" data-play-title="' + esc(rec.t.title) + '" title="Play">▶</button>' +
+    '</div>';
+}
+
 /* HOME */
 function renderHome() {
+  const drop = currentDrop();
+  $('dropTitle').textContent = drop.title;
+  $('dropDesc').textContent = drop.desc;
+  $('exploreDropBtn').onclick = () => doSearch(drop.query);
+  $('askSonicBtn2').onclick = () => { nav('search'); setTimeout(() => $('searchInput').focus(), 60); };
+  renderAgentCard();
   const r = store.get('recent_pathway', null);
   const el = $('homeRecent');
   if (!r || !r.anchor) {
