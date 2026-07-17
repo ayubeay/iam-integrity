@@ -380,6 +380,30 @@ button { font-family:inherit; }
 .ct-btn { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; background:var(--sk-bg-raised); border:1px solid var(--sk-border); color:var(--sk-text-2); font-size:12px; cursor:pointer; transition:border-color .2s, color .2s; }
 .ct-btn:hover { border-color:var(--sk-accent); color:var(--sk-text); }
 .ct-btn:disabled { opacity:.3; cursor:default; }
+.trans-chip {
+  display:flex; align-items:center; gap:10px; margin:2px 0 10px 10px;
+  padding:7px 12px; border-radius:10px; cursor:pointer;
+  background:transparent; border:1px dashed var(--sk-border);
+  font-size:12px; font-weight:600; color:var(--sk-text-2);
+  transition:border-color .2s;
+}
+.trans-chip:hover { border-color:var(--sk-border-bright); }
+.trans-pct { font-family:'Space Grotesk'; font-weight:700; font-size:13px; }
+.trans-good .trans-pct { color:var(--sk-positive); }
+.trans-mid .trans-pct { color:#F5B94A; }
+.trans-low .trans-pct { color:#FF8A80; }
+.trans-arrow { color:var(--sk-text-3); }
+.trans-detail {
+  display:none; margin:-4px 0 10px 10px; padding:13px 15px;
+  background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px;
+}
+.trans-detail.open { display:block; }
+.td-row { display:flex; gap:8px; font-size:12.5px; padding:3px 0; color:var(--sk-text-2); }
+.td-row.ok::before { content:'\2713'; color:var(--sk-positive); font-weight:700; }
+.td-row.warn::before { content:'\26a0'; color:#F5B94A; }
+.health-badge { display:inline-flex; align-items:center; gap:6px; }
+.energy-bars { display:inline-flex; align-items:flex-end; gap:2px; height:14px; margin-left:8px; }
+.energy-bars span { width:5px; border-radius:1.5px; background:var(--sk-accent); opacity:.85; }
 .agent-hero-retired {
   position:relative; z-index:2; margin:-52px 14px 0;
   background:
@@ -1087,6 +1111,72 @@ function renderLibrary() {
   renderSavedInto(el);
 }
 
+/* ── Sonic Transition Intelligence (metadata-only, fully explainable) ── */
+const GENRE_BRIDGES = { 'afrobeats|dancehall':1, 'afrobeats|amapiano':1, 'afrobeats|afropop':1, 'hip-hop|r&b':1, 'dancehall|soca':1, 'dancehall|reggae':1, 'amapiano|afro house':1, 'r&b|afrobeats':1 };
+const ENERGY_LVL = { low:1, medium:2, high:3 };
+const SETPOS_ORD = { 'warm-up':1, build:2, peak:3, 'wind-down':4 };
+
+function parseBpm(r) {
+  if (!r) return null;
+  const m = String(r).match(/(\d+)\s*-\s*(\d+)/);
+  if (m) return [parseInt(m[1]), parseInt(m[2])];
+  const s = parseInt(r); return isNaN(s) ? null : [s, s];
+}
+function genreKey(a, b) { return [String(a).toLowerCase(), String(b).toLowerCase()].sort().join('|'); }
+
+function scoreTransition(a, b) {
+  let pts = 0, max = 0; const oks = [], warns = [];
+  // BPM (25)
+  max += 25;
+  const ba = parseBpm(a.bpm_range), bb = parseBpm(b.bpm_range);
+  if (ba && bb) {
+    if (ba[0] <= bb[1] && bb[0] <= ba[1]) { pts += 25; oks.push('BPM compatible (' + a.bpm_range + ' \u2194 ' + b.bpm_range + ')'); }
+    else if (Math.min(Math.abs(ba[1]-bb[0]), Math.abs(bb[1]-ba[0])) <= 10) { pts += 14; oks.push('BPM stretch \u2014 pitch ride needed'); }
+    else warns.push('Tempo mismatch (' + a.bpm_range + ' vs ' + b.bpm_range + ')');
+  } else { max -= 25; }
+  // Genre (20)
+  max += 20;
+  if (a.genre && b.genre) {
+    if (a.genre === b.genre) { pts += 20; oks.push('Same genre (' + a.genre + ')'); }
+    else if (GENRE_BRIDGES[genreKey(a.genre, b.genre)]) { pts += 15; oks.push('Natural genre bridge (' + a.genre + ' \u2192 ' + b.genre + ')'); }
+    else { pts += 4; warns.push('Genre jump (' + a.genre + ' \u2192 ' + b.genre + ')'); }
+  } else { max -= 20; }
+  // Energy (20)
+  max += 20;
+  const ea = ENERGY_LVL[a.energy], eb = ENERGY_LVL[b.energy];
+  if (ea && eb) {
+    const d = eb - ea;
+    if (d === 1) { pts += 20; oks.push('Energy builds (' + a.energy + ' \u2192 ' + b.energy + ')'); }
+    else if (d === 0) { pts += 17; oks.push('Energy holds (' + a.energy + ')'); }
+    else if (d === -1) { pts += 10; oks.push('Controlled wind-down'); }
+    else if (d >= 2) { pts += 8; warns.push('Sharp energy spike'); }
+    else warns.push('Energy drops too quickly (' + a.energy + ' \u2192 ' + b.energy + ')');
+  } else { max -= 20; }
+  // Region (12)
+  max += 12;
+  if (a.region && b.region) {
+    if (a.region === b.region) { pts += 12; oks.push('Same region (' + a.region + ')'); }
+    else { pts += 7; oks.push('Regional bridge (' + a.region + ' \u2192 ' + b.region + ')'); }
+  } else { max -= 12; }
+  // Era (11)
+  max += 11;
+  if (a.era && b.era) {
+    if (a.era === b.era) { pts += 11; oks.push('Same era (' + a.era + ')'); }
+    else { pts += 5; warns.push('Era jump (' + a.era + ' \u2192 ' + b.era + ')'); }
+  } else { max -= 11; }
+  // Set position (12)
+  max += 12;
+  const sa = SETPOS_ORD[a.set_position], sb = SETPOS_ORD[b.set_position];
+  if (sa && sb) {
+    if (sb === sa || sb === sa + 1) { pts += 12; oks.push('Set position flows (' + a.set_position + ' \u2192 ' + b.set_position + ')'); }
+    else if (sb > sa) { pts += 6; warns.push('Skips a set stage'); }
+    else warns.push('Set position moves backward (' + a.set_position + ' \u2192 ' + b.set_position + ')');
+  } else { max -= 12; }
+
+  const pct = max > 0 ? Math.round(100 * pts / max) : null;
+  return { pct: pct, oks: oks, warns: warns };
+}
+
 function renderCratesInto(el) {
   const crates = store.get('crates', []);
   let html = '<div class="row-gap" style="margin-bottom:16px;">' +
@@ -1121,15 +1211,24 @@ function renderCratesInto(el) {
     /* energy summary from real track metadata */
     const energies = crate.tracks.map(t => t.energy).filter(Boolean);
     const bpms = crate.tracks.map(t => t.bpm_range).filter(Boolean);
+    const transScores = [];
+    for (let i = 0; i < crate.tracks.length - 1; i++) {
+      const s = scoreTransition(crate.tracks[i], crate.tracks[i+1]);
+      if (s.pct !== null) transScores.push(s.pct);
+    }
+    const health = transScores.length ? Math.round(transScores.reduce((a,b) => a+b, 0) / transScores.length) : null;
     const meta = [
       crate.tracks.length + ' track' + (crate.tracks.length === 1 ? '' : 's'),
       bpms.length ? (bpms[0] === bpms[bpms.length-1] ? bpms[0] : bpms[0].split('-')[0] + '-' + bpms[bpms.length-1].split('-').pop()) + ' BPM' : null,
-      energies.length ? energies[0] + ' \u2192 ' + energies[energies.length-1] + ' energy' : null
+      health !== null ? 'transition health ' + health + '%' : null
     ].filter(Boolean).join(' \u00b7 ');
+    const energyBars = energies.length >= 2
+      ? '<span class="energy-bars">' + energies.map(e => '<span style="height:' + ((ENERGY_LVL[e] || 1) * 4 + 2) + 'px"></span>').join('') + '</span>'
+      : '';
 
     box.innerHTML = '<div class="crate-head">' +
         '<div><div class="crate-title">' + esc(crate.name) + '</div>' +
-        '<div class="tc-meta" style="margin-top:3px;">' + meta + '</div></div>' +
+        '<div class="tc-meta" style="margin-top:3px;">' + meta + energyBars + '</div></div>' +
         '<div style="display:flex; gap:6px; align-items:center;">' +
           '<button class="icon-btn" data-renamecrate title="Rename">\u270e</button>' +
           '<button class="icon-btn" data-delcrate title="Delete crate">\u2715</button>' +
@@ -1177,6 +1276,33 @@ function renderCratesInto(el) {
           const c = cs.find(x => x.id === crate.id); if (c) c.tracks.splice(ti, 1);
         });
         wrap.appendChild(row);
+
+        /* Sonic transition intelligence between this track and the next */
+        if (ti < crate.tracks.length - 1) {
+          const nxt = crate.tracks[ti + 1];
+          const s = scoreTransition(t, nxt);
+          if (s.pct !== null) {
+            const tier = s.pct >= 75 ? 'trans-good' : s.pct >= 50 ? 'trans-mid' : 'trans-low';
+            const chip = document.createElement('div');
+            chip.className = 'trans-chip ' + tier;
+            chip.innerHTML = '<span class="trans-arrow">\u2193</span>' +
+              '<span class="trans-pct">' + s.pct + '%</span>' +
+              '<span>' + esc(s.oks.slice(0, 2).map(o => o.split(' (')[0]).join(' \u00b7 ') || 'Review this transition') + '</span>' +
+              '<span style="margin-left:auto; color:var(--sk-text-3);">Why?</span>';
+            const detail = document.createElement('div');
+            detail.className = 'trans-detail';
+            detail.innerHTML =
+              s.oks.map(o => '<div class="td-row ok">' + esc(o) + '</div>').join('') +
+              s.warns.map(w => '<div class="td-row warn">' + esc(w) + '</div>').join('') +
+              (s.pct < 60
+                ? '<button class="btn btn-ghost btn-sm" data-q="' + esc(t.artist) + '" style="margin-top:10px;">Map a bridge with Sonic</button>' +
+                  '<div style="color:var(--sk-text-3); font-size:11px; margin-top:6px;">Sonic generates a pathway from ' + esc(t.artist) + ' \u2014 pick a bridge track and slot it here.</div>'
+                : '');
+            chip.onclick = () => detail.classList.toggle('open');
+            wrap.appendChild(chip);
+            wrap.appendChild(detail);
+          }
+        }
       });
     }
 
