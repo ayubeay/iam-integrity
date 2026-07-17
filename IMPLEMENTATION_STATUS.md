@@ -39,9 +39,11 @@ Last full audit: **2026-07-15** (this file's baseline).
   HELIX-JANUS (only after deliberate equities extension), Backpack (dormant)
 - **Next milestone:** first OHLCV consumer integration (poi-engine
   synthetic-candle replacement, then Momentum Sniper evaluation)
-- **Verified:** 2026-07-16 (OHLCV live-verified in production: GeckoTerminal
-  provider, pool resolution, real 4h candles served, cache hit confirmed at
-  0ms on repeat, receipts + telemetry active)
+- **Verified:** 2026-07-17 (19h production evidence: 2,400+ requests across
+  3 data types, cache hit rates 71-92%; survived a real GeckoTerminal
+  429 incident — circuit breaker opened, 46 skips, 56 exhausted served —
+  while consumer saw zero fallbacks. Failed Railway build d82e2d59 was the
+  docs-only BCMS commit during the GitHub outage; production runs b2da2f1)
 
 ## 🟢 poi-engine — production
 
@@ -61,8 +63,12 @@ Last full audit: **2026-07-15** (this file's baseline).
 - **Data/logs:** Railway logs; watchlist.json in repo
 - **Provider relationships:** consumes api-connect (price); CoinGecko
   (OHLCV, direct); Helius (swap metrics, direct)
-- **Next milestone:** consume api-connect OHLCV when available
-- **Verified:** 2026-07-15 (live probes, cross-verified telemetry)
+- **Next milestone:** swap-metrics mediation via api-connect (poller Helius
+  429 rate measured at 99.6% — 515/517 fetches — on 2026-07-17)
+- **Verified:** 2026-07-17 (19h post-OHLCV evidence: 796/796/796
+  price/5m/4h api-connect successes, ZERO fallbacks, CoinGecko and
+  synthetic candles never invoked; rode out a GeckoTerminal 429 incident
+  invisibly on cache)
 
 ## 🟢 Momentum Sniper — production (paper doctrine)
 
