@@ -457,3 +457,41 @@ justifies continuous modeling.
 **Why deferred:** Extends unbuilt HelixShield infrastructure. The doctrine
 (security as observable, receipt-driven, simulation-backed) is captured;
 implementation waits for the substrate.
+
+---
+
+## Jul 16 evening canonical batch — protocol + product reserves (index)
+
+Seven complete formal reserve documents promoted directly to canonical.
+One-line index; each file carries its own activation doctrine:
+
+- **AI Internet Protocol (AIP)** — docs/reserve/ai-internet-protocol.md.
+  Protocol-layer research: identity, discovery, trust negotiation,
+  receipts, reputation, settlement for AI-to-AI interaction. The missing
+  question after DNS/OAuth/OpenAPI: "can I trust this autonomous system to
+  act on my behalf?" HELIX may implement, must not define.
+- **Agent DNS / AI Discovery Layer** — docs/reserve/agent-dns-discovery-layer.md.
+  agent.manifest.json + discovery records + AI passports + domain
+  reputation, atop existing DNS. One component of AIP.
+- **Continuous Security Receipts (CSR)** — docs/reserve/continuous-security-receipts.md.
+  Every security action (human or AI) produces signed receipts; continuous
+  compliance over periodic assertion. Sibling of the Adversarial Security
+  Graph reserve.
+- **HumanOS** — docs/reserve/humanos-personal-operating-system.md.
+  INDEPENDENT long-term product: person as platform, identity vault,
+  permission ledger, consent center, AI workforce, reputation passport.
+  Optional HELIX integration; never a HELIX module.
+- **HANOI Planner** — docs/reserve/hanoi-planner.md. Constraint-aware
+  recursive execution planning inside vLOID/OROS: minimum VALID path,
+  temporary-state doctrine, critical-transition protection, planning +
+  execution receipts, failure as state transition. Activates when OROS
+  needs real multi-step autonomous planning.
+- **Autonomous Connectivity Exchange (ACE)** — docs/reserve/autonomous-connectivity-exchange.md.
+  Connectivity as programmable execution marketplace above KONIGO Connect:
+  execution contracts, continuous provider scoring, connectivity receipts.
+- **Future Rights Exchange** — docs/reserve/future-rights-exchange.md.
+  Programmable future ownership infrastructure (vesting first vertical):
+  future-rights registry, vesting intelligence, receipt-native settlement.
+
+Staging additions same session (reserves-2026-07-16.md items 14-15):
+Founder Attention & Execution Allocation Layer; AI Capability Registry.
