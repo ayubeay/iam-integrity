@@ -371,6 +371,15 @@ button { font-family:inherit; }
 [data-theme="day"] .stat-num { color:var(--sk-accent-deep); }
 .stat-name { color:var(--sk-text-2); font-size:12px; margin-top:4px; }
 .rp-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px; padding:11px 14px; margin-bottom:9px; }
+.crate-track { display:flex; align-items:center; gap:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px; padding:10px 12px; margin-bottom:8px; }
+.ct-pos { font-family:'Space Grotesk'; font-weight:700; font-size:12px; color:var(--sk-accent-bright); width:22px; flex-shrink:0; }
+[data-theme="day"] .ct-pos { color:var(--sk-accent-deep); }
+.ct-main { min-width:0; flex:1; }
+.ct-note { color:var(--sk-text-3); font-size:11.5px; font-style:italic; margin-top:4px; }
+.ct-btns { display:flex; gap:5px; flex-shrink:0; }
+.ct-btn { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; background:var(--sk-bg-raised); border:1px solid var(--sk-border); color:var(--sk-text-2); font-size:12px; cursor:pointer; transition:border-color .2s, color .2s; }
+.ct-btn:hover { border-color:var(--sk-accent); color:var(--sk-text); }
+.ct-btn:disabled { opacity:.3; cursor:default; }
 .agent-hero-retired {
   position:relative; z-index:2; margin:-52px 14px 0;
   background:
@@ -1081,59 +1090,115 @@ function renderLibrary() {
 function renderCratesInto(el) {
   const crates = store.get('crates', []);
   let html = '<div class="row-gap" style="margin-bottom:16px;">' +
-    '<input class="input" id="newCrateName" placeholder="New crate name (e.g. Warm-up, Peak Hour)…">' +
+    '<input class="input" id="newCrateName" placeholder="New crate name (e.g. Warm-up, Peak Hour, Wedding Set)\u2026">' +
     '<button class="btn btn-primary" id="newCrateBtn">Create</button>' +
   '</div>';
   if (!crates.length) {
-    html += emptyState('▦', 'No crates yet', 'Crates are how DJs organize sets — warm-up, build, peak. Create one, then add tracks from Library → Tracks.');
+    html += emptyState('\u25a6', 'No crates yet', 'Crates are how DJs organize sets \u2014 warm-up, build, peak. Create one, then add tracks from Library \u2192 Tracks.');
   }
   el.innerHTML = html;
   $('newCrateBtn').onclick = () => {
     const name = $('newCrateName').value.trim();
     if (!name) return;
     const cs = store.get('crates', []);
-    cs.unshift({ id: Date.now().toString(36), name: name, tracks: [] });
+    cs.unshift({ id: Date.now().toString(36), name: name, tracks: [], notes: '' });
     store.set('crates', cs);
     toast('Crate created');
     renderCratesInto(el);
   };
+
+  function mutate(fn) {
+    const cs = store.get('crates', []);
+    fn(cs);
+    store.set('crates', cs);
+    renderCratesInto(el);
+  }
+
   crates.forEach(crate => {
     const box = document.createElement('div');
     box.className = 'card'; box.style.marginBottom = '14px';
+
+    /* energy summary from real track metadata */
+    const energies = crate.tracks.map(t => t.energy).filter(Boolean);
+    const bpms = crate.tracks.map(t => t.bpm_range).filter(Boolean);
+    const meta = [
+      crate.tracks.length + ' track' + (crate.tracks.length === 1 ? '' : 's'),
+      bpms.length ? (bpms[0] === bpms[bpms.length-1] ? bpms[0] : bpms[0].split('-')[0] + '-' + bpms[bpms.length-1].split('-').pop()) + ' BPM' : null,
+      energies.length ? energies[0] + ' \u2192 ' + energies[energies.length-1] + ' energy' : null
+    ].filter(Boolean).join(' \u00b7 ');
+
     box.innerHTML = '<div class="crate-head">' +
-        '<div class="crate-title">' + esc(crate.name) + '</div>' +
-        '<div style="display:flex; gap:8px; align-items:center;">' +
-          '<span class="badge">' + crate.tracks.length + ' tracks</span>' +
-          '<button class="icon-btn" data-delcrate title="Delete crate">✕</button>' +
+        '<div><div class="crate-title">' + esc(crate.name) + '</div>' +
+        '<div class="tc-meta" style="margin-top:3px;">' + meta + '</div></div>' +
+        '<div style="display:flex; gap:6px; align-items:center;">' +
+          '<button class="icon-btn" data-renamecrate title="Rename">\u270e</button>' +
+          '<button class="icon-btn" data-delcrate title="Delete crate">\u2715</button>' +
         '</div>' +
-      '</div><div data-cratetracks></div>';
+      '</div>' +
+      (crate.notes ? '<div class="ct-note" style="margin:-4px 0 10px;">' + esc(crate.notes) + '</div>' : '') +
+      '<div data-cratetracks></div>' +
+      '<button class="btn btn-ghost btn-sm" data-cratenotes style="margin-top:6px;">' + (crate.notes ? 'Edit set notes' : '\uff0b Set notes') + '</button>';
+
     const wrap = box.querySelector('[data-cratetracks]');
     if (!crate.tracks.length) {
-      wrap.innerHTML = '<div style="color:var(--sk-text-3); font-size:12.5px;">Empty — add tracks from Library → Tracks using ▦.</div>';
+      wrap.innerHTML = '<div style="color:var(--sk-text-3); font-size:12.5px; margin-bottom:6px;">Empty \u2014 add tracks from Library \u2192 Tracks using \u25a6.</div>';
     } else {
       crate.tracks.forEach((t, ti) => {
-        const c = document.createElement('div');
-        c.className = 'track-card';
-        c.innerHTML = '<div style="min-width:0;"><div class="tc-name">' + esc(t.artist) + ' — ' + esc(t.title) + '</div><div class="tc-meta">' + trackMeta(t) + '</div></div>' +
-          '<button class="icon-btn" data-removetrack title="Remove from crate">✕</button>';
-        c.querySelector('[data-removetrack]').onclick = () => {
-          const cs = store.get('crates', []);
-          const target = cs.find(x => x.id === crate.id);
-          if (target) { target.tracks.splice(ti, 1); store.set('crates', cs); renderCratesInto(el); }
+        const row = document.createElement('div');
+        row.className = 'crate-track';
+        row.innerHTML =
+          '<div class="ct-pos">' + String(ti + 1).padStart(2, '0') + '</div>' +
+          '<div class="ct-main">' +
+            '<div class="tc-name" style="font-size:13.5px;">' + esc(t.artist) + ' \u2014 ' + esc(t.title) + '</div>' +
+            '<div class="tc-meta" style="font-size:11.5px;">' + trackMeta(t) + '</div>' +
+            (t._note ? '<div class="ct-note">' + esc(t._note) + '</div>' : '') +
+          '</div>' +
+          '<div class="ct-btns">' +
+            '<button class="ct-btn" data-up ' + (ti === 0 ? 'disabled' : '') + ' title="Move up">\u25b2</button>' +
+            '<button class="ct-btn" data-down ' + (ti === crate.tracks.length - 1 ? 'disabled' : '') + ' title="Move down">\u25bc</button>' +
+            '<button class="ct-btn play-btn" data-play-artist="' + esc(t.artist) + '" data-play-title="' + esc(t.title) + '" title="Play">\u25b6</button>' +
+            '<button class="ct-btn" data-note title="Transition note">\u270e</button>' +
+            '<button class="ct-btn" data-removetrack title="Remove">\u2715</button>' +
+          '</div>';
+        row.querySelector('[data-up]').onclick = () => mutate(cs => {
+          const c = cs.find(x => x.id === crate.id);
+          if (c && ti > 0) { const tmp = c.tracks[ti-1]; c.tracks[ti-1] = c.tracks[ti]; c.tracks[ti] = tmp; }
+        });
+        row.querySelector('[data-down]').onclick = () => mutate(cs => {
+          const c = cs.find(x => x.id === crate.id);
+          if (c && ti < c.tracks.length - 1) { const tmp = c.tracks[ti+1]; c.tracks[ti+1] = c.tracks[ti]; c.tracks[ti] = tmp; }
+        });
+        row.querySelector('[data-note]').onclick = () => {
+          const note = prompt('Transition note for ' + t.title + ' (e.g. "long blend into next", "cut on the drop"):', t._note || '');
+          if (note === null) return;
+          mutate(cs => { const c = cs.find(x => x.id === crate.id); if (c) c.tracks[ti]._note = note.trim(); });
         };
-        wrap.appendChild(c);
+        row.querySelector('[data-removetrack]').onclick = () => mutate(cs => {
+          const c = cs.find(x => x.id === crate.id); if (c) c.tracks.splice(ti, 1);
+        });
+        wrap.appendChild(row);
       });
     }
+
+    box.querySelector('[data-renamecrate]').onclick = () => {
+      const name = prompt('Rename crate:', crate.name);
+      if (!name || !name.trim()) return;
+      mutate(cs => { const c = cs.find(x => x.id === crate.id); if (c) c.name = name.trim(); });
+    };
+    box.querySelector('[data-cratenotes]').onclick = () => {
+      const notes = prompt('Set notes for ' + crate.name + ' (venue, vibe, reminders):', crate.notes || '');
+      if (notes === null) return;
+      mutate(cs => { const c = cs.find(x => x.id === crate.id); if (c) c.notes = notes.trim(); });
+    };
     box.querySelector('[data-delcrate]').onclick = () => {
-      store.set('crates', store.get('crates', []).filter(c => c.id !== crate.id));
-      toast('Crate deleted');
-      renderCratesInto(el);
+      if (!confirm('Delete crate "' + crate.name + '"?')) return;
+      mutate(cs => { const i = cs.findIndex(c => c.id === crate.id); if (i > -1) cs.splice(i, 1); });
     };
     el.appendChild(box);
   });
 }
 
-/* STATS — real local metrics only */
+/* STATS/* STATS — real local metrics only */
 function renderStats() {
   const el = $('statsContent');
   const stats = [
