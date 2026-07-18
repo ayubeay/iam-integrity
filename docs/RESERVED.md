@@ -559,3 +559,27 @@ window designed with pre-committed gates (Proof Before Promotion).
 requires Universal Money Router, escrow, and mature VERITY counterparty
 scoring that do not exist yet. The doctrine is captured; the market will
 still be inefficient later.
+
+---
+
+## Universal Execution Interface (canonical reserve)
+
+**What it is:** One reusable execution interface across all products —
+"conversation is only the interface; execution is the product." Every
+product becomes an execution surface over the same stack (Intent -> IAM ->
+VERITY -> vLOID -> OROS -> Domain Engine -> HELIX -> Receipt), with one UI
+pattern (accomplish -> understand -> recommend -> approve -> execute ->
+receipt) and receipts for denials as first-class outcomes. Includes the
+observation/execution BOUNDARY DOCTRINE (Helius vs HeliusSwapProvider vs
+HELIX naming distinction; data layers never gain execution authority;
+Phase B shims never execute through HELIX). Doctrine: build one execution
+infrastructure, expose many execution surfaces. Canonical document:
+**docs/reserve/universal-execution-interface.md**
+
+**Activation condition:** vLOID governance mature + HELIX rails
+production-ready + at least two domain products sharing common execution
+patterns.
+
+**Why deferred:** The layer sits above five subsystems of which several
+are themselves reserved. The doctrine (especially the boundary rule) is
+binding NOW for design decisions; the interface build waits.
