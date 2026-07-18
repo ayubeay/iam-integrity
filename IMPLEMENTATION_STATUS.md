@@ -33,9 +33,12 @@ Last full audit: **2026-07-15** (this file's baseline).
 - **Known gaps:** one provider per data type (no OHLCV fallback provider
   yet); intervals deliberately narrow (5m/4h only); no alerting on metrics;
   equities/ETF asset class not supported (deliberate — see HELIX-JANUS note).
-  swap_metrics capability BUILT (Phase A, 2026-07-18: HeliusSwapProvider
-  with windows+events_60s, per-key negative cache honoring Retry-After,
-  TTL 30s) — awaiting deploy + HELIUS_API_KEY env + Phase B consumer
+  swap_metrics capability DEPLOYED + LIVE-VERIFIED (2026-07-18 evening:
+  dedicated HELIUS_API_KEY set after initial misconfigured-key incident
+  was diagnosed via own telemetry in one probe; SOL served 83 swaps/81
+  wallets with truthful truncation via oldest_event_ms; BONK showed
+  correctly differentiated m1/m5/m15 windows; cache hit 0ms at 16.7s age)
+  — Phase B consumer (poi-engine fail-open shims) is the next build
 - **Data/logs:** /data/cache.db, /data/provider_call_receipts.jsonl (Railway
   volume); Railway deploy/HTTP logs
 - **Consumers:** poi-engine (production). Future: Momentum Sniper (OHLCV),
