@@ -405,6 +405,12 @@ button { font-family:inherit; }
 .energy-bars { display:inline-flex; align-items:flex-end; gap:2px; height:14px; margin-left:8px; }
 .energy-bars span { width:5px; border-radius:1.5px; background:var(--sk-accent); opacity:.85; }
 .crate-insights { margin:2px 0 12px; }
+.beta-note { display:flex; gap:8px; align-items:flex-start; background:rgba(46,124,246,.07); border:1px solid var(--sk-border); border-radius:11px; padding:10px 14px; margin-bottom:16px; color:var(--sk-text-2); font-size:12.5px; line-height:1.55; }
+.fb-cats { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.fb-cat { padding:10px 8px; border-radius:10px; font-size:12px; font-weight:600; text-align:center; background:var(--sk-card-2); border:1px solid var(--sk-border); color:var(--sk-text-2); cursor:pointer; }
+.fb-cat.active { border-color:var(--sk-accent); color:var(--sk-text); box-shadow:var(--sk-glow-soft); }
+.fb-ctx { color:var(--sk-text-3); font-size:11px; margin-top:10px; line-height:1.5; }
+textarea.input { min-height:88px; resize:vertical; }
 .ci-row { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--sk-text-2); padding:3px 0; line-height:1.5; }
 .ci-row.warn::before { content:'\26a0'; color:#F5B94A; flex-shrink:0; }
 .ci-row.ok::before { content:'\2713'; color:var(--sk-positive); flex-shrink:0; }
@@ -517,6 +523,8 @@ button { font-family:inherit; }
     <button class="nav-item" data-nav="stems"><span class="ni">⚎</span>Stems</button>
     <button class="nav-item" data-nav="agents"><span class="ni">✦</span>Agents</button>
     <button class="nav-item" data-nav="stats"><span class="ni">⯡</span>Stats</button>
+    <div style="border-top:1px solid var(--sk-border); margin:8px 4px;"></div>
+    <button class="nav-item" onclick="openFeedback()"><span class="ni">✉</span>Feedback</button>
     <div class="sidebar-foot">
       <button class="session-toggle" data-toggle-theme style="width:100%; justify-content:center;">
         <span data-theme-icon>🌙</span><span data-theme-label>Night Session</span>
@@ -530,11 +538,13 @@ button { font-family:inherit; }
       <button class="session-toggle" data-toggle-theme id="mobileTheme">
         <span data-theme-icon>🌙</span><span data-theme-label>Night Session</span>
       </button>
+      <button class="icon-btn" onclick="openFeedback()" title="Send feedback" style="flex-shrink:0;">✉</button>
       <button class="icon-btn" onclick="openProviderModal()" title="Playback source" style="flex-shrink:0;">⚙</button>
     </div>
 
     <!-- HOME -->
     <section class="view" id="view-home">
+      <div class="beta-note">🛠 <span><b>Beta</b> — SoundKeep is validating AI pathways and DJ workflows. Playback opens on your chosen platform while catalog integrations are evaluated. Spot something off? Use ✉ Feedback.</span></div>
       <div class="card" style="margin-bottom:16px; padding:16px 18px;">
         <div class="row-gap">
           <input class="input" id="homeSearch" placeholder="Search tracks, artists, genres…">
@@ -727,6 +737,26 @@ button { font-family:inherit; }
   <button class="bn-item" data-nav="crates"><span class="ni">▦</span>Crates</button>
 </nav>
 
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal-card">
+    <div style="font-family:'Space Grotesk'; font-weight:600; font-size:17px; margin-bottom:4px;">Send feedback</div>
+    <div style="color:var(--sk-text-2); font-size:12.5px; margin-bottom:14px;">Honest > polite. This goes straight to the builder.</div>
+    <div class="fb-cats" id="fbCats">
+      <button class="fb-cat" data-cat="bug">🐛 Bug</button>
+      <button class="fb-cat" data-cat="feature">💡 Feature request</button>
+      <button class="fb-cat" data-cat="sonic_right">🎵 Sonic was right</button>
+      <button class="fb-cat" data-cat="sonic_wrong">🎵 Sonic was wrong</button>
+      <button class="fb-cat" data-cat="general">⭐ General</button>
+      <button class="fb-cat" data-cat="favorite">❤ Favorite feature</button>
+    </div>
+    <textarea class="input" id="fbComment" placeholder="What happened? What did you expect?"></textarea>
+    <div class="fb-ctx" id="fbCtx"></div>
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="closeFeedback()">Cancel</button>
+      <button class="btn btn-primary btn-sm" style="flex:1;" id="fbSend">Send</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="providerModal">
   <div class="modal-card">
     <div style="font-family:'Space Grotesk'; font-weight:600; font-size:17px; margin-bottom:6px;">Playback source</div>
@@ -828,9 +858,13 @@ function openProviderModal() {
   $('providerModal').style.display = 'flex';
 }
 function closeProviderModal() { $('providerModal').style.display = 'none'; pendingPlay = null; }
+function playLabel() {
+  const p = store.get('provider', null);
+  return p && PROVIDERS[p] ? 'Play on ' + PROVIDERS[p].name + ' ↗' : '▶ Play';
+}
 function listenLinks(artist, title) {
   return '<div class="listen-links">' +
-    '<button class="listen-link play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '">▶ Play</button>' +
+    '<button class="listen-link play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '">' + playLabel() + '</button>' +
   '</div>';
 }
 document.addEventListener('click', (e) => {
@@ -1331,11 +1365,16 @@ function renderCratesInto(el) {
             detail.innerHTML =
               s.oks.map(o => '<div class="td-row ok">' + esc(o) + '</div>').join('') +
               s.warns.map(w => '<div class="td-row warn">' + esc(w) + '</div>').join('') +
+              '<button class="btn btn-ghost btn-sm" data-fb-trans style="margin-top:10px; margin-right:8px;">Report this score</button>' +
               (s.pct < 60
                 ? '<button class="btn btn-ghost btn-sm" data-q="' + esc(t.artist) + '" style="margin-top:10px;">Map a bridge with Sonic</button>' +
                   '<div style="color:var(--sk-text-3); font-size:11px; margin-top:6px;">Sonic generates a pathway from ' + esc(t.artist) + ' \u2014 pick a bridge track and slot it here.</div>'
                 : '');
             chip.onclick = () => detail.classList.toggle('open');
+            detail.querySelector('[data-fb-trans]').onclick = (e) => {
+              e.stopPropagation();
+              openFeedback({ transition: { a: t.artist + ' — ' + t.title, b: nxt.artist + ' — ' + nxt.title, pct: s.pct, factors: s.oks.concat(s.warns) }, crate: crate.name });
+            };
             wrap.appendChild(chip);
             wrap.appendChild(detail);
           }
@@ -1540,6 +1579,45 @@ function renderTokenGraph() {
   const fill = line + ' L' + W + ' 56 L0 56 Z';
   g.innerHTML = '<path class="tg-fill" d="' + fill + '"/><path class="tg-line" d="' + line + '"/>';
 }
+
+const APP_VERSION = 'v17-beta';
+let fbCategory = null, fbContext = null;
+function openFeedback(ctx) {
+  fbContext = ctx || null;
+  fbCategory = ctx && ctx.transition ? 'sonic_wrong' : null;
+  document.querySelectorAll('.fb-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === fbCategory));
+  $('fbComment').value = '';
+  $('fbCtx').textContent = 'Auto-attached: ' + (location.hash || '#home') + ' · ' + APP_VERSION +
+    (ctx && ctx.transition ? ' · ' + ctx.transition.a + ' → ' + ctx.transition.b + ' (' + ctx.transition.pct + '%)' : '');
+  $('feedbackModal').style.display = 'flex';
+}
+function closeFeedback() { $('feedbackModal').style.display = 'none'; }
+document.querySelectorAll('.fb-cat').forEach(b => b.addEventListener('click', () => {
+  fbCategory = b.dataset.cat;
+  document.querySelectorAll('.fb-cat').forEach(x => x.classList.toggle('active', x === b));
+}));
+$('feedbackModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeFeedback(); });
+$('fbSend').addEventListener('click', async () => {
+  if (!fbCategory) { toast('Pick a category first'); return; }
+  const payload = {
+    category: fbCategory,
+    comment: $('fbComment').value.trim(),
+    context: Object.assign({
+      page: location.hash || '#home', version: APP_VERSION,
+      ua: navigator.userAgent, ts: new Date().toISOString(),
+      viewport: window.innerWidth + 'x' + window.innerHeight
+    }, fbContext || {})
+  };
+  try {
+    const res = await fetch(API + '/api/feedback', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw 0;
+    closeFeedback();
+    toast('Feedback sent — thank you');
+  } catch (e) { toast('Could not send — check connection and retry'); }
+});
 
 renderRoute();
 updateMiniplayer();
