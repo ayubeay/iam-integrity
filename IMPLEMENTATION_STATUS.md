@@ -63,14 +63,19 @@ Last full audit: **2026-07-15** (this file's baseline).
   first-hop price source (fail-open, env-gated), Phase 2 consumer telemetry
   (api_connect_success/fallback{reason}/latency in /v1/metrics), SSE UI,
   swap poller with backoff, 70 tests
-- **Known gaps:** OHLCV still direct CoinGecko (429s force synthetic
-  candles — primary motivation for api-connect OHLCV); capital_flow /
-  liquidity_stress signals degraded by Helius plan quota
+- **Known gaps:** capital_flow / liquidity_stress signals still degraded
+  (no liquidation/spot-burst source — unrelated to Helius mediation).
+  RESOLVED 2026-07-18: OHLCV via api-connect (synthetic candles retired);
+  swap metrics via api-connect (poller 429 rate 99.6% -> ZERO at first
+  post-deploy read — 8/8 poller ticks and adapter path served first-hop,
+  ~2 upstream calls/min replacing 7.5 failing direct calls/min)
 - **Data/logs:** Railway logs; watchlist.json in repo
-- **Provider relationships:** consumes api-connect (price); CoinGecko
-  (OHLCV, direct); Helius (swap metrics, direct)
-- **Next milestone:** swap-metrics mediation via api-connect (poller Helius
-  429 rate measured at 99.6% — 515/517 fetches — on 2026-07-17)
+- **Provider relationships:** consumes api-connect for ALL THREE data
+  types (price, OHLCV 5m/4h, swap metrics — d108852); CoinGecko and
+  direct Helius retained as fail-open fallbacks only
+- **Next milestone:** 24h Phase C verification read (swap_count_1m
+  population rate in snapshots; sustained zero 429s; source-tag
+  distribution), then routine operation
 - **Verified:** 2026-07-17 (19h post-OHLCV evidence: 796/796/796
   price/5m/4h api-connect successes, ZERO fallbacks, CoinGecko and
   synthetic candles never invoked; rode out a GeckoTerminal 429 incident
