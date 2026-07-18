@@ -32,7 +32,10 @@ Last full audit: **2026-07-15** (this file's baseline).
   shutdown, admin endpoints, 15 tests
 - **Known gaps:** one provider per data type (no OHLCV fallback provider
   yet); intervals deliberately narrow (5m/4h only); no alerting on metrics;
-  equities/ETF asset class not supported (deliberate — see HELIX-JANUS note)
+  equities/ETF asset class not supported (deliberate — see HELIX-JANUS note).
+  swap_metrics capability BUILT (Phase A, 2026-07-18: HeliusSwapProvider
+  with windows+events_60s, per-key negative cache honoring Retry-After,
+  TTL 30s) — awaiting deploy + HELIUS_API_KEY env + Phase B consumer
 - **Data/logs:** /data/cache.db, /data/provider_call_receipts.jsonl (Railway
   volume); Railway deploy/HTTP logs
 - **Consumers:** poi-engine (production). Future: Momentum Sniper (OHLCV),
