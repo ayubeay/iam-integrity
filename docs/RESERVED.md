@@ -535,3 +535,27 @@ Staging (reserves-2026-07-17.md): HelixHash Router reinforcement +
 history-recovery action; Sonic Discovery Confidence Engine (routed to
 SoundKeep reserved architecture); doctrine-trio linkage note (candidate
 consolidated Execution Doctrine under LITMUS).
+
+---
+
+## Commerce Sniper (canonical reserve)
+
+**What it is:** Verified commercial-opportunity and execution engine for
+real goods and services — demand gap -> source -> verify -> buy -> route
+-> sell -> settle. Six-part engine (scanner, demand verifier, VERITY
+counterparty trust, margin/route engine, bounded negotiation agent, OROS
+settlement), graded recommendations (OBSERVE...REJECT), commercial
+receipts for successes AND failures, hard doctrine (verified demand before
+capital, net margin not headline spread, no autonomous purchase early,
+escrow thresholds, capital preservation first). Phase Zero is a
+paper-commerce observation engine with pre-committed accuracy metrics.
+Canonical document: **docs/reserve/commerce-sniper.md**
+
+**Activation condition:** Tier 1 production maturity + a chosen narrow
+first category with verifiable demand signals + Phase Zero observation
+window designed with pre-committed gates (Proof Before Promotion).
+
+**Why deferred:** Extends the execution stack into physical commerce —
+requires Universal Money Router, escrow, and mature VERITY counterparty
+scoring that do not exist yet. The doctrine is captured; the market will
+still be inefficient later.
