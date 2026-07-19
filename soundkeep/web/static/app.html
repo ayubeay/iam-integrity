@@ -405,15 +405,38 @@ button { font-family:inherit; }
 .energy-bars { display:inline-flex; align-items:flex-end; gap:2px; height:14px; margin-left:8px; }
 .energy-bars span { width:5px; border-radius:1.5px; background:var(--sk-accent); opacity:.85; }
 .crate-insights { margin:2px 0 12px; }
+.ci-row { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--sk-text-2); padding:3px 0; line-height:1.5; }
+.ci-row.warn::before { content:'\26a0'; color:#F5B94A; flex-shrink:0; }
+.ci-row.ok::before { content:'\2713'; color:var(--sk-positive); flex-shrink:0; }
 .beta-note { display:flex; gap:8px; align-items:flex-start; background:rgba(46,124,246,.07); border:1px solid var(--sk-border); border-radius:11px; padding:10px 14px; margin-bottom:16px; color:var(--sk-text-2); font-size:12.5px; line-height:1.55; }
 .fb-cats { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
 .fb-cat { padding:10px 8px; border-radius:10px; font-size:12px; font-weight:600; text-align:center; background:var(--sk-card-2); border:1px solid var(--sk-border); color:var(--sk-text-2); cursor:pointer; }
 .fb-cat.active { border-color:var(--sk-accent); color:var(--sk-text); box-shadow:var(--sk-glow-soft); }
 .fb-ctx { color:var(--sk-text-3); font-size:11px; margin-top:10px; line-height:1.5; }
 textarea.input { min-height:88px; resize:vertical; }
-.ci-row { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--sk-text-2); padding:3px 0; line-height:1.5; }
-.ci-row.warn::before { content:'\26a0'; color:#F5B94A; flex-shrink:0; }
-.ci-row.ok::before { content:'\2713'; color:var(--sk-positive); flex-shrink:0; }
+.audiobar {
+  display:none; position:fixed; left:12px; right:12px; z-index:50;
+  bottom:calc(74px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb, var(--sk-card-2) 96%, transparent);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--sk-accent); border-radius:14px;
+  box-shadow:var(--sk-card-shadow), var(--sk-glow-soft);
+  padding:10px 14px;
+}
+.audiobar.show { display:block; }
+@media (min-width:861px) { .audiobar { left:auto; right:24px; bottom:24px; width:380px; } }
+.ab-top { display:flex; align-items:center; gap:12px; }
+.ab-info { min-width:0; flex:1; }
+.ab-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ab-src { color:var(--sk-accent-bright); font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.ab-btn { width:38px; height:38px; border-radius:50%; border:0; cursor:pointer; flex-shrink:0;
+  background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep)); color:#fff; font-size:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25); }
+.ab-close { background:none; border:0; color:var(--sk-text-3); font-size:15px; cursor:pointer; flex-shrink:0; }
+.ab-seek { width:100%; margin-top:8px; accent-color:var(--sk-accent); height:4px; cursor:pointer; }
+.ab-times { display:flex; justify-content:space-between; color:var(--sk-text-3); font-size:10.5px; margin-top:3px; }
+.lf-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px; padding:12px 14px; margin-bottom:9px; }
+.local-badge { display:inline-flex; font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--sk-positive); background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); border-radius:999px; padding:2px 8px; text-transform:uppercase; }
 .agent-hero-retired {
   position:relative; z-index:2; margin:-52px 14px 0;
   background:
@@ -544,7 +567,7 @@ textarea.input { min-height:88px; resize:vertical; }
 
     <!-- HOME -->
     <section class="view" id="view-home">
-      <div class="beta-note">🛠 <span><b>Beta</b> — SoundKeep is validating AI pathways and DJ workflows. Playback opens on your chosen platform while catalog integrations are evaluated. Spot something off? Use ✉ Feedback.</span></div>
+      <div class="beta-note">🛠 <span><b>Beta</b> — SoundKeep is validating AI pathways and DJ workflows. Playback opens on your chosen platform (YouTube, Spotify, Apple Music) while catalog integrations are evaluated. Spot something off? Use ✉ Feedback.</span></div>
       <div class="card" style="margin-bottom:16px; padding:16px 18px;">
         <div class="row-gap">
           <input class="input" id="homeSearch" placeholder="Search tracks, artists, genres…">
@@ -695,7 +718,14 @@ textarea.input { min-height:88px; resize:vertical; }
 
     <!-- DOWNLOADS -->
     <section class="view" id="view-downloads">
-      <div class="empty"><div class="e-icon">⤓</div><h4>Downloads unlock with licensed audio</h4><p>SoundKeep links out to your platform today. Offline files arrive when the licensed catalog does — reserved, not forgotten.</p></div>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-family:'Space Grotesk'; font-weight:600; font-size:16px; margin-bottom:6px;">Your music, on this device</div>
+        <div style="color:var(--sk-text-2); font-size:13px; line-height:1.6; margin-bottom:14px;">Import MP3, WAV, or M4A files you own. They play inside SoundKeep — in the Session view, in crates, everywhere — and Sonic learns from real listening. Files stay in your browser; nothing is uploaded.</div>
+        <button class="btn btn-primary" id="importBtn">＋ Import audio files</button>
+        <input type="file" id="importInput" accept="audio/*" multiple style="display:none;">
+      </div>
+      <div class="label">Imported Files</div>
+      <div id="localFilesList"></div>
     </section>
 
     <!-- STEMS -->
@@ -776,6 +806,18 @@ textarea.input { min-height:88px; resize:vertical; }
   </div>
   <button class="mp-next" id="mpNext" title="Next transition">⏭</button>
 </div>
+<div class="audiobar" id="audiobar">
+  <div class="ab-top">
+    <div class="ab-info">
+      <div class="ab-src">Playing in SoundKeep</div>
+      <div class="ab-name" id="abName"></div>
+    </div>
+    <button class="ab-btn" id="abToggle">⏸</button>
+    <button class="ab-close" id="abClose" title="Stop">✕</button>
+  </div>
+  <input type="range" class="ab-seek" id="abSeek" min="0" max="1000" value="0">
+  <div class="ab-times"><span id="abCur">0:00</span><span id="abDur">0:00</span></div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -823,6 +865,7 @@ function renderRoute() {
   if (v === 'library') renderLibrary();
   if (v === 'crates') renderCratesInto($('cratesContent'));
   if (v === 'stats') renderStats();
+  if (v === 'downloads') { renderLocalFiles(); }
   if (v === 'home') renderHome();
   if (v === 'session') renderSession();
 }
@@ -845,11 +888,166 @@ function logPlay(artist, title) {
   plays.unshift({ artist: artist, title: title, ts: Date.now() });
   store.set('recent_plays', plays.slice(0, 12));
 }
-function playTrack(artist, title) {
+
+/* ── IndexedDB: local audio files ── */
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('sk-audio', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('files');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbSet(key, blob) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put(blob, key);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbGet(key) {
+  const db = await idbOpen();
+  return new Promise((res) => {
+    const rq = db.transaction('files').objectStore('files').get(key);
+    rq.onsuccess = () => res(rq.result || null);
+    rq.onerror = () => res(null);
+  });
+}
+async function idbDel(key) {
+  const db = await idbOpen();
+  return new Promise((res) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(key);
+    tx.oncomplete = res; tx.onerror = res;
+  });
+}
+async function idbKeys() {
+  const db = await idbOpen();
+  return new Promise((res) => {
+    const rq = db.transaction('files').objectStore('files').getAllKeys();
+    rq.onsuccess = () => res(rq.result || []);
+    rq.onerror = () => res([]);
+  });
+}
+
+/* ── Listening receipts (the behavioral graph seed, stored locally) ── */
+function logListen(event, artist, title, pos, dur) {
+  const log = store.get('listen_log', []);
+  log.unshift({ e: event, artist: artist, title: title, pos: pos || 0, dur: dur || 0, ts: Date.now() });
+  store.set('listen_log', log.slice(0, 300));
+}
+
+/* ── In-app player ── */
+const audioEl = new Audio();
+let abTrack = null, abUrl = null, abCompleted = false;
+function fmtTime(s) { s = Math.floor(s || 0); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function abSkipReceipt() {
+  if (abTrack && !abCompleted && audioEl.duration && audioEl.currentTime / audioEl.duration < 0.9)
+    logListen('skip', abTrack.artist, abTrack.title, Math.round(audioEl.currentTime), Math.round(audioEl.duration));
+}
+function playLocal(artist, title, blob) {
+  abSkipReceipt();
+  if (abUrl) URL.revokeObjectURL(abUrl);
+  abTrack = { artist: artist, title: title };
+  abCompleted = false;
+  abUrl = URL.createObjectURL(blob);
+  audioEl.src = abUrl;
+  audioEl.play();
+  $('abName').textContent = artist + ' — ' + title;
+  $('abToggle').textContent = '⏸';
+  $('audiobar').classList.add('show');
+  logPlay(artist, title);
+  logListen('start', artist, title, 0, 0);
+}
+audioEl.addEventListener('timeupdate', () => {
+  if (!audioEl.duration) return;
+  $('abSeek').value = Math.round(1000 * audioEl.currentTime / audioEl.duration);
+  $('abCur').textContent = fmtTime(audioEl.currentTime);
+  $('abDur').textContent = fmtTime(audioEl.duration);
+});
+audioEl.addEventListener('ended', () => {
+  abCompleted = true;
+  if (abTrack) logListen('complete', abTrack.artist, abTrack.title, Math.round(audioEl.duration), Math.round(audioEl.duration));
+  $('abToggle').textContent = '▶';
+});
+$('abToggle').addEventListener('click', () => {
+  if (audioEl.paused) { audioEl.play(); $('abToggle').textContent = '⏸'; }
+  else { audioEl.pause(); $('abToggle').textContent = '▶'; }
+});
+$('abSeek').addEventListener('input', () => {
+  if (audioEl.duration) audioEl.currentTime = audioEl.duration * $('abSeek').value / 1000;
+});
+$('abClose').addEventListener('click', () => {
+  abSkipReceipt();
+  audioEl.pause();
+  $('audiobar').classList.remove('show');
+  abTrack = null;
+});
+
+async function playTrack(artist, title) {
+  const blob = await idbGet((artist + '::' + title).toLowerCase());
+  if (blob) { playLocal(artist, title, blob); return; }
   const p = store.get('provider', null);
   if (!p || !PROVIDERS[p]) { pendingPlay = { artist: artist, title: title }; openProviderModal(); return; }
   logPlay(artist, title);
   window.open(PROVIDERS[p].url(artist, title), '_blank', 'noopener');
+}
+
+/* ── Import + local files view ── */
+function parseFilename(name) {
+  const base = name.replace(/\.[^.]+$/, '');
+  const parts = base.split(' - ');
+  return parts.length >= 2
+    ? { artist: parts[0].trim(), title: parts.slice(1).join(' - ').trim() }
+    : { artist: 'Local', title: base.trim() };
+}
+async function importFiles(files) {
+  let added = 0;
+  const lib = store.get('library', []);
+  for (const f of files) {
+    const meta = parseFilename(f.name);
+    const key = (meta.artist + '::' + meta.title).toLowerCase();
+    await idbSet(key, f);
+    if (!lib.some(x => trackKey(x) === key)) {
+      lib.unshift({ artist: meta.artist, title: meta.title, genre: 'local file', source: 'localfile', track_id: 'local_' + Date.now().toString(36), local: true });
+    }
+    added++;
+  }
+  store.set('library', lib);
+  toast(added + ' file' + (added > 1 ? 's' : '') + ' imported — they play inside SoundKeep now');
+  renderLocalFiles();
+}
+async function renderLocalFiles() {
+  const el = $('localFilesList');
+  if (!el) return;
+  const keys = await idbKeys();
+  if (!keys.length) {
+    el.innerHTML = emptyState('📁', 'No files yet', 'Import tracks you own and SoundKeep becomes the player — transitions become audible, and Sonic learns from real listening.');
+    return;
+  }
+  el.innerHTML = '';
+  for (const key of keys) {
+    const blob = await idbGet(key);
+    const parts = key.split('::');
+    const artist = parts[0], title = parts.slice(1).join('::');
+    const row = document.createElement('div');
+    row.className = 'lf-row';
+    row.innerHTML = '<div style="min-width:0;">' +
+        '<div class="tc-name" style="font-size:13.5px;">' + esc(artist) + ' — ' + esc(title) + '</div>' +
+        '<div class="tc-meta" style="font-size:11.5px;">' + (blob ? (blob.size / 1048576).toFixed(1) + ' MB' : '') + ' <span class="local-badge">Local</span></div>' +
+      '</div>' +
+      '<div class="tc-actions">' +
+        '<button class="icon-btn play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '" title="Play">▶</button>' +
+        '<button class="icon-btn" data-dellocal title="Remove file">✕</button>' +
+      '</div>';
+    row.querySelector('[data-dellocal]').onclick = async () => {
+      await idbDel(key);
+      toast('File removed');
+      renderLocalFiles();
+    };
+    el.appendChild(row);
+  }
 }
 function openProviderModal() {
   const cur = store.get('provider', null);
@@ -1409,6 +1607,9 @@ function renderStats() {
     [store.get('crates', []).length, 'Crates'],
     [store.get('pathways', []).length, 'Saved pathways'],
     [store.get('recent_plays', []).length, 'Plays logged'],
+    [store.get('library', []).filter(t => t.local).length, 'Local files'],
+    [store.get('listen_log', []).filter(l => l.e === 'complete').length, 'Full listens'],
+    [store.get('listen_log', []).filter(l => l.e === 'skip').length, 'Skips'],
     [getSession() ? 1 : 0, 'Active session']
   ];
   el.innerHTML = '<div class="stat-grid">' + stats.map(s =>
@@ -1580,8 +1781,10 @@ function renderTokenGraph() {
   g.innerHTML = '<path class="tg-fill" d="' + fill + '"/><path class="tg-line" d="' + line + '"/>';
 }
 
+/* ── Feedback with receipts ── */
 const APP_VERSION = 'v17-beta';
 let fbCategory = null, fbContext = null;
+
 function openFeedback(ctx) {
   fbContext = ctx || null;
   fbCategory = ctx && ctx.transition ? 'sonic_wrong' : null;
@@ -1603,8 +1806,10 @@ $('fbSend').addEventListener('click', async () => {
     category: fbCategory,
     comment: $('fbComment').value.trim(),
     context: Object.assign({
-      page: location.hash || '#home', version: APP_VERSION,
-      ua: navigator.userAgent, ts: new Date().toISOString(),
+      page: location.hash || '#home',
+      version: APP_VERSION,
+      ua: navigator.userAgent,
+      ts: new Date().toISOString(),
       viewport: window.innerWidth + 'x' + window.innerHeight
     }, fbContext || {})
   };
@@ -1618,6 +1823,9 @@ $('fbSend').addEventListener('click', async () => {
     toast('Feedback sent — thank you');
   } catch (e) { toast('Could not send — check connection and retry'); }
 });
+
+$('importBtn').addEventListener('click', () => $('importInput').click());
+$('importInput').addEventListener('change', (e) => { if (e.target.files.length) importFiles(Array.from(e.target.files)); e.target.value = ''; });
 
 renderRoute();
 updateMiniplayer();
