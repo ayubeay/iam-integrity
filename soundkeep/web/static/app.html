@@ -1599,6 +1599,48 @@ function renderCratesInto(el) {
 }
 
 /* STATS/* STATS — real local metrics only */
+/* Export Everything - the exit door (vault doctrine: the keep is a promise, not a cage) */
+function exportEverything() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('sk_')) {
+      try { data[k] = JSON.parse(localStorage.getItem(k)); }
+      catch (e) { data[k] = localStorage.getItem(k); }
+    }
+  }
+  const payload = {
+    app: 'SoundKeep',
+    format: 'soundkeep-export-v1',
+    exported_at: new Date().toISOString(),
+    note: 'Library, crates, pathways, notes, play history, listening receipts, preferences. Audio files stay on-device (IndexedDB) - re-import them via Downloads on a new device.',
+    data: data
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'soundkeep-export-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('Export downloaded - your SoundKeep, in one file');
+}
+function importEverything(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const payload = JSON.parse(reader.result);
+      if (payload.format !== 'soundkeep-export-v1' || !payload.data) throw 0;
+      let n = 0;
+      Object.keys(payload.data).forEach(k => {
+        if (k.startsWith('sk_')) { localStorage.setItem(k, JSON.stringify(payload.data[k])); n++; }
+      });
+      toast('Restored ' + n + ' data sets - welcome back');
+      renderRoute();
+    } catch (e) { toast('Not a valid SoundKeep export file'); }
+  };
+  reader.readAsText(file);
+}
+
 function renderStats() {
   const el = $('statsContent');
   const stats = [
@@ -1614,7 +1656,19 @@ function renderStats() {
   ];
   el.innerHTML = '<div class="stat-grid">' + stats.map(s =>
     '<div class="stat-card"><div class="stat-num">' + s[0] + '</div><div class="stat-name">' + s[1] + '</div></div>').join('') + '</div>' +
-    '<div class="locked-note" style="margin-top:16px;">Local device stats · richer analytics arrive with accounts</div>';
+    '<div class="locked-note" style="margin-top:16px;">Local device stats · richer analytics arrive with accounts</div>' +
+    '<div class="card" style="margin-top:20px; max-width:520px;">' +
+      '<div class="crate-title" style="font-size:15.5px; margin-bottom:6px;">Export Everything</div>' +
+      '<div style="color:var(--sk-text-2); font-size:12.5px; line-height:1.6; margin-bottom:14px;">Your library, crates, pathways, notes, play history, and listening receipts - one portable file, yours to keep. Audio files remain on this device; re-import them via Downloads elsewhere. The keep is a promise, not a cage.</div>' +
+      '<div style="display:flex; gap:10px; flex-wrap:wrap;">' +
+        '<button class="btn btn-primary btn-sm" id="exportBtn">Export my SoundKeep</button>' +
+        '<button class="btn btn-ghost btn-sm" id="importDataBtn">Restore from export</button>' +
+        '<input type="file" id="importDataInput" accept="application/json,.json" style="display:none;">' +
+      '</div>' +
+    '</div>';
+  $('exportBtn').onclick = exportEverything;
+  $('importDataBtn').onclick = () => $('importDataInput').click();
+  $('importDataInput').onchange = (e) => { if (e.target.files.length) importEverything(e.target.files[0]); e.target.value = ''; };
 }
 
 function addToCratePrompt(t) {
