@@ -1,0 +1,6 @@
+target/
+results/gpu-*.json
+results/report/
+__pycache__/
+# Cargo.lock IS committed for this binary crate (pins metal/objc versions) —
+# generated on first build, then add it.

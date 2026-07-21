@@ -1,0 +1,26 @@
+[package]
+name = "fair-compute-bench-gpu"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Phase 2: Metal (GPU) baseline for the dependent-memory workload. Determinism gate + parallel throughput vs CPU."
+publish = false
+
+# GPU work needs bindings, so this crate is NOT zero-dependency — that property
+# belongs to the core benchmark, which this crate depends on for the CPU
+# baseline and the reference digests. Kept in a SEPARATE crate so the core stays
+# clean.
+[dependencies]
+metal = "0.29"
+objc = "0.2"
+fair-compute-bench = { path = "../fair-compute-bench" }
+
+[[bin]]
+name = "fair-compute-bench-gpu"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+debug = true
