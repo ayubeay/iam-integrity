@@ -932,6 +932,12 @@ async function idbKeys() {
 }
 
 /* ── Listening receipts (the behavioral graph seed, stored locally) ── */
+let localKeys = new Set();
+async function refreshLocalKeys() {
+  try { localKeys = new Set(await idbKeys()); } catch (e) {}
+}
+refreshLocalKeys().then(() => { try { renderRoute(); } catch (e) {} });
+
 function logListen(event, artist, title, pos, dur) {
   const log = store.get('listen_log', []);
   log.unshift({ e: event, artist: artist, title: title, pos: pos || 0, dur: dur || 0, ts: Date.now() });
@@ -1015,6 +1021,7 @@ async function importFiles(files) {
     added++;
   }
   store.set('library', lib);
+  await refreshLocalKeys();
   toast(added + ' file' + (added > 1 ? 's' : '') + ' imported — they play inside SoundKeep now');
   renderLocalFiles();
 }
@@ -1043,6 +1050,7 @@ async function renderLocalFiles() {
       '</div>';
     row.querySelector('[data-dellocal]').onclick = async () => {
       await idbDel(key);
+      await refreshLocalKeys();
       toast('File removed');
       renderLocalFiles();
     };
@@ -1056,13 +1064,15 @@ function openProviderModal() {
   $('providerModal').style.display = 'flex';
 }
 function closeProviderModal() { $('providerModal').style.display = 'none'; pendingPlay = null; }
-function playLabel() {
+function playLabel(artist, title) {
+  if (artist !== undefined && localKeys.has((artist + '::' + title).toLowerCase()))
+    return 'Play in SoundKeep';
   const p = store.get('provider', null);
-  return p && PROVIDERS[p] ? 'Play on ' + PROVIDERS[p].name + ' ↗' : '▶ Play';
+  return p && PROVIDERS[p] ? 'Play on ' + PROVIDERS[p].name + ' \u2197' : '\u25b6 Play';
 }
 function listenLinks(artist, title) {
   return '<div class="listen-links">' +
-    '<button class="listen-link play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '">' + playLabel() + '</button>' +
+    '<button class="listen-link play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '">' + playLabel(artist, title) + '</button>' +
   '</div>';
 }
 document.addEventListener('click', (e) => {
