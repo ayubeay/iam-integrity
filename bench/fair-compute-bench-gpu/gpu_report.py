@@ -156,18 +156,28 @@ def main():
 
     if large[2] < 1.0 and peak[2] >= 1.2:
         floor_txt = ("above ~%.0f MiB/worker" % fairness_floor) if fairness_floor else "at large sizes"
-        L.append("**The thesis holds where it is designed to, but the result is "
-                 "parameter-dependent.** At large, DRAM-latency-bound scratchpads the GPU "
-                 "advantage falls **below 1×** (%.2f× at %.0f MiB — the CPU is ~%.1f× faster): "
-                 "with only a few workers, the GPU cannot fill its ALUs and each thread pays "
-                 "higher memory latency than a CPU core, so a parallel device does **not** win. "
-                 "But there is a **vulnerability window** at intermediate sizes, peaking at "
-                 "%.2f× at %.0f MiB/worker — where the CPU has fallen off its cache cliff yet "
-                 "enough parallel chains still fit to keep the GPU busy. The design implication "
-                 "is concrete: a fair-compute workload must size the per-worker scratchpad past "
-                 "that window (%s here), or a GPU farm reclaims a real edge."
+        L.append("**On this Apple Silicon configuration, the experiment provides evidence "
+                 "consistent with the fairness hypothesis — but the result is "
+                 "parameter-dependent and not yet generalizable.** At large, "
+                 "DRAM-latency-bound scratchpads the GPU advantage falls **below 1×** "
+                 "(%.2f× at %.0f MiB — the CPU is ~%.1f× faster): with only a few workers, the "
+                 "GPU cannot fill its ALUs and each thread pays higher memory latency than a "
+                 "CPU core, so the parallel device does **not** win. But there is a "
+                 "**vulnerability window** at intermediate sizes, peaking at %.2f× at %.0f "
+                 "MiB/worker — where the CPU has fallen off its cache cliff yet enough parallel "
+                 "chains still fit to keep the GPU busy. The design implication is concrete: a "
+                 "fair-compute workload must size the per-worker scratchpad past that window "
+                 "(%s here), or a GPU farm reclaims a real edge."
                  % (large[2], large[0], 1.0 / large[2] if large[2] else 0,
                     peak[2], peak[0], floor_txt))
+        L.append("")
+        L.append("This is an engineering result on **one** GPU architecture, **one** memory "
+                 "budget (see workers column), **one** implementation, and **one** machine. It "
+                 "is enough to turn scratchpad size from an arbitrary knob into a studied "
+                 "variable, and to motivate the right next question — *where does this "
+                 "transition sit on other hardware?* — rather than the overbroad *do GPUs "
+                 "always lose?*. Generalizing needs Phase 2B (a data-center GPU) and a "
+                 "budget-varying sweep.")
     elif not wins:
         L.append("**Strongest support: the GPU never beats the CPU at any tested size.** "
                  "The latency-bound chained workload denies the parallel device an advantage "
@@ -204,9 +214,11 @@ def main():
     with open(os.path.join(out_dir, "phase2.md"), "w") as f:
         f.write("\n".join(L))
 
+    advs = [d["advantage_gpu_over_cpu"] for d in rows]
     print("gpu:", gpu_dev)
     print("cpu:", cpu_model, "(%d threads)" % cpu_threads)
-    print("sizes:", len(rows), "| advantage small→large: %.2fx → %.2fx" % (adv_small, adv_large))
+    print("sizes: %d | peak %.2fx | largest-size %.2fx"
+          % (len(rows), max(advs), rows[-1]["advantage_gpu_over_cpu"]))
     print("wrote:")
     for ext in ("md", "csv", "json"):
         print("  " + os.path.join(out_dir, "phase2." + ext))

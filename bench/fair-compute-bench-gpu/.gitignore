@@ -1,6 +1,7 @@
 target/
 results/gpu-*.json
-results/report/
+# results/report/ IS committed — the Phase 2 report is the milestone artifact,
+# kept alongside Phase 1's for historical continuity (raw gpu-*.json stay local).
 __pycache__/
 # Cargo.lock IS committed for this binary crate (pins metal/objc versions) —
 # generated on first build, then add it.

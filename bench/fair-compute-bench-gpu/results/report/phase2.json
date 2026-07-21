@@ -1,0 +1,281 @@
+{
+  "schema": "fair-compute-bench-phase2-report/1",
+  "generated_utc": "2026-07-21T23:51:37.102402+00:00",
+  "gpu_device": "Apple M1",
+  "cpu_model": "Apple M1",
+  "rows": [
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 131072,
+        "scratchpad_bytes_per_worker": 1048576,
+        "steps_per_worker": 5000000,
+        "workers": 1024,
+        "total_steps": 5120000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "7c9b68e5eb3bb264e5e7e6e9800d0e1076291295e65a87722045055832374293",
+        "cpu_reference_digest": "7c9b68e5eb3bb264e5e7e6e9800d0e1076291295e65a87722045055832374293",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 43.060071167,
+        "throughput_steps_per_s": 118903658.6,
+        "throughput_msteps_per_s": 118.904
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 25.281045,
+        "throughput_steps_per_s": 202523273.9,
+        "throughput_msteps_per_s": 202.523
+      },
+      "advantage_gpu_over_cpu": 0.5871,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    },
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 524288,
+        "scratchpad_bytes_per_worker": 4194304,
+        "steps_per_worker": 5000000,
+        "workers": 256,
+        "total_steps": 1280000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "2090519b8974fc4ad5351d3f46eccf13c18dd5c5440f5dbd8a5f315a3bd90b56",
+        "cpu_reference_digest": "2090519b8974fc4ad5351d3f46eccf13c18dd5c5440f5dbd8a5f315a3bd90b56",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 10.480915041,
+        "throughput_steps_per_s": 122126741.3,
+        "throughput_msteps_per_s": 122.127
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 27.906126875,
+        "throughput_steps_per_s": 45868063.5,
+        "throughput_msteps_per_s": 45.868
+      },
+      "advantage_gpu_over_cpu": 2.6626,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    },
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 2097152,
+        "scratchpad_bytes_per_worker": 16777216,
+        "steps_per_worker": 5000000,
+        "workers": 64,
+        "total_steps": 320000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "5d26cd1c120033960f554602baf58193be198a09042b483699ff4a2eada995a0",
+        "cpu_reference_digest": "5d26cd1c120033960f554602baf58193be198a09042b483699ff4a2eada995a0",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 4.68641575,
+        "throughput_steps_per_s": 68282460.9,
+        "throughput_msteps_per_s": 68.282
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 7.988926083,
+        "throughput_steps_per_s": 40055446.3,
+        "throughput_msteps_per_s": 40.055
+      },
+      "advantage_gpu_over_cpu": 1.7047,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    },
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 4194304,
+        "scratchpad_bytes_per_worker": 33554432,
+        "steps_per_worker": 5000000,
+        "workers": 32,
+        "total_steps": 160000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "b89504f072bdde1e3350794e7d29fe2556e8ed4418834f004e2628bd125d50bc",
+        "cpu_reference_digest": "b89504f072bdde1e3350794e7d29fe2556e8ed4418834f004e2628bd125d50bc",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 4.432724875,
+        "throughput_steps_per_s": 36095179.5,
+        "throughput_msteps_per_s": 36.095
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 4.186339792,
+        "throughput_steps_per_s": 38219544.5,
+        "throughput_msteps_per_s": 38.22
+      },
+      "advantage_gpu_over_cpu": 0.9444,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    },
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 8388608,
+        "scratchpad_bytes_per_worker": 67108864,
+        "steps_per_worker": 5000000,
+        "workers": 16,
+        "total_steps": 80000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "74d30bbbbfa61ae23f7bb8314418cd487354610d1b5532a12b9ef1d0c83db1a2",
+        "cpu_reference_digest": "74d30bbbbfa61ae23f7bb8314418cd487354610d1b5532a12b9ef1d0c83db1a2",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 3.447699667,
+        "throughput_steps_per_s": 23203877.3,
+        "throughput_msteps_per_s": 23.204
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 2.256097625,
+        "throughput_steps_per_s": 35459458.5,
+        "throughput_msteps_per_s": 35.459
+      },
+      "advantage_gpu_over_cpu": 0.6544,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    },
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 16777216,
+        "scratchpad_bytes_per_worker": 134217728,
+        "steps_per_worker": 5000000,
+        "workers": 8,
+        "total_steps": 40000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "e98e4aa97dc25acd9cf9782b1348d7f93da18e128e923dc52c5c13c8a64f1d7c",
+        "cpu_reference_digest": "e98e4aa97dc25acd9cf9782b1348d7f93da18e128e923dc52c5c13c8a64f1d7c",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 2.853162667,
+        "throughput_steps_per_s": 14019530.1,
+        "throughput_msteps_per_s": 14.02
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 1.115653541,
+        "throughput_steps_per_s": 35853424.5,
+        "throughput_msteps_per_s": 35.853
+      },
+      "advantage_gpu_over_cpu": 0.391,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    },
+    {
+      "schema": "fair-compute-bench-throughput/1",
+      "label": "phase2 sweep",
+      "workload": {
+        "name": "dependent-memory-latency-chain",
+        "seed0": 0,
+        "scratchpad_words_per_worker": 33554432,
+        "scratchpad_bytes_per_worker": 268435456,
+        "steps_per_worker": 5000000,
+        "workers": 4,
+        "total_steps": 20000000
+      },
+      "determinism": {
+        "gpu_worker0_digest": "371df80c328c0a70a98b13b023bff9f5bf91b5ed291cb452f0f9c903bc90d0b0",
+        "cpu_reference_digest": "371df80c328c0a70a98b13b023bff9f5bf91b5ed291cb452f0f9c903bc90d0b0",
+        "digest_match": true,
+        "executed_ok": true
+      },
+      "gpu": {
+        "device": "Apple M1",
+        "time_s": 2.496902208,
+        "throughput_steps_per_s": 8009925.2,
+        "throughput_msteps_per_s": 8.01
+      },
+      "cpu": {
+        "model": "Apple M1",
+        "threads": 8,
+        "wall_time_s": 0.945349833,
+        "throughput_steps_per_s": 21156189.3,
+        "throughput_msteps_per_s": 21.156
+      },
+      "advantage_gpu_over_cpu": 0.3786,
+      "host": {
+        "os": "macos",
+        "arch": "aarch64",
+        "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+        "target": "aarch64-apple-darwin"
+      }
+    }
+  ]
+}
