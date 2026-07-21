@@ -29,5 +29,8 @@ A physical/digital credential for vLOID workspace operators — employees, devel
 - Decide: operators = humans only, or governed agents too? (Agent operator cards would be very vLOID.)
 - Canonical render: store the approved card image in the repo (docs/assets/) per the canonical-assets design rule.
 
+## DRIFT — defined (July 21, 2026; closes open item)
+DRIFT is the vLOID module for behavioral and mission-deviation detection — ratified via the HELIXEDGE PIL pipeline (Sensors > PIL > VERITY > DRIFT > vLOID > PEG) and the HELIX ecosystem tree (vLOID: VERITY, IAM, OROS, DRIFT). VERITY answers "can this actor be trusted"; DRIFT answers "is this actor still doing what it was authorized to do." Its emblem on the operator card is therefore correct: operators carry clearance across trust, identity, policy, and deviation-monitoring. Fuller spec pending; definition sufficient for card doctrine.
+
 ## Activation gate
 Requires IAM operator registry + at least one system consuming operator signatures. Do not build ahead of a consuming use case.
