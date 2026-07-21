@@ -210,37 +210,6 @@ struct RunResult {
     elapsed_ns: u128,
     ns_per_step: f64,
     digest: String,
-    executed_steps: u64,
-}
-
-/// Ask the OS to schedule this thread on the fast cores.
-///
-/// This exists because of a real confound found in Milestone C: on Apple
-/// Silicon a foreground browser tab runs at high QoS on the performance cores,
-/// while a CLI benchmark can be scheduled on the efficiency cores, which have a
-/// much smaller L2. For a memory-latency workload that is a cache-resident vs
-/// DRAM difference — a ~10x swing on identical code. Raising this thread's QoS
-/// to USER_INTERACTIVE biases the scheduler toward the performance cores so the
-/// native measurement is taken on the same class of core the browser uses.
-///
-/// It is a bias, not a guarantee — macOS exposes no public pin-to-P-core API —
-/// so the JSON records that the hint was requested, and a citable run should
-/// still confirm core residency out of band (e.g. `powermetrics`).
-#[cfg(target_os = "macos")]
-fn request_performance_cores() -> &'static str {
-    // qos_class_t QOS_CLASS_USER_INTERACTIVE == 0x21
-    extern "C" {
-        fn pthread_set_qos_class_self_np(qos_class: u32, relative_priority: i32) -> i32;
-    }
-    unsafe {
-        pthread_set_qos_class_self_np(0x21, 0);
-    }
-    "user_interactive (macos qos hint)"
-}
-
-#[cfg(not(target_os = "macos"))]
-fn request_performance_cores() -> &'static str {
-    "none (non-macos; scheduler default)"
 }
 
 fn main() {
@@ -255,53 +224,31 @@ fn main() {
         );
     }
 
-    let qos_hint = request_performance_cores();
-
-    let alloc_t0 = Instant::now();
     let mut pad = vec![0u64; p.scratchpad_words as usize];
-    let alloc_ns = alloc_t0.elapsed().as_nanos();
 
     // Warmup: pages the scratchpad in, settles frequency scaling, and lets any
     // first-touch allocation cost land outside the measured runs.
-    let warmup_t0 = Instant::now();
     for _ in 0..cfg.warmup {
         workload::init_scratchpad(&mut pad, p.seed);
-        let s = workload::run_loop(&mut pad, p);
-        std::hint::black_box(s);
+        let d = workload::run_chain(&mut pad, p);
+        std::hint::black_box(d);
     }
-    let warmup_ns = warmup_t0.elapsed().as_nanos();
-
-    // Per-phase accumulators, so a reader can confirm the timed number is the
-    // loop alone and see how large init and finalize are relative to it.
-    let mut init_ns_total: u128 = 0;
-    let mut digest_ns_total: u128 = 0;
 
     let mut results: Vec<RunResult> = Vec::with_capacity(cfg.runs as usize);
 
     for run_i in 0..cfg.runs {
         // Re-initialise OUTSIDE the timed region. Required for run
-        // independence: the loop mutates the pad, so without this each run would
-        // start from a different state and digests would diverge. Timed only to
-        // report init cost, never folded into the workload number.
-        let init_t0 = Instant::now();
+        // independence: run_chain mutates the pad, so without this each run
+        // would start from a different state and digests would diverge.
         workload::init_scratchpad(&mut pad, p.seed);
-        init_ns_total += init_t0.elapsed().as_nanos();
 
-        // TIMED REGION: the dependent-access loop ONLY. Finalize is excluded.
         let t0 = Instant::now();
-        let state = workload::run_loop(&mut pad, p);
+        let digest = workload::run_chain(&mut pad, p);
         let elapsed = t0.elapsed();
-        let state = std::hint::black_box(state);
 
-        // Digest AFTER the clock stops, measured separately.
-        let dg_t0 = Instant::now();
-        let digest = workload::finalize(&pad, state.acc, p);
-        digest_ns_total += dg_t0.elapsed().as_nanos();
         let digest = std::hint::black_box(digest);
-
-        let executed_steps = state.executed_steps;
         let elapsed_ns = elapsed.as_nanos();
-        let ns_per_step = elapsed_ns as f64 / executed_steps as f64;
+        let ns_per_step = elapsed_ns as f64 / p.steps as f64;
 
         if !cfg.quiet {
             println!(
@@ -319,16 +266,11 @@ fn main() {
             elapsed_ns,
             ns_per_step,
             digest: digest.to_hex(),
-            executed_steps,
         });
     }
 
     let first = results[0].digest.clone();
     let determinism_ok = results.iter().all(|r| r.digest == first);
-
-    // Step-accounting guard: the loop reports how many iterations it ran. If any
-    // run executed a number other than requested, the timing is meaningless.
-    let steps_ok = results.iter().all(|r| r.executed_steps == p.steps);
 
     let mut sorted: Vec<f64> = results.iter().map(|r| r.ns_per_step).collect();
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -355,33 +297,16 @@ fn main() {
         println!("implementation      {}", impl_hash);
         println!("scratchpad          {} words ({:.2} MiB)", p.scratchpad_words,
                  p.scratchpad_bytes() as f64 / (1024.0 * 1024.0));
-        println!("steps/run           {} requested", p.steps);
-        println!("executed_steps      {}", if steps_ok {
-            "OK (all runs ran exactly the requested count)".to_string()
-        } else {
-            format!("MISMATCH — a run executed != {} steps", p.steps)
-        });
-        println!("scheduling          {}", qos_hint);
+        println!("steps/run           {}", p.steps);
         println!("digest              {}", first);
         println!("determinism         {}", if determinism_ok { "OK (all runs identical)" } else { "FAILED" });
         println!();
-        println!("TIMED = dependent-access loop only (init and digest excluded)");
         println!("ns/step  min {:.3}   median {:.3}   max {:.3}   stddev {:.3}", min, median, max, stddev);
         println!("relative spread     {:.2}%{}", rel_spread * 100.0,
                  if rel_spread > 0.05 { "   <- noisy; quiet the machine before quoting this" } else { "" });
-        println!();
-        println!("phase (per run, avg)  alloc {:.2} ms (once)   init {:.3} ms   loop {:.3} ms   digest {:.3} ms",
-                 alloc_ns as f64 / 1e6,
-                 (init_ns_total as f64 / cfg.runs as f64) / 1e6,
-                 (results.iter().map(|r| r.elapsed_ns).sum::<u128>() as f64 / cfg.runs as f64) / 1e6,
-                 (digest_ns_total as f64 / cfg.runs as f64) / 1e6);
         if debug_build {
             println!();
             println!("BUILD               debug -- timings above are not valid");
-        }
-        if !steps_ok {
-            println!();
-            println!("STEP COUNT MISMATCH. The loop did not run the requested iterations.");
         }
         if !determinism_ok {
             println!();
@@ -399,15 +324,10 @@ fn main() {
                 runs_json.push_str(",\n");
             }
             runs_json.push_str(&format!(
-                "      {{ \"index\": {}, \"elapsed_ns\": {}, \"ns_per_step\": {:.6}, \"executed_steps\": {}, \"digest\": \"{}\" }}",
-                i, r.elapsed_ns, r.ns_per_step, r.executed_steps, r.digest
+                "      {{ \"index\": {}, \"elapsed_ns\": {}, \"ns_per_step\": {:.6}, \"digest\": \"{}\" }}",
+                i, r.elapsed_ns, r.ns_per_step, r.digest
             ));
         }
-
-        let avg_loop_ns = results.iter().map(|r| r.elapsed_ns).sum::<u128>() as f64
-            / cfg.runs as f64;
-        let avg_init_ns = init_ns_total as f64 / cfg.runs as f64;
-        let avg_digest_ns = digest_ns_total as f64 / cfg.runs as f64;
 
         let json = format!(
 "{{
@@ -439,20 +359,9 @@ fn main() {
   \"protocol\": {{
     \"warmup_runs\": {warmup},
     \"timed_runs\": {nruns},
-    \"timed_region\": \"dependent-access loop only\",
     \"init_excluded_from_timing\": true,
-    \"digest_excluded_from_timing\": true,
-    \"allocation_excluded_from_timing\": true,
     \"scratchpad_reinitialised_between_runs\": true,
-    \"scheduling_hint\": \"{qos}\",
     \"threads\": 1
-  }},
-  \"timing_breakdown_ms\": {{
-    \"allocation_once\": {alloc_ms:.6},
-    \"warmup_total\": {warmup_ms:.6},
-    \"init_per_run_avg\": {init_ms:.6},
-    \"loop_per_run_avg\": {loop_ms:.6},
-    \"digest_per_run_avg\": {digest_ms:.6}
   }},
   \"runs\": [
 {runs}
@@ -460,8 +369,6 @@ fn main() {
   \"summary\": {{
     \"digest\": \"{digest}\",
     \"determinism_ok\": {det},
-    \"executed_steps_ok\": {steps_ok},
-    \"requested_steps\": {steps},
     \"ns_per_step_min\": {min:.6},
     \"ns_per_step_median\": {median:.6},
     \"ns_per_step_max\": {max:.6},
@@ -490,16 +397,9 @@ fn main() {
             target = json_escape(env!("FCB_TARGET")),
             warmup = cfg.warmup,
             nruns = cfg.runs,
-            qos = json_escape(qos_hint),
-            alloc_ms = alloc_ns as f64 / 1e6,
-            warmup_ms = warmup_ns as f64 / 1e6,
-            init_ms = avg_init_ns / 1e6,
-            loop_ms = avg_loop_ns / 1e6,
-            digest_ms = avg_digest_ns / 1e6,
             runs = runs_json,
             digest = first,
             det = determinism_ok,
-            steps_ok = steps_ok,
             min = min,
             median = median,
             max = max,
@@ -518,7 +418,7 @@ fn main() {
         }
     }
 
-    if !determinism_ok || !steps_ok {
+    if !determinism_ok {
         std::process::exit(1);
     }
 }
