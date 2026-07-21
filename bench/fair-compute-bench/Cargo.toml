@@ -1,0 +1,26 @@
+[package]
+name = "fair-compute-bench"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Deterministic dependent-memory-latency benchmark. Milestone A: native only."
+publish = false
+
+# Zero dependencies is a deliberate choice, not an oversight. A benchmark whose
+# results depend on a transitive dependency tree is a benchmark whose results
+# cannot be reproduced in two years. Everything here is std-only.
+[dependencies]
+
+[lib]
+name = "fair_compute_bench"
+path = "src/lib.rs"
+
+[[bin]]
+name = "fair-compute-bench"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+debug = true          # keep symbols; profiling this later is expected
