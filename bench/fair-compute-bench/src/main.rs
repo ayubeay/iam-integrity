@@ -90,7 +90,7 @@ fn parse_args() -> Config {
     let mut i = 0;
     while i < argv.len() {
         let arg = argv[i].as_str();
-        let mut next = |i: &mut usize| -> String {
+        let next = |i: &mut usize| -> String {
             *i += 1;
             match argv.get(*i) {
                 Some(v) => v.clone(),
