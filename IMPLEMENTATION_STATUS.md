@@ -45,11 +45,11 @@ Last full audit: **2026-07-15** (this file's baseline).
   HELIX-JANUS (only after deliberate equities extension), Backpack (dormant)
 - **Next milestone:** first OHLCV consumer integration (poi-engine
   synthetic-candle replacement, then Momentum Sniper evaluation)
-- **Verified:** 2026-07-17 (19h production evidence: 2,400+ requests across
-  3 data types, cache hit rates 71-92%; survived a real GeckoTerminal
-  429 incident — circuit breaker opened, 46 skips, 56 exhausted served —
-  while consumer saw zero fallbacks. Failed Railway build d82e2d59 was the
-  docs-only BCMS commit during the GitHub outage; production runs b2da2f1)
+- **Verified:** 2026-07-21 (66h three-datatype evidence: 46,300+ requests,
+  ZERO exhausted; swap_metrics 34,215 served at 78% cache hit with 7,554
+  upstream calls at 99.95% success — 1.9 upstream/min matching the design's
+  ~2/min prediction; negative cache and stale-serving both exercised in
+  production; prior verification 2026-07-17 stands)
 
 ## 🟢 poi-engine — production
 
@@ -73,9 +73,12 @@ Last full audit: **2026-07-15** (this file's baseline).
 - **Provider relationships:** consumes api-connect for ALL THREE data
   types (price, OHLCV 5m/4h, swap metrics — d108852); CoinGecko and
   direct Helius retained as fail-open fallbacks only
-- **Next milestone:** 24h Phase C verification read (swap_count_1m
-  population rate in snapshots; sustained zero 429s; source-tag
-  distribution), then routine operation
+- **Next milestone:** routine operation. Phase C CLOSED 2026-07-21 (66h
+  read): poller 429 rate 99.6% -> 2.7% (30,256 fetches, 97.3% via
+  api-connect; 826 fail-open fallbacks absorbed cleanly by preserved
+  backoff). Optional Phase D tuning identified with evidence:
+  API_CONNECT_SWAP_TIMEOUT_MS 1500->2500 (helius-swap upstream median ~1s,
+  tail past 1.5s caused the 823 shim timeouts)
 - **Verified:** 2026-07-17 (19h post-OHLCV evidence: 796/796/796
   price/5m/4h api-connect successes, ZERO fallbacks, CoinGecko and
   synthetic candles never invoked; rode out a GeckoTerminal 429 incident
