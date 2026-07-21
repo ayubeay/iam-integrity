@@ -191,4 +191,41 @@ def dynamic_pathway(artist: str, steps: int = 5):
 def serve_app():
     return FileResponse(str(Path(__file__).parent / "static" / "app.html"))
 
+
+# ── Feedback (beta) ─────────────────────────────────────────
+import json as _json, os as _os, time as _time
+from fastapi import Body, HTTPException
+
+_FEEDBACK_FILE = Path(__file__).parent.parent / "data" / "feedback.jsonl"
+
+@app.post("/api/feedback")
+def submit_feedback(payload: dict = Body(...)):
+    entry = {
+        "category": str(payload.get("category", ""))[:40],
+        "comment": str(payload.get("comment", ""))[:2000],
+        "context": payload.get("context", {}),
+        "received": _time.strftime("%Y-%m-%dT%H:%M:%SZ", _time.gmtime()),
+    }
+    if not entry["category"]:
+        raise HTTPException(400, "category required")
+    line = _json.dumps(entry, ensure_ascii=False)
+    print("FEEDBACK " + line, flush=True)  # survives in Railway logs even across deploys
+    try:
+        _FEEDBACK_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(_FEEDBACK_FILE, "a") as f:
+            f.write(line + "\n")
+    except Exception as e:
+        print("FEEDBACK_FILE_ERROR " + str(e), flush=True)
+    return {"ok": True}
+
+@app.get("/api/feedback")
+def read_feedback(key: str = ""):
+    expected = _os.environ.get("FEEDBACK_KEY", "")
+    if not expected or key != expected:
+        raise HTTPException(403, "set FEEDBACK_KEY env var and pass ?key=")
+    if not _FEEDBACK_FILE.exists():
+        return {"count": 0, "items": []}
+    items = [_json.loads(l) for l in open(_FEEDBACK_FILE) if l.strip()]
+    return {"count": len(items), "items": items}
+
 app.mount("/", StaticFiles(directory=str(Path(__file__).parent / "static"), html=True), name="static")
