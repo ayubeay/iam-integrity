@@ -435,6 +435,23 @@ textarea.input { min-height:88px; resize:vertical; }
 .ab-close { background:none; border:0; color:var(--sk-text-3); font-size:15px; cursor:pointer; flex-shrink:0; }
 .ab-seek { width:100%; margin-top:8px; accent-color:var(--sk-accent); height:4px; cursor:pointer; }
 .ab-times { display:flex; justify-content:space-between; color:var(--sk-text-3); font-size:10.5px; margin-top:3px; }
+.deck-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:760px) { .deck-grid { grid-template-columns:1fr; } }
+.deck { background:var(--sk-card); border:1px solid var(--sk-border); border-radius:14px; padding:14px; }
+.deck.playing { border-color:var(--sk-accent); box-shadow:var(--sk-glow-soft); }
+.deck-tag { font-size:10.5px; font-weight:700; letter-spacing:.12em; color:var(--sk-accent-bright); text-transform:uppercase; margin-bottom:8px; }
+.deck select { width:100%; background:var(--sk-card-2); border:1px solid var(--sk-border); color:var(--sk-text); border-radius:9px; padding:9px 10px; font-size:12.5px; margin-bottom:10px; font-family:inherit; }
+.deck-wave { width:100%; height:64px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:9px; display:block; cursor:pointer; }
+.deck-row { display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+.deck-btn { min-width:44px; height:38px; border-radius:9px; border:1px solid var(--sk-border); background:var(--sk-card-2); color:var(--sk-text); font-size:13px; cursor:pointer; padding:0 12px; }
+.deck-btn:hover { border-color:var(--sk-accent); }
+.deck-btn.primary { background:linear-gradient(180deg, var(--sk-accent), var(--sk-accent-deep)); color:#fff; border:0; }
+.deck-slider { flex:1; accent-color:var(--sk-accent); min-width:80px; }
+.deck-lbl { color:var(--sk-text-3); font-size:10.5px; min-width:52px; }
+.deck-time { color:var(--sk-text-2); font-size:11px; font-variant-numeric:tabular-nums; }
+.xfader-card { background:var(--sk-card); border:1px solid var(--sk-border); border-radius:14px; padding:14px 18px; margin-top:14px; display:flex; align-items:center; gap:14px; }
+.xfader-card input { flex:1; accent-color:var(--sk-accent); }
+.xf-tag { font-family:'Space Grotesk'; font-weight:700; font-size:13px; color:var(--sk-text-2); }
 .lf-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px; padding:12px 14px; margin-bottom:9px; }
 .local-badge { display:inline-flex; font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--sk-positive); background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); border-radius:999px; padding:2px 8px; text-transform:uppercase; }
 .agent-hero-retired {
@@ -721,6 +738,7 @@ textarea.input { min-height:88px; resize:vertical; }
       <div class="card" style="margin-bottom:16px;">
         <div style="font-family:'Space Grotesk'; font-weight:600; font-size:16px; margin-bottom:6px;">Your music, on this device</div>
         <div style="color:var(--sk-text-2); font-size:13px; line-height:1.6; margin-bottom:14px;">Import MP3, WAV, or M4A files you own. They play inside SoundKeep — in the Session view, in crates, everywhere — and Sonic learns from real listening. Files stay in your browser; nothing is uploaded.</div>
+        <button class="btn btn-ghost" onclick="nav('decks')" style="float:right;">🎛 Practice Decks</button>
         <button class="btn btn-primary" id="importBtn">＋ Import audio files</button>
         <input type="file" id="importInput" accept="audio/*" multiple style="display:none;">
       </div>
@@ -749,6 +767,39 @@ textarea.input { min-height:88px; resize:vertical; }
     </section>
 
     <!-- STATS -->
+    <section class="view" id="view-decks">
+      <div class="beta-note">🎛 <span><b>Practice Decks</b> — load two of your imported files, hear them together, practice the blend. Prep tool, not a performance rig: tempo shift affects pitch (no time-stretch yet), and only local files load here.</span></div>
+      <div class="deck-grid">
+        <div class="deck" id="deckA">
+          <div class="deck-tag">Deck A</div>
+          <select data-deck="0"></select>
+          <canvas class="deck-wave" data-deck="0" width="600" height="64"></canvas>
+          <div class="deck-row">
+            <button class="deck-btn primary" data-play="0">▶</button>
+            <button class="deck-btn" data-cue-set="0" title="Set cue at current position">Set Cue</button>
+            <button class="deck-btn" data-cue-go="0" title="Jump to cue">Cue</button>
+            <span class="deck-time" data-time="0">0:00 / 0:00</span>
+          </div>
+          <div class="deck-row"><span class="deck-lbl">Volume</span><input type="range" class="deck-slider" data-vol="0" min="0" max="100" value="100"></div>
+          <div class="deck-row"><span class="deck-lbl">Tempo</span><input type="range" class="deck-slider" data-tempo="0" min="92" max="108" value="100"><span class="deck-time" data-tempoval="0">100%</span></div>
+        </div>
+        <div class="deck" id="deckB">
+          <div class="deck-tag">Deck B</div>
+          <select data-deck="1"></select>
+          <canvas class="deck-wave" data-deck="1" width="600" height="64"></canvas>
+          <div class="deck-row">
+            <button class="deck-btn primary" data-play="1">▶</button>
+            <button class="deck-btn" data-cue-set="1" title="Set cue at current position">Set Cue</button>
+            <button class="deck-btn" data-cue-go="1" title="Jump to cue">Cue</button>
+            <span class="deck-time" data-time="1">0:00 / 0:00</span>
+          </div>
+          <div class="deck-row"><span class="deck-lbl">Volume</span><input type="range" class="deck-slider" data-vol="1" min="0" max="100" value="100"></div>
+          <div class="deck-row"><span class="deck-lbl">Tempo</span><input type="range" class="deck-slider" data-tempo="1" min="92" max="108" value="100"><span class="deck-time" data-tempoval="1">100%</span></div>
+        </div>
+      </div>
+      <div class="xfader-card"><span class="xf-tag">A</span><input type="range" id="xfader" min="0" max="1000" value="500"><span class="xf-tag">B</span></div>
+    </section>
+
     <section class="view" id="view-stats">
       <div id="statsContent"></div>
     </section>
@@ -854,7 +905,7 @@ function toast(msg) {
 }
 
 /* router */
-const TITLES = { home:'Home', search:'Discover', library:'Library', crates:'DJ Crates', downloads:'Downloads', stems:'Stems', agents:'Agents', stats:'Stats', session:'Session' };
+const TITLES = { home:'Home', search:'Discover', library:'Library', crates:'DJ Crates', downloads:'Downloads', stems:'Stems', agents:'Agents', stats:'Stats', session:'Session', decks:'Practice Decks' };
 function nav(view) { location.hash = view; }
 function renderRoute() {
   const view = (location.hash || '#home').slice(1).split('/')[0];
@@ -866,6 +917,7 @@ function renderRoute() {
   if (v === 'crates') renderCratesInto($('cratesContent'));
   if (v === 'stats') renderStats();
   if (v === 'downloads') { renderLocalFiles(); }
+  if (v === 'decks') { initDecks(); }
   if (v === 'home') renderHome();
   if (v === 'session') renderSession();
 }
@@ -1456,7 +1508,8 @@ function renderCratesInto(el) {
   let html = '<div class="row-gap" style="margin-bottom:16px;">' +
     '<input class="input" id="newCrateName" placeholder="New crate name (e.g. Warm-up, Peak Hour, Wedding Set)\u2026">' +
     '<button class="btn btn-primary" id="newCrateBtn">Create</button>' +
-  '</div>';
+  '</div>' +
+  '<button class="btn btn-ghost btn-sm" onclick="nav(\'decks\')" style="margin-bottom:16px;">🎛 Practice this set in Decks</button>';
   if (!crates.length) {
     html += emptyState('\u25a6', 'No crates yet', 'Crates are how DJs organize sets \u2014 warm-up, build, peak. Create one, then add tracks from Library \u2192 Tracks.');
   }
@@ -1890,6 +1943,136 @@ $('fbSend').addEventListener('click', async () => {
 
 $('importBtn').addEventListener('click', () => $('importInput').click());
 $('importInput').addEventListener('change', (e) => { if (e.target.files.length) importFiles(Array.from(e.target.files)); e.target.value = ''; });
+
+/* ── Practice Decks — two-deck prep player on Web Audio ── */
+let dkCtx = null, dkMaster = null;
+const decks = [null, null].map(() => ({ audio: null, srcNode: null, gain: null, key: null, buf: null, cue: 0, vol: 1 }));
+function dkEnsureCtx() {
+  if (dkCtx) return;
+  dkCtx = new (window.AudioContext || window.webkitAudioContext)();
+  dkMaster = dkCtx.createGain();
+  dkMaster.connect(dkCtx.destination);
+}
+function dkApplyMix() {
+  const x = ($('xfader').value | 0) / 1000;
+  const gA = Math.cos(x * Math.PI / 2), gB = Math.sin(x * Math.PI / 2);
+  if (decks[0].gain) decks[0].gain.gain.value = gA * decks[0].vol;
+  if (decks[1].gain) decks[1].gain.gain.value = gB * decks[1].vol;
+}
+async function dkLoad(i, key) {
+  dkEnsureCtx();
+  const d = decks[i];
+  if (d.audio) { d.audio.pause(); }
+  const blob = await idbGet(key);
+  if (!blob) { toast('File not found — re-import it in Downloads'); return; }
+  if (!d.audio) {
+    d.audio = new Audio();
+    d.srcNode = dkCtx.createMediaElementSource(d.audio);
+    d.gain = dkCtx.createGain();
+    d.srcNode.connect(d.gain); d.gain.connect(dkMaster);
+    d.audio.addEventListener('timeupdate', () => dkDrawHead(i));
+    d.audio.addEventListener('ended', () => { document.querySelector('[data-play="' + i + '"]').textContent = '▶'; document.getElementById(i ? 'deckB' : 'deckA').classList.remove('playing'); });
+  }
+  d.key = key; d.cue = (store.get('deck_cues', {})[key]) || 0; d.buf = null;
+  d.audio.src = URL.createObjectURL(blob);
+  const parts = key.split('::');
+  logListen('start', parts[0], parts.slice(1).join('::'), 0, 0);
+  dkApplyMix();
+  blob.arrayBuffer().then(ab => dkCtx.decodeAudioData(ab)).then(buf => { d.buf = buf; dkDrawWave(i); }).catch(() => {});
+}
+function dkDrawWave(i) {
+  const cv = document.querySelector('canvas[data-deck="' + i + '"]');
+  const g = cv.getContext('2d'); const d = decks[i];
+  g.clearRect(0, 0, cv.width, cv.height);
+  if (!d.buf) return;
+  const ch = d.buf.getChannelData(0), N = 300, step = Math.floor(ch.length / N);
+  g.fillStyle = 'rgba(83,168,255,0.75)';
+  for (let n = 0; n < N; n++) {
+    let peak = 0;
+    for (let j = 0; j < step; j += 50) { const v = Math.abs(ch[n * step + j] || 0); if (v > peak) peak = v; }
+    const h = Math.max(2, peak * cv.height);
+    g.fillRect(n * (cv.width / N), (cv.height - h) / 2, Math.max(1, cv.width / N - 1), h);
+  }
+  dkDrawHead(i);
+}
+function dkDrawHead(i) {
+  const d = decks[i]; if (!d.audio || !d.buf) return;
+  dkDrawWaveBase(i);
+  const cv = document.querySelector('canvas[data-deck="' + i + '"]');
+  const g = cv.getContext('2d');
+  const x = (d.audio.currentTime / (d.audio.duration || 1)) * cv.width;
+  g.fillStyle = '#F7FAFF'; g.fillRect(x, 0, 2, cv.height);
+  if (d.cue) { g.fillStyle = '#34D399'; g.fillRect((d.cue / (d.audio.duration || 1)) * cv.width, 0, 2, cv.height); }
+  const t = document.querySelector('[data-time="' + i + '"]');
+  t.textContent = fmtTime(d.audio.currentTime) + ' / ' + fmtTime(d.audio.duration || 0);
+}
+function dkDrawWaveBase(i) {
+  const cv = document.querySelector('canvas[data-deck="' + i + '"]');
+  const g = cv.getContext('2d'); const d = decks[i];
+  g.clearRect(0, 0, cv.width, cv.height);
+  if (!d.buf) return;
+  const ch = d.buf.getChannelData(0), N = 300, step = Math.floor(ch.length / N);
+  g.fillStyle = 'rgba(83,168,255,0.75)';
+  for (let n = 0; n < N; n++) {
+    let peak = 0;
+    for (let j = 0; j < step; j += 50) { const v = Math.abs(ch[n * step + j] || 0); if (v > peak) peak = v; }
+    const h = Math.max(2, peak * cv.height);
+    g.fillRect(n * (cv.width / N), (cv.height - h) / 2, Math.max(1, cv.width / N - 1), h);
+  }
+}
+async function initDecks() {
+  const keys = await idbKeys();
+  document.querySelectorAll('select[data-deck]').forEach(sel => {
+    const i = sel.dataset.deck | 0;
+    sel.innerHTML = '<option value="">— load an imported file —</option>' +
+      keys.map(k => '<option value="' + esc(k) + '"' + (decks[i].key === k ? ' selected' : '') + '>' + esc(k.replace('::', ' — ')) + '</option>').join('');
+    sel.onchange = () => { if (sel.value) dkLoad(i, sel.value); };
+  });
+  if (!keys.length) toast('Import files in Downloads first — decks play your own audio');
+}
+document.addEventListener('click', (e) => {
+  const p = e.target.closest('[data-play]');
+  if (p) {
+    const i = p.dataset.play | 0, d = decks[i];
+    if (!d.audio) { toast('Load a file on this deck first'); return; }
+    dkEnsureCtx(); if (dkCtx.state === 'suspended') dkCtx.resume();
+    const card = document.getElementById(i ? 'deckB' : 'deckA');
+    if (d.audio.paused) { d.audio.play(); p.textContent = '⏸'; card.classList.add('playing'); }
+    else { d.audio.pause(); p.textContent = '▶'; card.classList.remove('playing'); }
+    return;
+  }
+  const cs = e.target.closest('[data-cue-set]');
+  if (cs) {
+    const i = cs.dataset.cueSet | 0, d = decks[i];
+    if (!d.audio) return;
+    d.cue = d.audio.currentTime;
+    const cues = store.get('deck_cues', {}); cues[d.key] = d.cue; store.set('deck_cues', cues);
+    toast('Cue set at ' + fmtTime(d.cue)); dkDrawHead(i);
+    return;
+  }
+  const cg = e.target.closest('[data-cue-go]');
+  if (cg) {
+    const i = cg.dataset.cueGo | 0, d = decks[i];
+    if (d.audio) d.audio.currentTime = d.cue || 0;
+  }
+});
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'xfader') { dkApplyMix(); return; }
+  if (e.target.dataset.vol !== undefined) { decks[e.target.dataset.vol | 0].vol = e.target.value / 100; dkApplyMix(); return; }
+  if (e.target.dataset.tempo !== undefined) {
+    const i = e.target.dataset.tempo | 0, d = decks[i];
+    if (d.audio) d.audio.playbackRate = e.target.value / 100;
+    document.querySelector('[data-tempoval="' + i + '"]').textContent = e.target.value + '%';
+  }
+});
+document.addEventListener('click', (e) => {
+  const cv = e.target.closest('canvas[data-deck]');
+  if (!cv) return;
+  const i = cv.dataset.deck | 0, d = decks[i];
+  if (!d.audio || !d.audio.duration) return;
+  d.audio.currentTime = (e.offsetX / cv.clientWidth) * d.audio.duration;
+  dkDrawHead(i);
+});
 
 renderRoute();
 updateMiniplayer();
