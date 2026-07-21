@@ -136,14 +136,49 @@ any number from this crate until that script passes end to end.
 
 ## Status
 
-- [x] Milestone A — workload specified, cross-verified against an independent
-      reference, harness and JSON export written
-- [ ] Milestone A gate — `./verify.sh` passes on a real machine (not yet run)
-- [ ] Milestone B — same source compiled to `wasm32`, browser page with
-      explicit Start/Stop, same JSON schema
+- [x] Milestone A — native Rust, deterministic, KAT-verified, JSON export
+- [x] Milestone A gate — `./verify.sh` green on native (Apple M-series)
+- [x] Milestone B — same `workload.rs` compiled to `wasm32`, browser page with
+      explicit Start/Stop, identical `fair-compute-bench/1` JSON schema
+- [ ] Milestone B gate — `./build-wasm.sh` succeeds and the browser page's
+      known-answer check passes (not yet run — no wasm toolchain in authoring env)
 - [ ] Milestone C — first same-machine browser-vs-native comparison
 
-Milestone B does not begin until `./verify.sh` passes on the target machine.
+## Milestone B — the browser harness
+
+`web/index.html` runs the **same** `workload.rs` compiled to `wasm32`, via a raw
+C-ABI export surface (`src/lib.rs`, `#[cfg(target_arch = "wasm32")]`). No
+wasm-bindgen, no wasm-pack, no npm — the crate stays zero-dependency and no
+framework glue enters the timed region.
+
+```
+./build-wasm.sh                 # adds the wasm32 target, builds, copies the .wasm into web/
+cd web && python3 -m http.server 8000
+# open http://localhost:8000/  (file:// cannot fetch the wasm)
+```
+
+The page enforces the product doctrine from the reserve at the code level: it
+does **nothing until you press Start**, runs only in the focused tab, has a Stop
+control, makes no network calls, and does no background execution. There is no
+auto-run path.
+
+On load it runs the five known-answer vectors and shows pass/fail against the
+native reference, and it prints the wasm `implementation_hash` for you to
+eyeball against the native binary's `implementation` line. The determinism claim
+is exactly this: **browser and native must produce byte-identical digests for
+identical parameters.** The algorithm has already been cross-verified across
+three independent implementations — Rust, `reference/reference_workload.py`, and
+a JavaScript/BigInt re-derivation — so a wasm digest that disagrees means the
+build, not the algorithm, is wrong.
+
+Results download as JSON in the **same `fair-compute-bench/1` schema** the native
+runner emits (`harness.runtime` is `"browser"` vs `"native"`), so Milestone C is
+just laying the two curves on one axis. Browser timers are deliberately coarsened
+by the engine, so the page reports `min` prominently and warns when relative
+spread exceeds 5%.
+
+Milestone C does not begin until `./build-wasm.sh` succeeds and the page's
+known-answer check passes on the target machine.
 
 ## Not in scope
 

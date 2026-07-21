@@ -14,6 +14,9 @@ publish = false
 [lib]
 name = "fair_compute_bench"
 path = "src/lib.rs"
+# rlib for the native binary and tests; cdylib so the wasm32 build emits a
+# loadable .wasm. On native the cdylib is a harmless unused .dylib.
+crate-type = ["rlib", "cdylib"]
 
 [[bin]]
 name = "fair-compute-bench"

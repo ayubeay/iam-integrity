@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>fair-compute-bench — browser harness (Milestone B)</title>
+<style>
+  :root {
+    --bg: #14140f; --panel: #1d1d17; --ink: #e9e7dc; --muted: #a8a69a;
+    --line: #34342b; --accent: #5dcaa5; --warn: #efb64f; --bad: #e2726f;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 system-ui, -apple-system, Segoe UI, sans-serif;
+    padding: 24px; max-width: 860px; margin: 0 auto;
+  }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 2px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 16px 18px; margin: 0 0 16px;
+  }
+  .doctrine { border-color: #3a4a3f; }
+  .doctrine b { color: var(--accent); font-weight: 500; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 4px; }
+  input, select {
+    background: #12120d; color: var(--ink); border: 1px solid var(--line);
+    border-radius: 6px; padding: 7px 9px; font: inherit; font-size: 14px; width: 150px;
+  }
+  button {
+    font: inherit; font-size: 14px; border-radius: 6px; padding: 9px 18px;
+    border: 1px solid var(--line); background: #232319; color: var(--ink); cursor: pointer;
+  }
+  button.go { background: var(--accent); color: #062018; border-color: var(--accent); font-weight: 500; }
+  button.stop { background: #2a1c1b; color: var(--bad); border-color: #4a2c2b; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .stat { font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  .mono { font-family: var(--mono); font-size: 12px; color: var(--muted); word-break: break-all; }
+  .big { font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .pill { font-size: 12px; padding: 2px 9px; border-radius: 20px; display: inline-block; }
+  .ok { background: #123a2c; color: var(--accent); }
+  .fail { background: #3a1c1b; color: var(--bad); }
+  .pending { background: #2c2c22; color: var(--muted); }
+  #log { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: pre-wrap;
+         max-height: 190px; overflow: auto; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+  <h1>fair-compute-bench — browser harness</h1>
+  <p class="sub">Milestone B · runtime = browser · schema fair-compute-bench/1 · the same <span class="mono">workload.rs</span> the native binary runs, compiled to wasm32</p>
+
+  <div class="panel doctrine">
+    <b>This page does nothing until you press Start.</b> It runs a benchmark in
+    this tab, on this device, using this tab's CPU — and only while you watch.
+    No token, no network calls, no background execution, no hidden mining. Stop
+    halts it between runs. Close the tab and it is gone. See the product
+    doctrine in the reserve document.
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <div>
+        <label for="mib">scratchpad (MiB, power of two)</label>
+        <select id="mib">
+          <option>1</option><option>2</option><option>4</option>
+          <option selected>8</option><option>16</option><option>32</option>
+          <option>64</option><option>128</option><option>256</option>
+        </select>
+      </div>
+      <div>
+        <label for="steps">steps / run</label>
+        <input id="steps" value="5000000" />
+      </div>
+      <div>
+        <label for="seed">seed (dec or 0x…)</label>
+        <input id="seed" value="0" />
+      </div>
+      <div>
+        <label for="runs">timed runs</label>
+        <input id="runs" value="7" style="width:80px" />
+      </div>
+      <div>
+        <label for="warmup">warmup</label>
+        <input id="warmup" value="2" style="width:80px" />
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <button id="start" class="go" disabled>Start</button>
+      <button id="stop" class="stop" disabled>Stop</button>
+      <button id="download" disabled>Download JSON</button>
+      <span id="wasmstate" class="pill pending">loading wasm…</span>
+    </div>
+    <div class="hint" id="progress"></div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between; align-items:baseline;">
+      <div>
+        <label>median ns / dependent access</label>
+        <div class="big stat" id="median">—</div>
+      </div>
+      <div>
+        <label>min (least-contended)</label>
+        <div class="big stat" id="min">—</div>
+      </div>
+      <div>
+        <label>relative spread</label>
+        <div class="big stat" id="spread">—</div>
+      </div>
+      <div>
+        <label>determinism across runs</label>
+        <div><span id="det" class="pill pending">—</span></div>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label>digest</label>
+      <div class="mono" id="digest">—</div>
+    </div>
+    <table id="runtable" style="margin-top:14px; display:none;">
+      <thead><tr><th>run</th><th>ms</th><th>ns/step</th><th>Mstep/s</th><th>digest[0..16]</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between; align-items:baseline;">
+      <div>
+        <label>cross-runtime check vs native known-answer vectors</label>
+        <div id="katline"><span id="kat" class="pill pending">not yet run</span></div>
+      </div>
+      <div>
+        <label>implementation_hash (must equal native)</label>
+        <div class="mono" id="implhash">—</div>
+      </div>
+    </div>
+    <div class="hint">Browser and native must produce identical digests for identical parameters. This is the whole determinism claim; if it fails, the two are not running the same code.</div>
+  </div>
+
+  <div class="panel">
+    <label>log</label>
+    <div id="log"></div>
+  </div>
+
+<script>
+"use strict";
+
+// Known-answer vectors, copied from tests/determinism.rs. These were generated
+// by the independent Python reference, NOT by the wasm. Agreement here proves
+// the browser reproduces the native/reference digests exactly.
+const KAT = [
+  { seed: 0n, words: 1024n, steps: 10000n, hex: "898d0f747b85e8c4e14d3139cf85723946c2a3a5caf87093153263f8d698a4d8" },
+  { seed: 0n, words: 1024n, steps: 10001n, hex: "4dcff0af62e97a257530d8f5f09ff656a09b980857738fff3a832399597a1767" },
+  { seed: 1n, words: 1024n, steps: 10000n, hex: "e47daa135f3f80ee5f430c033482fad6f1bf2f3aa7d5b251b6bac3b3e40ee9f0" },
+  { seed: 0xDEADBEEFCAFEF00Dn, words: 4096n, steps: 100000n, hex: "d2cf0d099685b3dc5746b1943047b8af89efa3062305a24bb80ed023655be3c6" },
+  { seed: 0x0123456789ABCDEFn, words: 65536n, steps: 250000n, hex: "718fcb7c78b1a0f19151e3604bfec98b4a0f5181a7abfbe9a39a189f6d6f3199" },
+];
+
+const U64 = 0xFFFFFFFFFFFFFFFFn;
+let wasm = null, mem = null, exports = null;
+let stopFlag = false, lastResult = null;
+
+const $ = (id) => document.getElementById(id);
+const log = (m) => { const el = $("log"); el.textContent += m + "\n"; el.scrollTop = el.scrollHeight; };
+
+function memViewU64(ptr, len) { return new BigUint64Array(mem.buffer, ptr, len); }
+
+function digestHex(outPtr) {
+  const v = memViewU64(outPtr, 4);
+  let s = "";
+  for (let i = 0; i < 4; i++) s += v[i].toString(16).padStart(16, "0");
+  return s;
+}
+
+// Run one full workload (alloc + init + run + free) and return the digest hex.
+function runOnce(seed, words, steps) {
+  const ptr = exports.fcb_alloc(Number(words));
+  if (ptr === 0) throw new Error("fcb_alloc returned null for " + words + " words");
+  const out = exports.fcb_alloc(4); // 4-word scratch for the digest
+  try {
+    exports.fcb_init(ptr, Number(words), seed);
+    exports.fcb_run(ptr, Number(words), steps, seed, out);
+    return digestHex(out);
+  } finally {
+    exports.fcb_free(ptr, Number(words));
+    exports.fcb_free(out, 4);
+  }
+}
+
+// Timed run: init OUTSIDE timing (matches native), then time run_chain only.
+function timedRun(ptr, seed, words, steps) {
+  const out = exports.fcb_alloc(4);
+  try {
+    exports.fcb_init(ptr, Number(words), seed);
+    const t0 = performance.now();
+    exports.fcb_run(ptr, Number(words), steps, seed, out);
+    const t1 = performance.now();
+    return { ms: t1 - t0, digest: digestHex(out) };
+  } finally {
+    exports.fcb_free(out, 4);
+  }
+}
+
+function implHashHex() {
+  const out = exports.fcb_alloc(4);
+  try {
+    exports.fcb_impl_hash(out);
+    return digestHex(out);
+  } finally { exports.fcb_free(out, 4); }
+}
+
+function parseU64(s) {
+  s = s.trim().replace(/_/g, "");
+  const v = s.startsWith("0x") || s.startsWith("0X") ? BigInt(s) : BigInt(s);
+  return v & U64;
+}
+
+async function loadWasm() {
+  // Proxy import object: satisfies any imports the toolchain emits without us
+  // needing to know them ahead of time. wasm32-unknown-unknown cdylib normally
+  // needs none, but this keeps the page robust across toolchain versions.
+  const noop = () => 0;
+  const importObject = new Proxy({}, {
+    get: () => new Proxy({}, { get: () => noop })
+  });
+  try {
+    const resp = await fetch("fair_compute_bench.wasm");
+    if (!resp.ok) throw new Error("HTTP " + resp.status + " fetching wasm");
+    const { instance } = await WebAssembly.instantiateStreaming(resp, importObject)
+      .catch(async () => {
+        const buf = await (await fetch("fair_compute_bench.wasm")).arrayBuffer();
+        return WebAssembly.instantiate(buf, importObject);
+      });
+    exports = instance.exports;
+    mem = exports.memory;
+    for (const fn of ["fcb_alloc","fcb_free","fcb_init","fcb_run","fcb_impl_hash"]) {
+      if (typeof exports[fn] !== "function") throw new Error("missing export: " + fn);
+    }
+    wasm = instance;
+    $("implhash").textContent = implHashHex();
+    $("wasmstate").textContent = "wasm ready";
+    $("wasmstate").className = "pill ok";
+    $("start").disabled = false;
+    log("wasm loaded. implementation_hash = " + $("implhash").textContent);
+    log("Compare that hash against the native binary's `implementation` line.");
+    runKat();
+  } catch (e) {
+    $("wasmstate").textContent = "wasm failed";
+    $("wasmstate").className = "pill fail";
+    log("ERROR loading wasm: " + e.message);
+    log("Did you build it? Run ./build-wasm.sh, then serve web/ over http.");
+  }
+}
+
+function runKat() {
+  log("running known-answer vectors…");
+  let pass = 0;
+  for (const k of KAT) {
+    const got = runOnce(k.seed, k.words, k.steps);
+    const ok = got === k.hex;
+    if (ok) pass++;
+    log(`  KAT seed=0x${k.seed.toString(16).padStart(16,"0")} words=${k.words} steps=${k.steps} -> ${ok ? "OK" : "MISMATCH"}`);
+    if (!ok) log(`    expected ${k.hex}\n    got      ${got}`);
+  }
+  const el = $("kat");
+  if (pass === KAT.length) {
+    el.textContent = `PASS — ${pass}/${KAT.length} match native reference`;
+    el.className = "pill ok";
+  } else {
+    el.textContent = `FAIL — ${pass}/${KAT.length}`;
+    el.className = "pill fail";
+  }
+}
+
+async function start() {
+  stopFlag = false;
+  $("start").disabled = true; $("stop").disabled = false; $("download").disabled = true;
+  $("runtable").style.display = "none";
+  $("runtable").querySelector("tbody").innerHTML = "";
+
+  const mib = BigInt($("mib").value);
+  const words = (mib * 1024n * 1024n) / 8n;
+  const steps = parseU64($("steps").value);
+  const seed = parseU64($("seed").value);
+  const runs = parseInt($("runs").value, 10);
+  const warmup = parseInt($("warmup").value, 10);
+
+  if (!(words > 0n) || (words & (words - 1n)) !== 0n) { log("bad scratchpad size"); return reset(); }
+  if (steps === 0n) { log("steps must be > 0"); return reset(); }
+
+  log(`\nstart: ${mib} MiB (${words} words), ${steps} steps, ${runs} runs, ${warmup} warmup, seed=0x${seed.toString(16)}`);
+
+  const ptr = exports.fcb_alloc(Number(words));
+  if (ptr === 0) { log("allocation failed — try a smaller scratchpad"); return reset(); }
+
+  const results = [];
+  try {
+    for (let w = 0; w < warmup && !stopFlag; w++) {
+      $("progress").textContent = `warmup ${w + 1}/${warmup}…`;
+      timedRun(ptr, seed, words, steps);
+      await new Promise(r => setTimeout(r));
+    }
+    for (let i = 0; i < runs && !stopFlag; i++) {
+      $("progress").textContent = `run ${i + 1}/${runs}…`;
+      const r = timedRun(ptr, seed, words, steps);
+      const nsPerStep = (r.ms * 1e6) / Number(steps);
+      const mstep = (Number(steps) / (r.ms / 1e3)) / 1e6;
+      results.push({ index: i, elapsed_ns: Math.round(r.ms * 1e6), ns_per_step: nsPerStep, digest: r.digest });
+      addRow(i, runs, r.ms, nsPerStep, mstep, r.digest);
+      await new Promise(r => setTimeout(r));
+    }
+  } finally {
+    exports.fcb_free(ptr, Number(words));
+  }
+
+  if (results.length === 0) { log("stopped before any timed run."); return reset(); }
+  summarize(results, { mib, words, steps, seed, runs, warmup });
+  reset();
+}
+
+function addRow(i, runs, ms, ns, mstep, digest) {
+  const t = $("runtable"); t.style.display = "";
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${i+1}/${runs}</td><td class="stat">${ms.toFixed(2)}</td>` +
+    `<td class="stat">${ns.toFixed(3)}</td><td class="stat">${mstep.toFixed(2)}</td>` +
+    `<td class="mono">${digest.slice(0,16)}</td>`;
+  t.querySelector("tbody").appendChild(tr);
+}
+
+function summarize(results, p) {
+  const first = results[0].digest;
+  const det = results.every(r => r.digest === first);
+  const ns = results.map(r => r.ns_per_step).sort((a,b) => a-b);
+  const n = ns.length;
+  const median = n % 2 ? ns[(n-1)/2] : (ns[n/2-1] + ns[n/2]) / 2;
+  const min = ns[0], max = ns[n-1];
+  const mean = ns.reduce((a,b)=>a+b,0) / n;
+  const stddev = Math.sqrt(ns.reduce((a,b)=>a+(b-mean)**2,0) / n);
+  const spread = median > 0 ? (max - min) / median : 0;
+
+  $("median").textContent = median.toFixed(1);
+  $("min").textContent = min.toFixed(1);
+  $("spread").textContent = (spread*100).toFixed(1) + "%";
+  const s = $("spread"); s.style.color = spread > 0.05 ? "var(--warn)" : "var(--ink)";
+  $("digest").textContent = first;
+  const d = $("det");
+  d.textContent = det ? "OK — all runs identical" : "FAILED";
+  d.className = "pill " + (det ? "ok" : "fail");
+
+  log(`\nns/step  min ${min.toFixed(3)}  median ${median.toFixed(3)}  max ${max.toFixed(3)}  stddev ${stddev.toFixed(3)}`);
+  log(`relative spread ${(spread*100).toFixed(2)}%${spread>0.05?"  <- noisy; quiet the machine before quoting":""}`);
+  log(`determinism: ${det ? "OK" : "FAILED"}`);
+  if (spread > 0.05) log("note: browsers coarsen performance.now(); for a citable number keep the tab focused and the machine quiet.");
+
+  lastResult = buildJson(results, p, { first, det, min, median, max, mean, stddev, spread });
+  $("download").disabled = false;
+}
+
+function buildJson(results, p, s) {
+  const md = navigator.deviceMemory ? navigator.deviceMemory : null;
+  return {
+    schema: "fair-compute-bench/1",
+    harness: { name: "fair-compute-bench", version: "0.1.0", runtime: "browser",
+               build_profile: "wasm32-release", label: "" },
+    workload: { name: "dependent-memory-latency-chain",
+                implementation_hash: $("implhash").textContent,
+                seed: Number(p.seed), scratchpad_words: Number(p.words),
+                scratchpad_bytes: Number(p.words) * 8, steps: Number(p.steps) },
+    host: { os: navigator.platform || "unknown", arch: "wasm32",
+            pointer_width_bits: 32,
+            cpu_model: "browser (not exposed)",
+            logical_cpus: navigator.hardwareConcurrency || 0,
+            user_agent: navigator.userAgent,
+            device_memory_gb: md },
+    protocol: { warmup_runs: p.warmup, timed_runs: p.runs,
+                init_excluded_from_timing: true,
+                scratchpad_reinitialised_between_runs: true, threads: 1,
+                timer: "performance.now (browser-coarsened)" },
+    runs: results,
+    summary: { digest: s.first, determinism_ok: s.det,
+               ns_per_step_min: +s.min.toFixed(6), ns_per_step_median: +s.median.toFixed(6),
+               ns_per_step_max: +s.max.toFixed(6), ns_per_step_mean: +s.mean.toFixed(6),
+               ns_per_step_stddev: +s.stddev.toFixed(6), relative_spread: +s.spread.toFixed(6),
+               steps_per_second_median: +(1e9 / s.median).toFixed(3) }
+  };
+}
+
+function download() {
+  if (!lastResult) return;
+  const w = lastResult.workload;
+  const name = `browser-${w.scratchpad_bytes/(1024*1024)}mib.json`;
+  const blob = new Blob([JSON.stringify(lastResult, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  URL.revokeObjectURL(a.href);
+  log("downloaded " + name);
+}
+
+function reset() {
+  $("start").disabled = false; $("stop").disabled = true;
+  $("progress").textContent = "";
+}
+
+$("start").addEventListener("click", start);
+$("stop").addEventListener("click", () => { stopFlag = true; log("stop requested — halting after current run."); });
+$("download").addEventListener("click", download);
+
+loadWasm();
+</script>
+</body>
+</html>
