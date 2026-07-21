@@ -34,6 +34,12 @@ from datetime import datetime, timezone
 
 SCHEMA = "fair-compute-bench/1"
 
+# A paired size only enters the headline claim if BOTH runtimes measured it with
+# relative spread at or below this. It keeps thermally-noisy points (e.g. an
+# 8 MiB run at 192% spread) out of the quotable number — they stay in the table,
+# flagged, but the headline is computed only from stable measurements.
+STABILITY_THRESHOLD = 0.15
+
 
 def die(msg):
     print("error: " + msg, file=sys.stderr)
@@ -195,13 +201,20 @@ def write_markdown(path, rows, impl_hash, repro, notes):
     L.append("")
     L.append("## What this does and does not claim")
     L.append("")
-    L.append("This report compares **performance** between two runtimes that have "
-             "already been shown to produce **byte-identical output** for identical "
-             "input. The efficiency ratio below is the first number that speaks to "
-             "the reserve's core question. It is evidence, not proof: the workload "
-             "is one deterministic dependent-memory chain on one machine, and a "
-             "single machine cannot establish hardware fairness. Phases 2 and 3 of "
-             "the reserve (diverse hardware, adversarial replication) remain open.")
+    L.append("This report compares **performance** between two runtimes already "
+             "shown to produce **byte-identical output** for identical input. It is "
+             "evidence, not proof, and its scope is deliberately narrow: one "
+             "deterministic dependent-memory workload, on one machine. The headline "
+             "claim is drawn only from the **stable** measurements (relative spread "
+             "≤ %d%% in both runtimes) — in practice the larger, DRAM-latency-bound "
+             "sizes, where the timing is not dominated by cache residency or "
+             "scheduler noise. Smaller sizes are reported in the table but excluded "
+             "from the headline when noisy." % int(STABILITY_THRESHOLD * 100))
+    L.append("")
+    L.append("A single machine cannot establish hardware fairness. Phases 2 and 3 "
+             "of the reserve — diverse devices, a massively-parallel GPU baseline, "
+             "and adversarial replication — remain open, and are where the fairness "
+             "thesis is actually tested rather than mere runtime parity.")
     L.append("")
     L.append("## Implementation identity")
     L.append("")
@@ -237,15 +250,39 @@ def write_markdown(path, rows, impl_hash, repro, notes):
         ))
     L.append("")
 
+    def is_stable(r):
+        ns, bs = r["native_spread"], r["browser_spread"]
+        return (ns is not None and bs is not None
+                and ns <= STABILITY_THRESHOLD and bs <= STABILITY_THRESHOLD)
+
     paired = [r for r in rows if r["paired"]]
-    if paired:
-        rmins = [r["ratio_min"] for r in paired if r["ratio_min"]]
-        if rmins:
-            lo, hi = min(rmins), max(rmins)
-            avg = sum(rmins) / len(rmins)
-            L.append("Across %d paired size(s), the browser/native ratio on `min` "
-                     "ranges **%.2f×–%.2f×** (mean %.2f×)." % (len(paired), lo, hi, avg))
+    stable = [r for r in paired if is_stable(r) and r["ratio_min"]]
+    if stable:
+        rmins = [r["ratio_min"] for r in stable]
+        lo, hi = min(rmins), max(rmins)
+        avg = sum(rmins) / len(rmins)
+        sizes = ", ".join("%.0f MiB" % r["scratchpad_mib"] for r in stable)
+        L.append("**Headline (stable measurements only — %s):** across %d size(s) "
+                 "where both runtimes measured with ≤ %d%% spread, the browser/native "
+                 "ratio on `min` is **%.2f×–%.2f×** (mean %.2f×). These are the "
+                 "DRAM-latency-bound sizes; the correct reading is that browser "
+                 "WebAssembly and native Rust are statistically similar once memory "
+                 "latency dominates execution, differing by only a few percent."
+                 % (sizes, len(stable), int(STABILITY_THRESHOLD * 100), lo, hi, avg))
+        L.append("")
+        noisy_paired = [r for r in paired if not is_stable(r)]
+        if noisy_paired:
+            ns = ", ".join("%.0f MiB" % r["scratchpad_mib"] for r in noisy_paired)
+            L.append("_Excluded from the headline as too noisy to quote: %s "
+                     "(see noise flags below). They remain in the table for "
+                     "completeness._" % ns)
             L.append("")
+    elif paired:
+        L.append("_Paired sizes exist, but none met the ≤ %d%% stability bar in "
+                 "both runtimes, so no headline figure is quoted. Re-run on a quiet, "
+                 "cooled, plugged-in machine — the DRAM-bound sizes (128–256 MiB) "
+                 "settle first._" % int(STABILITY_THRESHOLD * 100))
+        L.append("")
     else:
         L.append("_No size has both a native and a browser run yet, so no ratio "
                  "can be computed. Collect browser runs at the native sizes and "

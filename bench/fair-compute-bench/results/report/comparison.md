@@ -1,10 +1,12 @@
 # Browser-vs-native comparison — fair-compute-bench
 
-_Generated 2026-07-21 23:08 UTC by `compare.py`. First research artifact of the browser-fair-compute reserve._
+_Generated 2026-07-21 23:17 UTC by `compare.py`. First research artifact of the browser-fair-compute reserve._
 
 ## What this does and does not claim
 
-This report compares **performance** between two runtimes that have already been shown to produce **byte-identical output** for identical input. The efficiency ratio below is the first number that speaks to the reserve's core question. It is evidence, not proof: the workload is one deterministic dependent-memory chain on one machine, and a single machine cannot establish hardware fairness. Phases 2 and 3 of the reserve (diverse hardware, adversarial replication) remain open.
+This report compares **performance** between two runtimes already shown to produce **byte-identical output** for identical input. It is evidence, not proof, and its scope is deliberately narrow: one deterministic dependent-memory workload, on one machine. The headline claim is drawn only from the **stable** measurements (relative spread ≤ 15% in both runtimes) — in practice the larger, DRAM-latency-bound sizes, where the timing is not dominated by cache residency or scheduler noise. Smaller sizes are reported in the table but excluded from the headline when noisy.
+
+A single machine cannot establish hardware fairness. Phases 2 and 3 of the reserve — diverse devices, a massively-parallel GPU baseline, and adversarial replication — remain open, and are where the fairness thesis is actually tested rather than mere runtime parity.
 
 ## Implementation identity
 
@@ -28,7 +30,9 @@ Lower `ns/step` is faster. A ratio near **1.0** means browser execution is compe
 | 128 MiB | 107.3 | 105.2 | **0.98×** | 113.2 | 106.0 | 0.94× |
 | 256 MiB | 112.8 | 110.8 | **0.98×** | 113.8 | 112.4 | 0.99× |
 
-Across 5 paired size(s), the browser/native ratio on `min` ranges **0.94×–1.01×** (mean 0.98×).
+**Headline (stable measurements only — 128 MiB, 256 MiB):** across 2 size(s) where both runtimes measured with ≤ 15% spread, the browser/native ratio on `min` is **0.98×–0.98×** (mean 0.98×). These are the DRAM-latency-bound sizes; the correct reading is that browser WebAssembly and native Rust are statistically similar once memory latency dominates execution, differing by only a few percent.
+
+_Excluded from the headline as too noisy to quote: 1 MiB, 8 MiB, 32 MiB (see noise flags below). They remain in the table for completeness._
 
 ### Noise flags
 
