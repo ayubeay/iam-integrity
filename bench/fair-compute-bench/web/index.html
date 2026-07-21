@@ -95,6 +95,7 @@
     <div class="row" style="margin-top:16px;">
       <button id="start" class="go" disabled>Start</button>
       <button id="stop" class="stop" disabled>Stop</button>
+      <button id="scaling" disabled>Scaling check</button>
       <button id="download" disabled>Download JSON</button>
       <span id="wasmstate" class="pill pending">loading wasm…</span>
     </div>
@@ -194,17 +195,34 @@ function runOnce(seed, words, steps) {
   }
 }
 
-// Timed run: init OUTSIDE timing (matches native), then time run_chain only.
+// Timed run. Boundaries match native exactly:
+//   - init OUTSIDE timing (measured separately, reported)
+//   - TIMED region is the dependent-access loop ONLY (fcb_run_loop)
+//   - digest finalized AFTER the clock stops (measured separately)
+// fcb_run_loop returns the number of iterations it actually executed, so the
+// harness verifies executed === requested without trusting the JS argument.
 function timedRun(ptr, seed, words, steps) {
-  const out = exports.fcb_alloc(4);
+  const accOut = exports.fcb_alloc(1);
+  const digOut = exports.fcb_alloc(4);
   try {
+    const it0 = performance.now();
     exports.fcb_init(ptr, Number(words), seed);
+    const it1 = performance.now();
+
     const t0 = performance.now();
-    exports.fcb_run(ptr, Number(words), steps, seed, out);
+    const executed = exports.fcb_run_loop(ptr, Number(words), steps, seed, accOut);
     const t1 = performance.now();
-    return { ms: t1 - t0, digest: digestHex(out) };
+
+    const acc = memViewU64(accOut, 1)[0];
+    const d0 = performance.now();
+    exports.fcb_finalize(ptr, Number(words), steps, seed, acc, digOut);
+    const d1 = performance.now();
+
+    return { ms: t1 - t0, init_ms: it1 - it0, digest_ms: d1 - d0,
+             executed: executed, digest: digestHex(digOut) };
   } finally {
-    exports.fcb_free(out, 4);
+    exports.fcb_free(accOut, 1);
+    exports.fcb_free(digOut, 4);
   }
 }
 
@@ -248,6 +266,7 @@ async function loadWasm() {
     $("wasmstate").textContent = "wasm ready";
     $("wasmstate").className = "pill ok";
     $("start").disabled = false;
+    $("scaling").disabled = false;
     log("wasm loaded. implementation_hash = " + $("implhash").textContent);
     log("Compare that hash against the native binary's `implementation` line.");
     runKat();
@@ -310,9 +329,15 @@ async function start() {
     for (let i = 0; i < runs && !stopFlag; i++) {
       $("progress").textContent = `run ${i + 1}/${runs}…`;
       const r = timedRun(ptr, seed, words, steps);
-      const nsPerStep = (r.ms * 1e6) / Number(steps);
-      const mstep = (Number(steps) / (r.ms / 1e3)) / 1e6;
-      results.push({ index: i, elapsed_ns: Math.round(r.ms * 1e6), ns_per_step: nsPerStep, digest: r.digest });
+      const executed = BigInt(r.executed);
+      const stepsOk = executed === steps;
+      if (!stepsOk) log(`  run ${i+1}: STEP COUNT MISMATCH — executed ${executed}, requested ${steps}`);
+      const nsPerStep = (r.ms * 1e6) / Number(executed);
+      const mstep = (Number(executed) / (r.ms / 1e3)) / 1e6;
+      results.push({ index: i, elapsed_ns: Math.round(r.ms * 1e6),
+                     ns_per_step: nsPerStep, executed_steps: Number(executed),
+                     steps_ok: stepsOk, init_ms: r.init_ms, digest_ms: r.digest_ms,
+                     digest: r.digest });
       addRow(i, runs, r.ms, nsPerStep, mstep, r.digest);
       await new Promise(r => setTimeout(r));
     }
@@ -337,6 +362,7 @@ function addRow(i, runs, ms, ns, mstep, digest) {
 function summarize(results, p) {
   const first = results[0].digest;
   const det = results.every(r => r.digest === first);
+  const stepsOk = results.every(r => r.steps_ok);
   const ns = results.map(r => r.ns_per_step).sort((a,b) => a-b);
   const n = ns.length;
   const median = n % 2 ? ns[(n-1)/2] : (ns[n/2-1] + ns[n/2]) / 2;
@@ -354,12 +380,23 @@ function summarize(results, p) {
   d.textContent = det ? "OK — all runs identical" : "FAILED";
   d.className = "pill " + (det ? "ok" : "fail");
 
-  log(`\nns/step  min ${min.toFixed(3)}  median ${median.toFixed(3)}  max ${max.toFixed(3)}  stddev ${stddev.toFixed(3)}`);
-  log(`relative spread ${(spread*100).toFixed(2)}%${spread>0.05?"  <- noisy; quiet the machine before quoting":""}`);
-  log(`determinism: ${det ? "OK" : "FAILED"}`);
-  if (spread > 0.05) log("note: browsers coarsen performance.now(); for a citable number keep the tab focused and the machine quiet.");
+  const avgInit = results.reduce((a,r)=>a+r.init_ms,0) / results.length;
+  const avgLoop = results.reduce((a,r)=>a+r.elapsed_ns/1e6,0) / results.length;
+  const avgDigest = results.reduce((a,r)=>a+r.digest_ms,0) / results.length;
 
-  lastResult = buildJson(results, p, { first, det, min, median, max, mean, stddev, spread });
+  log(`\nTIMED = dependent-access loop only (init and digest excluded)`);
+  log(`ns/step  min ${min.toFixed(3)}  median ${median.toFixed(3)}  max ${max.toFixed(3)}  stddev ${stddev.toFixed(3)}`);
+  log(`relative spread ${(spread*100).toFixed(2)}%${spread>0.05?"  <- noisy; quiet the machine before quoting":""}`);
+  log(`determinism: ${det ? "OK" : "FAILED"}   executed_steps: ${stepsOk ? "OK ("+p.steps+" each)" : "MISMATCH"}`);
+  log(`phase (avg)  init ${avgInit.toFixed(3)} ms   loop ${avgLoop.toFixed(3)} ms   digest ${avgDigest.toFixed(3)} ms`);
+  if (spread > 0.05) log("note: browsers coarsen performance.now(); for a citable number keep the tab focused and the machine quiet.");
+  if (!stepsOk) log("STEP COUNT MISMATCH — do not use these numbers.");
+
+  const d2 = $("det");
+  if (!stepsOk) { d2.textContent = "STEP MISMATCH"; d2.className = "pill fail"; }
+
+  lastResult = buildJson(results, p, { first, det, stepsOk, min, median, max, mean,
+    stddev, spread, avgInit, avgLoop, avgDigest });
   $("download").disabled = false;
 }
 
@@ -380,11 +417,19 @@ function buildJson(results, p, s) {
             user_agent: navigator.userAgent,
             device_memory_gb: md },
     protocol: { warmup_runs: p.warmup, timed_runs: p.runs,
+                timed_region: "dependent-access loop only",
                 init_excluded_from_timing: true,
+                digest_excluded_from_timing: true,
+                allocation_excluded_from_timing: true,
                 scratchpad_reinitialised_between_runs: true, threads: 1,
+                scheduling_hint: "browser tab (performance cores at foreground QoS)",
                 timer: "performance.now (browser-coarsened)" },
+    timing_breakdown_ms: { init_per_run_avg: +s.avgInit.toFixed(6),
+                           loop_per_run_avg: +s.avgLoop.toFixed(6),
+                           digest_per_run_avg: +s.avgDigest.toFixed(6) },
     runs: results,
     summary: { digest: s.first, determinism_ok: s.det,
+               executed_steps_ok: s.stepsOk, requested_steps: Number(p.steps),
                ns_per_step_min: +s.min.toFixed(6), ns_per_step_median: +s.median.toFixed(6),
                ns_per_step_max: +s.max.toFixed(6), ns_per_step_mean: +s.mean.toFixed(6),
                ns_per_step_stddev: +s.stddev.toFixed(6), relative_spread: +s.spread.toFixed(6),
@@ -405,11 +450,63 @@ function download() {
 
 function reset() {
   $("start").disabled = false; $("stop").disabled = true;
+  $("scaling").disabled = false;
   $("progress").textContent = "";
+}
+
+// Scaling check: run the same scratchpad at 5M / 25M / 100M steps. If the loop
+// genuinely executes every dependent step, elapsed time must scale ~linearly
+// (5x and 20x). If it does not, the timing or step accounting is wrong and the
+// headline ns/step is not trustworthy — regardless of a matching digest.
+async function scalingCheck() {
+  $("start").disabled = true; $("scaling").disabled = true; $("stop").disabled = false;
+  stopFlag = false;
+  const mib = BigInt($("mib").value);
+  const words = (mib * 1024n * 1024n) / 8n;
+  const seed = parseU64($("seed").value);
+  const stepSet = [5000000n, 25000000n, 100000000n];
+
+  log(`\nscaling check @ ${mib} MiB — steps 5M / 25M / 100M (expect ~1x / 5x / 20x)`);
+  const ptr = exports.fcb_alloc(Number(words));
+  if (ptr === 0) { log("allocation failed"); $("scaling").disabled = false; return reset(); }
+
+  const rows = [];
+  try {
+    // one warmup at the smallest size to page memory in
+    exports.fcb_init(ptr, Number(words), seed);
+    { const a = exports.fcb_alloc(1); exports.fcb_run_loop(ptr, Number(words), 5000000n, seed, a); exports.fcb_free(a, 1); }
+    for (const steps of stepSet) {
+      if (stopFlag) break;
+      $("progress").textContent = `scaling: ${steps} steps…`;
+      const r = timedRun(ptr, seed, words, steps);
+      const executed = BigInt(r.executed);
+      rows.push({ steps, ms: r.ms, ns: (r.ms*1e6)/Number(executed), ok: executed === steps });
+      log(`  ${String(steps).padStart(9)} steps -> ${r.ms.toFixed(1)} ms   ${((r.ms*1e6)/Number(executed)).toFixed(2)} ns/step   executed ${executed}${executed===steps?"":"  MISMATCH"}`);
+      await new Promise(r => setTimeout(r));
+    }
+  } finally {
+    exports.fcb_free(ptr, Number(words));
+  }
+
+  if (rows.length === 3) {
+    const base = rows[0].ms;
+    const r5 = rows[1].ms / base, r20 = rows[2].ms / base;
+    const linear = r5 > 4 && r5 < 6.5 && r20 > 16 && r20 < 26;
+    log(`scaling factors: 25M/5M = ${r5.toFixed(2)}x (want ~5x)   100M/5M = ${r20.toFixed(2)}x (want ~20x)`);
+    log(linear ? "SCALING OK — elapsed time tracks step count; timing is trustworthy."
+               : "SCALING ANOMALY — time does not track step count; do not trust ns/step.");
+    const stable = rows.every(r => r.ok) &&
+      Math.abs(rows[0].ns - rows[2].ns) / rows[0].ns < 0.5;
+    log(stable ? "ns/step is stable across step counts (as it should be for a fixed workload)."
+               : "ns/step drifts with step count — investigate before quoting.");
+  }
+  $("scaling").disabled = false;
+  reset();
 }
 
 $("start").addEventListener("click", start);
 $("stop").addEventListener("click", () => { stopFlag = true; log("stop requested — halting after current run."); });
+$("scaling").addEventListener("click", scalingCheck);
 $("download").addEventListener("click", download);
 
 loadWasm();
