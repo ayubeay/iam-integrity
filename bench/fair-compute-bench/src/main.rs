@@ -352,7 +352,9 @@ fn main() {
     \"arch\": \"{arch}\",
     \"pointer_width_bits\": {ptr},
     \"cpu_model\": \"{cpu}\",
-    \"logical_cpus\": {ncpu}
+    \"logical_cpus\": {ncpu},
+    \"toolchain\": \"{toolchain}\",
+    \"target\": \"{target}\"
   }},
   \"protocol\": {{
     \"warmup_runs\": {warmup},
@@ -391,6 +393,8 @@ fn main() {
             ptr = usize::BITS,
             cpu = json_escape(&cpu_model()),
             ncpu = std::thread::available_parallelism().map(|v| v.get()).unwrap_or(0),
+            toolchain = json_escape(env!("FCB_RUSTC_VERSION")),
+            target = json_escape(env!("FCB_TARGET")),
             warmup = cfg.warmup,
             nruns = cfg.runs,
             runs = runs_json,

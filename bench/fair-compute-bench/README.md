@@ -180,6 +180,51 @@ spread exceeds 5%.
 Milestone C does not begin until `./build-wasm.sh` succeeds and the page's
 known-answer check passes on the target machine.
 
+## Milestone C — the comparison
+
+`compare.py` (zero-dependency, stdlib only) turns a directory of result JSONs
+into the first research artifact: the browser-to-native efficiency ratio per
+scratchpad size. It is the number that speaks to the reserve's core question.
+
+```
+# 1. native sweep
+for mib in 1 8 32 128 256; do
+  cargo run --release -- --scratchpad-mib $mib --steps 5000000 \
+    --json results/native-${mib}mib.json --label "M-series baseline"
+done
+
+# 2. browser sweep — open web/index.html, Start at each size, Download JSON
+#    into results/ as browser-<n>mib.json
+
+# 3. the report
+python3 compare.py            # scans results/, writes results/report/{md,csv,json}
+```
+
+Three guarantees, in priority order:
+
+1. It **refuses to compare** runs whose `implementation_hash` differs, with a
+   hard non-zero exit. If native and browser did not run the same source, no
+   ratio between them is meaningful, so none is produced.
+2. It reports the ratio on both `min` (least-contended, the defensible
+   estimator) and `median`, and flags any size whose relative spread exceeded
+   5% as not-citable.
+3. It carries the reproducibility metadata — OS, CPU, logical cores, Rust
+   toolchain and target (native), user agent, hardware concurrency and device
+   memory (browser) — so a later run on different hardware can be compared
+   without wondering whether the environment explains the difference. Power
+   mode, thermal state, and browser version still need recording by hand; the
+   report says so.
+
+Native results now embed the toolchain and target via `build.rs` (no runtime
+cost). Re-run the native sweep after this change so those fields are populated —
+older JSONs simply omit them and the generator skips them.
+
+What a ratio near 1.0 would mean: browser execution is competitive with native
+on this workload. What it would not mean: hardware fairness. That needs Phase 2
+(diverse devices) and Phase 3 (adversarial parallel replication), both still
+open. Correctness parity is proven; performance parity is what Milestone C
+measures; fairness is a later and harder claim.
+
 ## Not in scope
 
 No token. No network calls. No background execution. No use of anyone's
