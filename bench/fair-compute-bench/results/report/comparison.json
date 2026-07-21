@@ -1,0 +1,133 @@
+{
+  "schema": "fair-compute-bench-report/1",
+  "generated_utc": "2026-07-21T23:08:09.084423+00:00",
+  "implementation_hash": "50f713afa874d4456c399eb592d14f4260fa544c37c30f116a811b293c1110c6",
+  "reproducibility": {
+    "browser": {
+      "os": "MacIntel",
+      "arch": "wasm32",
+      "cpu_model": "browser (not exposed)",
+      "logical_cpus": 8,
+      "toolchain": null,
+      "target": null,
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Safari/605.1.15",
+      "device_memory_gb": null,
+      "build_profile": "wasm32-release",
+      "timed_region": "dependent-access loop only",
+      "scheduling_hint": "browser tab (performance cores at foreground QoS)",
+      "timer": "performance.now (browser-coarsened)",
+      "warmup_runs": 2,
+      "timed_runs": 7
+    },
+    "native": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpu_model": "Apple M1",
+      "logical_cpus": 8,
+      "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+      "target": "aarch64-apple-darwin",
+      "user_agent": null,
+      "device_memory_gb": null,
+      "build_profile": "release",
+      "timed_region": "dependent-access loop only",
+      "scheduling_hint": "user_interactive (macos qos hint)",
+      "timer": null,
+      "warmup_runs": 2,
+      "timed_runs": 7
+    }
+  },
+  "comparison": [
+    {
+      "scratchpad_bytes": 1048576,
+      "scratchpad_mib": 1.0,
+      "native_min": 11.8364,
+      "native_median": 12.015842,
+      "native_spread": 0.350276,
+      "browser_min": 12,
+      "browser_median": 12.4,
+      "browser_spread": 0.048387,
+      "ratio_min": 1.0138217701328107,
+      "ratio_median": 1.0319709596714073,
+      "paired": true
+    },
+    {
+      "scratchpad_bytes": 2097152,
+      "scratchpad_mib": 2.0,
+      "native_min": null,
+      "native_median": null,
+      "native_spread": null,
+      "browser_min": 12.4,
+      "browser_median": 12.6,
+      "browser_spread": 0.047619,
+      "ratio_min": null,
+      "ratio_median": null,
+      "paired": false
+    },
+    {
+      "scratchpad_bytes": 8388608,
+      "scratchpad_mib": 8.0,
+      "native_min": 14.3465,
+      "native_median": 23.285992,
+      "native_spread": 1.919762,
+      "browser_min": 13.8,
+      "browser_median": 15.2,
+      "browser_spread": 0.552632,
+      "ratio_min": 0.961907085351828,
+      "ratio_median": 0.6527529512163364,
+      "paired": true
+    },
+    {
+      "scratchpad_bytes": 16777216,
+      "scratchpad_mib": 16.0,
+      "native_min": null,
+      "native_median": null,
+      "native_spread": null,
+      "browser_min": 36.8,
+      "browser_median": 37.6,
+      "browser_spread": 0.25,
+      "ratio_min": null,
+      "ratio_median": null,
+      "paired": false
+    },
+    {
+      "scratchpad_bytes": 33554432,
+      "scratchpad_mib": 32.0,
+      "native_min": 75.648592,
+      "native_median": 79.512683,
+      "native_spread": 0.061571,
+      "browser_min": 71,
+      "browser_median": 76.8,
+      "browser_spread": 0.369792,
+      "ratio_min": 0.938550184780703,
+      "ratio_median": 0.9658836439967697,
+      "paired": true
+    },
+    {
+      "scratchpad_bytes": 134217728,
+      "scratchpad_mib": 128.0,
+      "native_min": 107.317683,
+      "native_median": 113.213933,
+      "native_spread": 0.11922,
+      "browser_min": 105.2,
+      "browser_median": 106,
+      "browser_spread": 0.022642,
+      "ratio_min": 0.9802671569046082,
+      "ratio_median": 0.9362805194657445,
+      "paired": true
+    },
+    {
+      "scratchpad_bytes": 268435456,
+      "scratchpad_mib": 256.0,
+      "native_min": 112.822217,
+      "native_median": 113.763833,
+      "native_spread": 0.07341,
+      "browser_min": 110.8,
+      "browser_median": 112.4,
+      "browser_spread": 0.037367,
+      "ratio_min": 0.982076074608603,
+      "ratio_median": 0.9880117172212367,
+      "paired": true
+    }
+  ],
+  "selection_notes": []
+}
