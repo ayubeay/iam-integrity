@@ -127,13 +127,29 @@ pub fn init_scratchpad(pad: &mut [u64], seed: u64) {
     }
 }
 
-/// The timed region.
+/// Result of the timed dependent-access loop, before digest finalization.
+#[derive(Clone, Copy, Debug)]
+pub struct LoopState {
+    /// Final accumulator, fed into `finalize`.
+    pub acc: u64,
+    /// Number of iterations actually executed. This is returned by the loop
+    /// itself, not taken on faith from the caller's argument, so a harness can
+    /// assert `executed_steps == requested_steps` independently of the digest.
+    pub executed_steps: u64,
+}
+
+/// The timed region — the dependent-access loop ONLY.
 ///
-/// The caller MUST consume the returned digest (the harness passes it through
-/// `std::hint::black_box`). This loop is pure computation over a buffer the
-/// caller owns; if the result is discarded, the optimiser is entitled to
-/// delete the whole thing and the benchmark measures nothing.
-pub fn run_chain(pad: &mut [u64], params: Params) -> Digest {
+/// Digest finalization is deliberately NOT here: it is a strided fold whose cost
+/// is bandwidth, not dependent latency, and mixing it into the timed number
+/// contaminates the measurement. Time this; call `finalize` after the clock
+/// stops.
+///
+/// The caller MUST consume the returned state (the harness passes it through a
+/// black-box). This loop is pure computation over a buffer the caller owns; if
+/// the result is discarded, the optimiser is entitled to delete it and the
+/// benchmark measures nothing.
+pub fn run_loop(pad: &mut [u64], params: Params) -> LoopState {
     let mask = params.scratchpad_words - 1;
     let mut acc = mix(params.seed ^ 0xA5A5_5A5A_C3C3_3C3C);
 
@@ -148,14 +164,23 @@ pub fn run_chain(pad: &mut [u64], params: Params) -> Digest {
         step = step.wrapping_add(1);
     }
 
-    finalize(pad, acc, params)
+    LoopState { acc, executed_steps: step }
+}
+
+/// Loop plus digest. Behaviour is identical to the original `run_chain`; the KAT
+/// suite pins its output, so the loop/finalize split above cannot silently
+/// change semantics.
+pub fn run_chain(pad: &mut [u64], params: Params) -> Digest {
+    let state = run_loop(pad, params);
+    finalize(pad, state.acc, params)
 }
 
 /// The digest covers the accumulator (which every step feeds) and a strided
 /// sample of the scratchpad (which catches a write-back path that silently
 /// stops working). A full fold over the pad would be bandwidth work and would
-/// dominate short runs.
-fn finalize(pad: &[u64], acc: u64, params: Params) -> Digest {
+/// dominate short runs. Called after the clock stops — not part of the timed
+/// loop.
+pub fn finalize(pad: &[u64], acc: u64, params: Params) -> Digest {
     let mut h0 = mix(acc);
     let mut h1 = mix(acc ^ params.steps);
     let mut h2 = mix(acc ^ params.scratchpad_words);

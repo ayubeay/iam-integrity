@@ -75,15 +75,19 @@ def mib(nbytes):
 
 
 def pick_best(candidates):
-    """Among multiple runs at the same (runtime, size), keep the quietest:
-    determinism must hold, then lowest relative_spread wins. Returns (data,
-    dropped_count)."""
-    good = [c for c in candidates if c["summary"].get("determinism_ok") is True]
-    dropped_nondet = len(candidates) - len(good)
+    """Among multiple runs at the same (runtime, size), keep the quietest run
+    that passed both integrity gates: determinism, and step accounting
+    (executed_steps_ok, defaulting True for JSONs predating that field). Then
+    lowest relative_spread wins. Returns (data, dropped_count)."""
+    def integrity_ok(c):
+        s = c["summary"]
+        return s.get("determinism_ok") is True and s.get("executed_steps_ok", True) is True
+    good = [c for c in candidates if integrity_ok(c)]
+    dropped = len(candidates) - len(good)
     if not good:
-        return None, dropped_nondet
+        return None, dropped
     good.sort(key=lambda d: d["summary"].get("relative_spread", float("inf")))
-    return good[0], dropped_nondet + (len(good) - 1)
+    return good[0], dropped + (len(good) - 1)
 
 
 def collect(files):
@@ -173,6 +177,8 @@ def repro_block(reduced):
             "user_agent": host.get("user_agent"),
             "device_memory_gb": host.get("device_memory_gb"),
             "build_profile": harness.get("build_profile"),
+            "timed_region": proto.get("timed_region"),
+            "scheduling_hint": proto.get("scheduling_hint"),
             "timer": proto.get("timer"),
             "warmup_runs": proto.get("warmup_runs"),
             "timed_runs": proto.get("timed_runs"),
@@ -272,15 +278,30 @@ def write_markdown(path, rows, impl_hash, repro, notes):
         L.append("### " + rt)
         L.append("")
         for k in ("os", "arch", "cpu_model", "logical_cpus", "toolchain", "target",
-                  "user_agent", "device_memory_gb", "build_profile", "timer",
-                  "warmup_runs", "timed_runs"):
+                  "user_agent", "device_memory_gb", "build_profile", "timed_region",
+                  "scheduling_hint", "timer", "warmup_runs", "timed_runs"):
             v = info.get(k)
             if v not in (None, ""):
                 L.append("- **%s**: %s" % (k, v))
         L.append("")
+
+    L.append("### Scheduling caveat (read before trusting any ratio)")
+    L.append("")
+    L.append("On heterogeneous CPUs (Apple Silicon P/E cores, Intel P/E cores) "
+             "the core a process lands on dominates a memory-latency result: a "
+             "foreground browser tab runs on performance cores, while a CLI "
+             "process may run on efficiency cores with a much smaller L2. At a "
+             "working-set size that fits one core's L2 but not the other's, "
+             "identical code can differ ~10x. The native harness now requests "
+             "performance-core scheduling (`scheduling_hint`), but this is a bias, "
+             "not a guarantee — confirm core residency out of band before quoting "
+             "a ratio, and prefer a size that is DRAM-bound on both runtimes for "
+             "the cleanest comparison.")
+    L.append("")
     L.append("_Not captured automatically — record by hand for a citable run:_ "
              "power mode (plugged in vs battery), background load, thermal state, "
-             "and for the browser, the exact version and whether the tab was focused.")
+             "actual core residency, and for the browser, the exact version and "
+             "whether the tab was focused.")
     L.append("")
 
     if notes:

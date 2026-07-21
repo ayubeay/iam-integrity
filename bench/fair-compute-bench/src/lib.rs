@@ -102,7 +102,9 @@ pub mod wasm {
         workload::init_scratchpad(pad, seed);
     }
 
-    /// Run the timed chain. Writes the 4-word digest to `out`.
+    /// Run the full timed chain (loop + digest). Writes the 4-word digest to
+    /// `out`. Kept for the browser's known-answer self-check, which wants the
+    /// digest in one call.
     ///
     /// # Safety
     /// `ptr` must reference `words` valid slots; `out` must reference 4 slots.
@@ -117,6 +119,49 @@ pub mod wasm {
         let pad = core::slice::from_raw_parts_mut(ptr, words as usize);
         let params = Params { seed, scratchpad_words: words as u64, steps };
         let d = workload::run_chain(pad, params);
+        core::slice::from_raw_parts_mut(out, 4).copy_from_slice(&d.0);
+    }
+
+    /// Run the dependent-access loop ONLY — the region the browser times, so
+    /// digest finalization is excluded exactly as it is on native. Writes the
+    /// final accumulator to `acc_out` and returns the number of iterations the
+    /// loop actually executed (so the harness can assert it equals `steps`
+    /// without trusting the JS argument).
+    ///
+    /// # Safety
+    /// `ptr` must reference `words` valid slots; `acc_out` must reference 1 slot.
+    #[no_mangle]
+    pub unsafe extern "C" fn fcb_run_loop(
+        ptr: *mut u64,
+        words: u32,
+        steps: u64,
+        seed: u64,
+        acc_out: *mut u64,
+    ) -> u64 {
+        let pad = core::slice::from_raw_parts_mut(ptr, words as usize);
+        let params = Params { seed, scratchpad_words: words as u64, steps };
+        let state = workload::run_loop(pad, params);
+        *acc_out = state.acc;
+        state.executed_steps
+    }
+
+    /// Finalize the digest from an accumulator produced by `fcb_run_loop`.
+    /// Called after the browser's clock stops. Writes 4 words to `out`.
+    ///
+    /// # Safety
+    /// `ptr` must reference `words` valid slots; `out` must reference 4 slots.
+    #[no_mangle]
+    pub unsafe extern "C" fn fcb_finalize(
+        ptr: *const u64,
+        words: u32,
+        steps: u64,
+        seed: u64,
+        acc: u64,
+        out: *mut u64,
+    ) {
+        let pad = core::slice::from_raw_parts(ptr, words as usize);
+        let params = Params { seed, scratchpad_words: words as u64, steps };
+        let d = workload::finalize(pad, acc, params);
         core::slice::from_raw_parts_mut(out, 4).copy_from_slice(&d.0);
     }
 

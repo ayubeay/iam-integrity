@@ -225,6 +225,71 @@ on this workload. What it would not mean: hardware fairness. That needs Phase 2
 open. Correctness parity is proven; performance parity is what Milestone C
 measures; fairness is a later and harder claim.
 
+## Milestone C.1 — timed-region equivalence and step accounting
+
+The first browser-vs-native reading was anomalous: at 8 MiB the browser appeared
+~9.5x **faster** than native on identical code. A reversal that large is a
+benchmark-integrity signal, not a fairness result, and it was investigated
+before any ratio was trusted.
+
+Findings:
+
+- **Timed regions were already equivalent.** Both harnesses excluded allocation
+  and initialization and timed `run_chain`. That was not the cause.
+- **Step accounting was already proven by the digest** (it is a function of step
+  count; the browser digest matched native's `steps=5000000` byte for byte), and
+  is now also returned explicitly by the loop and asserted (`executed_steps_ok`).
+- **The cause was CPU core scheduling.** The native sweep's curve barely rose
+  from 8 MiB (170 ns) to 256 MiB (259 ns) — the signature of a small L2, i.e. an
+  efficiency core. The foreground browser tab runs on performance cores, where
+  8 MiB fits in the 12 MB L2 (~14 ns). Same code, ~10x apart, entirely from
+  which core cluster the OS picked.
+
+Hardening added in this milestone:
+
+- The timed region is now the **dependent-access loop only**. `init` and digest
+  `finalize` are timed separately and reported under `timing_breakdown_ms`, so a
+  reader can confirm the headline number is the loop alone.
+- The loop **returns its executed iteration count**; native and browser both
+  assert it equals the request and refuse the result otherwise. `compare.py`
+  drops any run that fails this gate.
+- The native binary requests **performance-core scheduling** on macOS
+  (`pthread_set_qos_class_self_np`, `USER_INTERACTIVE`, zero-dependency), so it
+  is measured on the same class of core the browser uses. Recorded in JSON as
+  `scheduling_hint`; it is a bias, not a guarantee.
+- A **scaling check** in the browser (`Scaling check` button) runs 5M / 25M /
+  100M steps at one size. Elapsed time must track step count (~1x / 5x / 20x)
+  and ns/step must stay flat; if not, the timing is not trustworthy regardless
+  of a matching digest.
+
+The honest report entry, until a clean paired run passes on performance cores:
+
+> Initial browser results appeared ~9.5x faster than native at 8 MiB. This was
+> traced to CPU core scheduling (native on efficiency cores, browser on
+> performance cores), not a fairness result. The timed region has been narrowed
+> to the dependent loop, step accounting is asserted, and native now requests
+> performance-core scheduling. A citable ratio requires confirmed equal-core
+> residency and a DRAM-bound size on both runtimes.
+
+### Re-run order after C.1
+
+Rebuild both (the workload split changes nothing semantically — the KAT suite
+proves it — but both artifacts must be regenerated):
+
+```
+cargo test --release            # KATs must stay green through the loop/finalize split
+./verify.sh
+for mib in 1 8 32 128 256; do
+  cargo run --release -- --scratchpad-mib $mib --steps 5000000 \
+    --json results/native-${mib}mib.json --label "C.1 perf-core"
+done
+./build-wasm.sh                 # rebuild the wasm with fcb_run_loop / fcb_finalize
+```
+
+Then in the browser: run the **Scaling check** first (confirm timing is sound),
+then the size sweep, Download each, and `python3 compare.py`. Read the loop-only
+`ns/step` and compare at a size that is DRAM-bound on both sides.
+
 ## Not in scope
 
 No token. No network calls. No background execution. No use of anyone's
