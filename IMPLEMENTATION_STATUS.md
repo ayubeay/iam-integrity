@@ -30,11 +30,13 @@ Last full audit: **2026-07-15** (this file's baseline).
   /v1/metrics (per-provider latency, classified error distributions, 429
   pressure, circuit state), provider health circuit breaker, graceful
   shutdown, admin endpoints, 15 tests
-- **Known gaps:** one provider per data type (no OHLCV fallback provider
-  yet); intervals deliberately narrow (5m/4h only); no external alerting
-  wired yet (but /v1/admin/health + provider_healthy gauge now report ALL
-  three providers as of 2026-07-22 — prior hardcode showed only helius);
-  equities/ETF asset class not supported (deliberate — see HELIX-JANUS note).
+- **Known gaps:** intervals deliberately narrow (5m/4h only); no external
+  alerting wired yet; equities/ETF asset class not supported (deliberate).
+  RESOLVED 2026-07-22: multi-provider health observability (/v1/admin/health
+  + gauge report all providers); capability-aware /readyz (503 only when a
+  critical capability has no healthy path); OHLCV fallback provider (Birdeye,
+  gated on BIRDEYE_API_KEY — geckoterminal primary, birdeye fallback, so a
+  GT outage keeps ohlcv available instead of flipping /readyz to 503).
   swap_metrics capability DEPLOYED + LIVE-VERIFIED (2026-07-18 evening:
   dedicated HELIUS_API_KEY set after initial misconfigured-key incident
   was diagnosed via own telemetry in one probe; SOL served 83 swaps/81
