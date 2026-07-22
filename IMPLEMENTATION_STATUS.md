@@ -31,7 +31,9 @@ Last full audit: **2026-07-15** (this file's baseline).
   pressure, circuit state), provider health circuit breaker, graceful
   shutdown, admin endpoints, 15 tests
 - **Known gaps:** one provider per data type (no OHLCV fallback provider
-  yet); intervals deliberately narrow (5m/4h only); no alerting on metrics;
+  yet); intervals deliberately narrow (5m/4h only); no external alerting
+  wired yet (but /v1/admin/health + provider_healthy gauge now report ALL
+  three providers as of 2026-07-22 — prior hardcode showed only helius);
   equities/ETF asset class not supported (deliberate — see HELIX-JANUS note).
   swap_metrics capability DEPLOYED + LIVE-VERIFIED (2026-07-18 evening:
   dedicated HELIUS_API_KEY set after initial misconfigured-key incident
