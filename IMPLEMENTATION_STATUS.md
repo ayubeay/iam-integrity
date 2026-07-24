@@ -25,11 +25,14 @@ Last full audit: **2026-07-15** (this file's baseline).
   validation (2,260 requests, 71% cache hit rate, 0 consumer failures)
 - **Implemented:** cache-first provider router, helius/jupiter-v3 provider
   (token_price), GeckoTerminal provider (normalized crypto OHLCV, 5m/4h,
-  pool-resolved so arbitrary mints work — added 2026-07-16), sqlite cache on
-  volume, execution receipts (JSONL on volume), Prometheus telemetry at
-  /v1/metrics (per-provider latency, classified error distributions, 429
-  pressure, circuit state), provider health circuit breaker, graceful
-  shutdown, admin endpoints, 15 tests
+  pool-resolved), Birdeye OHLCV fallback (gated on BIRDEYE_API_KEY),
+  HeliusSwap provider (swap_metrics), sqlite cache on volume, execution
+  receipts, Prometheus telemetry at /v1/metrics; THREE distinct ops
+  endpoints (design rule, docs/NEXT-SESSION.md): /v1/admin/health
+  (providers), /readyz (capability readiness, 503 only on critical-no-path),
+  /v1/admin/capabilities (how each capability is fulfilled — route, failover
+  count, last success — added 2026-07-24 Phase A); circuit breaker, negative
+  cache, graceful shutdown, 52 tests
 - **Known gaps:** intervals deliberately narrow (5m/4h only); no external
   alerting wired yet; equities/ETF asset class not supported (deliberate).
   RESOLVED 2026-07-22: multi-provider health observability (/v1/admin/health
