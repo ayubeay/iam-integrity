@@ -17,7 +17,7 @@ Last full audit: **2026-07-15** (this file's baseline).
 
 ## 🟢 api-connect — production
 
-- **Canonical repo:** github.com/ayubeay/api-connect · commit `2b083c6`
+- **Canonical repo:** github.com/ayubeay/api-connect · commit `40c6b6e`
 - **Runtime:** Railway (EU West), https://api-connect-production-b1a7.up.railway.app
 - **Deployment mode:** auto-deploy on push to main; persistent volume
   `api-connect-data` mounted at /data
@@ -85,6 +85,19 @@ Last full audit: **2026-07-15** (this file's baseline).
   HelixAtlas/etc.), deferred by design so the detector stays vendor-agnostic.
   Next: Phase 2 hardening (boot config validation + provider timeout env) and
   Phase 3 (shared httpGetJson refactor) — see api-connect docs/NEXT-SESSION.md.
+  2026-07-25 (Phase 2A, commit 40c6b6e): capability-derived boot config
+  validation deployed + LIVE-VERIFIED. src/config.ts validateEnv (structural,
+  secret-free — never echoes HELIUS_RPC_URL, which embeds the api key) +
+  criticalCapabilityGaps. Governing rule: the service starts only if every
+  CRITICAL capability has >=1 valid provider path (derived from the capability
+  graph, not vendor-special-cased — survives token_price gaining a 2nd
+  provider). Structural errors and critical gaps refuse startup (exit 1,
+  aggregated errors); optional/redundant absences (BIRDEYE/HELIUS_API_KEY)
+  warn-and-start, governed by readiness. Replaced the raw HeliusProvider
+  constructor throw. 12 new tests (72 total), tsc clean. Live-verified: valid
+  prod config booted identically, verify-ops.sh all-green (readyz 200 ok, 4
+  providers closed, ohlcv [geckoterminal,birdeye], all capability gauges=1).
+  Phase 2B (PROVIDER_TIMEOUT_MS) still TODO.
 
 ## 🟢 poi-engine — production
 
