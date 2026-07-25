@@ -17,7 +17,7 @@ Last full audit: **2026-07-15** (this file's baseline).
 
 ## 🟢 api-connect — production
 
-- **Canonical repo:** github.com/ayubeay/api-connect · commit `e307d3c`
+- **Canonical repo:** github.com/ayubeay/api-connect · commit `2b083c6`
 - **Runtime:** Railway (EU West), https://api-connect-production-b1a7.up.railway.app
 - **Deployment mode:** auto-deploy on push to main; persistent volume
   `api-connect-data` mounted at /data
@@ -33,8 +33,10 @@ Last full audit: **2026-07-15** (this file's baseline).
   /v1/admin/capabilities (how each capability is fulfilled — route, failover
   count, last success — added 2026-07-24 Phase A); circuit breaker, negative
   cache, graceful shutdown, 52 tests
-- **Known gaps:** intervals deliberately narrow (5m/4h only); no external
-  alerting wired yet; equities/ETF asset class not supported (deliberate).
+- **Known gaps:** intervals deliberately narrow (5m/4h only); external alert
+  DELIVERY sink not wired (detection layer is live — see 2026-07-25 note —
+  delivery deliberately deferred/vendor-agnostic); equities/ETF asset class
+  not supported (deliberate).
   RESOLVED 2026-07-22: multi-provider health observability (/v1/admin/health
   + gauge report all providers); capability-aware /readyz (503 only when a
   critical capability has no healthy path); OHLCV fallback provider (Birdeye,
@@ -69,7 +71,20 @@ Last full audit: **2026-07-15** (this file's baseline).
   ~2/min prediction; negative cache and stale-serving both exercised in
   production; prior verification 2026-07-17 stands). 2026-07-25: Birdeye
   OHLCV fallback + /readyz Railway healthcheck live-verified (verify-ops.sh
-  operational receipt). Only remaining known gap: no external alerting wired.
+  operational receipt). 2026-07-25 (Phase 1 alerting, commit 2b083c6):
+  operational alert DETECTION deployed + LIVE-VERIFIED — a delivery-agnostic
+  transition detector (src/alerts.ts) diffs readiness snapshots on a 20s tick,
+  deduplicates, and emits transitions as first-class operational-event receipts
+  (./data/operational_event_receipts.jsonl via generic ReceiptWriter<T>) plus a
+  log sink. New metrics live-confirmed via verify-ops.sh step 7:
+  apiconnect_readyz_status=0 (ok), apiconnect_capability_available=1 for
+  token_price/ohlcv_5m/ohlcv_4h/swap_metrics; apiconnect_alert_events_total
+  {kind,severity} is defined and unit-verified (60 tests) and will emit its
+  first series on the first real transition (none since boot — healthy). Only
+  remaining alerting work is an external DELIVERY sink (Slack/PagerDuty/
+  HelixAtlas/etc.), deferred by design so the detector stays vendor-agnostic.
+  Next: Phase 2 hardening (boot config validation + provider timeout env) and
+  Phase 3 (shared httpGetJson refactor) — see api-connect docs/NEXT-SESSION.md.
 
 ## 🟢 poi-engine — production
 
