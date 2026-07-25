@@ -17,7 +17,7 @@ Last full audit: **2026-07-15** (this file's baseline).
 
 ## 🟢 api-connect — production
 
-- **Canonical repo:** github.com/ayubeay/api-connect · commit `f313d15`
+- **Canonical repo:** github.com/ayubeay/api-connect · commit `e307d3c`
 - **Runtime:** Railway (EU West), https://api-connect-production-b1a7.up.railway.app
 - **Deployment mode:** auto-deploy on push to main; persistent volume
   `api-connect-data` mounted at /data
@@ -40,6 +40,17 @@ Last full audit: **2026-07-15** (this file's baseline).
   critical capability has no healthy path); OHLCV fallback provider (Birdeye,
   gated on BIRDEYE_API_KEY — geckoterminal primary, birdeye fallback, so a
   GT outage keeps ohlcv available instead of flipping /readyz to 503).
+  RESOLVED 2026-07-25: BIRDEYE_API_KEY now SET in Railway — Birdeye OHLCV
+  fallback ACTIVE + LIVE-VERIFIED via scripts/verify-ops.sh (/v1/admin/health
+  lists birdeye supporting ohlcv_5m/4h; capabilities receipt shows ohlcv_5m
+  and ohlcv_4h providers [geckoterminal, birdeye], serving geckoterminal,
+  failover_total 0, all four circuits closed, /readyz 200 ok). OHLCV is no
+  longer a single-provider path. Also 2026-07-25: /readyz is now the Railway
+  deploy healthcheck, codified as config-as-code in railway.json
+  (deploy.healthcheckPath=/readyz, commit 91d783a; deploy 20ead19d went Active
+  on it, confirming a boot-healthy 200); verify-ops.sh + operational-receipt
+  table (primary/fallback/serving/failovers per capability) added (commits
+  91d783a, e307d3c).
   swap_metrics capability DEPLOYED + LIVE-VERIFIED (2026-07-18 evening:
   dedicated HELIUS_API_KEY set after initial misconfigured-key incident
   was diagnosed via own telemetry in one probe; SOL served 83 swaps/81
@@ -56,7 +67,9 @@ Last full audit: **2026-07-15** (this file's baseline).
   ZERO exhausted; swap_metrics 34,215 served at 78% cache hit with 7,554
   upstream calls at 99.95% success — 1.9 upstream/min matching the design's
   ~2/min prediction; negative cache and stale-serving both exercised in
-  production; prior verification 2026-07-17 stands)
+  production; prior verification 2026-07-17 stands). 2026-07-25: Birdeye
+  OHLCV fallback + /readyz Railway healthcheck live-verified (verify-ops.sh
+  operational receipt). Only remaining known gap: no external alerting wired.
 
 ## 🟢 poi-engine — production
 
