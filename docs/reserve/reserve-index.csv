@@ -1,0 +1,41 @@
+file,reserve,type,layer,status,depends_on,repo
+meta-architecture-observation-to-moat.md,Meta-Architecture: Observation to Strategic Moat,Doctrine,Global (index),Canonical,All,iam-integrity
+survivor-doctrine.md,SURVIVOR Doctrine,Doctrine,Global (Endurance),Canonical,All,iam-integrity
+ai-era-moat-doctrine.md,AI-Era Moat Doctrine,Doctrine,Global (Strategic Moat),Canonical,Universal Execution Timeline,iam-integrity
+ownership-proofs-vs-execution-rights.md,Ownership Proofs vs Execution Rights,Doctrine,Admissibility,Canonical,,iam-integrity
+organizational-separation-doctrine.md,Organizational Separation Doctrine,Doctrine,Global (org),Canonical,,iam-integrity
+proof-before-promotion.md,Proof Before Promotion,Doctrine,Opportunity Evaluation,Canonical,VERITY,iam-integrity
+recalculation-doctrine.md,Recalculation Doctrine,Doctrine,Execution / Routing,Canonical,,iam-integrity
+helix-universal-execution-lifecycle.md,HELIX Universal Execution Lifecycle,Doctrine,Execution (all stages),Canonical,,iam-integrity
+operational-workflow-discovery-engine.md,Operational Workflow Discovery Engine,Module,Workflow Discovery,Reserved,"VERITY, IAM, OROS, DRIFT, Commerce Sniper",iam-integrity
+opportunity-intelligence-evaluation-engine.md,Opportunity Intelligence & Evaluation Engine,Module,Opportunity Evaluation,Reserved,"VERITY, OWDE, IAM",iam-integrity
+commerce-sniper.md,Commerce Sniper,Module,Workflow Discovery (commerce),Reserved,"VERITY, OROS",iam-integrity
+hidden-asset-discovery-engine.md,Hidden Asset Discovery Engine,Module,Workflow Discovery,Reserved,VERITY,iam-integrity
+capital-admissibility-framework.md,Capital Admissibility Framework,Layer,Admissibility (capital project),Reserved,"VERITY, OROS",iam-integrity
+domain-aware-capital-intelligence.md,Domain-Aware Capital Intelligence (DACI),Module,Opportunity Evaluation (capital),Reserved,"Opportunity Intelligence & Evaluation Engine, VERITY",iam-integrity
+governed-capital-eligibility.md,Governed Capital Eligibility (GCE),Layer,Admissibility (capital execution),Reserved,"vLOID, VERITY, SURVIVOR, Shield Router",iam-integrity
+future-rights-exchange.md,Future Rights Exchange,Module,Admissibility / settlement (rights),Reserved,vLOID,iam-integrity
+helix-execution-ecosystem-reserve.md,HELIX Execution Ecosystem,Module,Execution,Reserved,"IAM, VERITY, OROS",iam-integrity
+helix-exchange-layer.md,HELIX Exchange Layer,Layer,Match / Route (capability),Reserved,"HELIX Lifecycle, API Connect",iam-integrity
+execution-placement-engine.md,Execution Placement Engine,Module,Route (placement),Reserved,,iam-integrity
+adaptive-execution-layer.md,Adaptive Execution Layer,Layer,Execution / Learning,Reserved,evidence gates,iam-integrity
+universal-execution-interface.md,Universal Execution Interface,Layer,Execution surface,Reserved,"IAM, VERITY, vLOID, OROS",iam-integrity
+execution-assurance-layer.md,Execution Assurance Layer,Layer,Execution completion,Reserved,"Universal Money Router, HELIX, Shield Router, VERITY",iam-integrity
+helixshield-execution-governance.md,HelixShield Execution Governance,Module,Verify (autonomous cyber),Reserved,"IAM, VERITY, vLOID, Universal Execution Timeline",iam-integrity
+continuous-adversarial-security-graph.md,Continuous Adversarial Security Graph,Module,Verify (security),Reserved,VERITY,iam-integrity
+continuous-security-receipts.md,Continuous Security Receipts,Layer,Receipts (security),Reserved,Receipts substrate,iam-integrity
+flow-economics-engine.md,Flow Economics Engine,Layer,Economic Attribution,Reserved,"HELIX, OROS, Receipts",iam-integrity
+universal-execution-timeline.md,Universal Execution Timeline,Layer,Timeline (execution memory),Reserved,Receipts,iam-integrity
+universal-timeline-semantic-index-engine.md,Universal Timeline & Semantic Index Engine,Module,Media indexing (shared infra),Reserved,,iam-integrity
+vyre-vyrel-evolution.md,VYRE / VYREL Evolution,Module,Post-execution (package / sign),Reserved,"Universal Execution Timeline, Receipts",iam-integrity
+regime-evidence-engine.md,Regime Evidence Engine,Module,Learning (evidence),Reserved,VERITY,iam-integrity
+agent-dns-discovery-layer.md,Agent DNS Discovery Layer,Layer,Discover (agents),Reserved,,iam-integrity
+autonomous-connectivity-exchange.md,Autonomous Connectivity Exchange,Module,Match / Route (connectivity),Reserved,,iam-integrity
+ai-internet-protocol.md,AI Internet Protocol,Module,Infrastructure,Reserved,,iam-integrity
+api-trust-exposure-model.md,API Trust Exposure Model,Doctrine,Governance (trust),Canonical,VERITY,iam-integrity
+helix-project-lifecycle-exchange.md,HELIX Project Lifecycle Exchange,Module,Coordinate (projects),Reserved,HELIX,iam-integrity
+hanoi-planner.md,Hanoi Planner,Module,Coordinate (planning),Reserved,,iam-integrity
+humanos-personal-operating-system.md,HumanOS Personal Operating System,Module,Execution surface (personal),Reserved,IAM,iam-integrity
+RESERVE.md#11,Enterprise Knowledge Integrity,Layer,Verify (knowledge),Reserved,"API Connect, VERITY, Execution Governance, Receipts",api-connect
+RESERVE.md#10,Capability Intelligence Layer (Phase B/C),Layer,Route (capability telemetry),Reserved,API Connect router,api-connect
+RESERVE.md#1,Backpack Research Operating System,Module,Learning (research),Reserved,"vLOID, OROS, HELIX, Proof Before Promotion",backpack-engine

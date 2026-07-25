@@ -194,6 +194,30 @@ Last full audit: **2026-07-15** (this file's baseline).
   RESERVED.md "Janus #2")
 - **Verified:** 2026-07-15
 
+## 🔴 Reserve canon batch — 2026-07-25 (architecture/doctrine, no implementation)
+
+- **Status:** reserve only. 13 new canonical docs written to
+  docs/reserve/ this session plus 2 module RESERVE.md updates. No code, no
+  runtime, no execution authority — routing/doctrine only.
+- **Canonical (iam-integrity/docs/reserve/):** flow-economics-engine,
+  survivor-doctrine, opportunity-intelligence-evaluation-engine,
+  vyre-vyrel-evolution, domain-aware-capital-intelligence,
+  governed-capital-eligibility, helix-universal-execution-lifecycle
+  (folds Context Classification + Canonical Execution Doctrine Preservation),
+  helix-exchange-layer, helixshield-execution-governance,
+  execution-assurance-layer, universal-execution-timeline,
+  universal-timeline-semantic-index-engine, ownership-proofs-vs-execution-rights,
+  ai-era-moat-doctrine, organizational-separation-doctrine,
+  operational-workflow-discovery-engine, meta-architecture-observation-to-moat.
+- **Module reserves:** api-connect/RESERVE.md §11 (Enterprise Knowledge
+  Integrity); backpack-engine/RESERVE.md §1 (Research Operating System).
+- **Promotions:** ai-era-moat-doctrine promotes 2026-07-24 staging #1;
+  survivor-doctrine absorbs 2026-07-24 staging #4.
+- **Provenance:** docs/reserve/staging/reserves-2026-07-25.md (session ledger).
+- **Quarantined, NOT in this repo:** ~11 SoundKeep reserves (separate
+  ecosystem) → transport hand-off artifact in session outputs.
+- **Verified:** 2026-07-25.
+
 ## ⚪ Not yet audited (per doctrine rule 3, cannot be classified)
 
 KONIGO Connect, SoundKeep runtime state, SURVIVOR/OOBE agent operational
