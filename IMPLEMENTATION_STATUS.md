@@ -17,7 +17,7 @@ Last full audit: **2026-07-15** (this file's baseline).
 
 ## 🟢 api-connect — production
 
-- **Canonical repo:** github.com/ayubeay/api-connect · commit `40c6b6e`
+- **Canonical repo:** github.com/ayubeay/api-connect · commit `e958c32`
 - **Runtime:** Railway (EU West), https://api-connect-production-b1a7.up.railway.app
 - **Deployment mode:** auto-deploy on push to main; persistent volume
   `api-connect-data` mounted at /data
@@ -97,7 +97,15 @@ Last full audit: **2026-07-15** (this file's baseline).
   constructor throw. 12 new tests (72 total), tsc clean. Live-verified: valid
   prod config booted identically, verify-ops.sh all-green (readyz 200 ok, 4
   providers closed, ohlcv [geckoterminal,birdeye], all capability gauges=1).
-  Phase 2B (PROVIDER_TIMEOUT_MS) still TODO.
+  2026-07-25 (Phase 2B, commit e958c32): PROVIDER_TIMEOUT_MS deployed +
+  LIVE-VERIFIED. One validated optional env (default 8000; rejected if
+  non-numeric/zero/negative or outside [500,60000]), applied uniformly to all
+  four provider adapters; distinct from consumer-side API_CONNECT_* timeouts.
+  4 new tests (76 total), tsc clean. Live-verified: valid config (unset ->
+  8000 default) booted identically, verify-ops.sh all-green. PHASE 2 COMPLETE
+  (2A boot validation + 2B timeout config, both live-verified). Remaining
+  plan: Phase 3 (shared httpGetJson refactor) — optional pure refactor, not a
+  defect; external alert DELIVERY sink — deferred by design.
 
 ## 🟢 poi-engine — production
 
