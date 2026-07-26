@@ -747,8 +747,8 @@ textarea.input { min-height:88px; resize:vertical; }
         <input type="file" id="importInput" accept="audio/*" multiple style="display:none;">
       </div>
       <div class="card" style="margin-bottom:16px;">
-        <div class="crate-title" style="font-size:15.5px; margin-bottom:6px;">Folder Sync</div>
-        <div style="color:var(--sk-text-2); font-size:12.5px; line-height:1.6; margin-bottom:14px;">Connect your music folder once. SoundKeep indexes everything inside it and finds new tracks on every rescan - your files stay where they are, nothing is copied or uploaded. Background watching while the app is closed arrives with the desktop build.</div>
+        <div class="crate-title" id="syncHead" style="font-size:15.5px; margin-bottom:6px;">Folder Sync</div>
+        <div id="syncIntro" style="color:var(--sk-text-2); font-size:12.5px; line-height:1.6; margin-bottom:14px;">Connect your music folder once. SoundKeep indexes everything inside it and finds new tracks on every rescan - your files stay where they are, nothing is copied or uploaded. Background watching while the app is closed arrives with the desktop build.</div>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
           <button class="btn btn-primary btn-sm" id="addSourceBtn">Connect a music folder</button>
           <button class="btn btn-ghost btn-sm" id="rescanAllBtn">Rescan all</button>
@@ -2263,13 +2263,19 @@ function renderSources() {
       fb.textContent = canSync ? 'Select folder (other browsers)' : 'Import audio files';
       fb.className = canSync ? 'btn btn-ghost btn-sm' : 'btn btn-primary btn-sm';
     }
+    const head = document.getElementById('syncHead');
+    const intro = document.getElementById('syncIntro');
+    if (head) head.textContent = canSync ? 'Folder Sync' : 'Folder Sync \u2014 not available in this browser';
+    if (intro) intro.textContent = canSync
+      ? 'Connect your music folder once. SoundKeep indexes everything inside it and finds new tracks on every rescan - your files stay where they are, nothing is copied or uploaded. Background watching while the app is closed arrives with the desktop build.'
+      : 'Linked folders keep your library in sync without copying or uploading anything. This browser cannot hold a folder link, so use Import for a crate-sized selection until SoundKeep for Mac arrives.';
     const note = $('syncNote');
     if (note) note.innerHTML = canSync ? '' :
       '<div class="beta-note" style="margin:0 0 12px;">\u2139 <span>Continuous Folder Sync needs the File System Access API, which this browser does not support. Chrome or Edge on desktop gives you linked folders today; <b>SoundKeep for Mac</b> will bring native folder watching to every Mac. Importing here copies files into this browser instead of linking them, so keep it to a crate-sized selection.</span></div>';
   }
   const sources = store.get('sources', []);
   el.innerHTML = sources.length ? '' :
-    '<div style="color:var(--sk-text-3); font-size:12.5px;">No folders connected yet. Connect one and your whole library indexes at once.</div>';
+    (canSync ? '<div style="color:var(--sk-text-3); font-size:12.5px;">No folders connected yet. Connect one and your whole library indexes at once.</div>' : '');
   sources.forEach(s => {
     const row = document.createElement('div');
     row.className = 'src-row';
