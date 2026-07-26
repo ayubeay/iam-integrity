@@ -755,6 +755,7 @@ textarea.input { min-height:88px; resize:vertical; }
           <button class="btn btn-ghost btn-sm" id="folderFallbackBtn">Select folder (other browsers)</button>
           <input type="file" id="folderFallbackInput" webkitdirectory directory multiple style="display:none;">
         </div>
+        <div id="syncNote"></div>
         <div id="sourcesList"></div>
         <div id="receiptSummary" class="locked-note" style="margin-top:10px;"></div>
       </div>
@@ -2253,6 +2254,19 @@ async function removeSource(id) {
 function renderSources() {
   const el = $('sourcesList');
   if (!el) return;
+  const canSync = !!window.showDirectoryPicker;
+  const add = $('addSourceBtn'), rescan = $('rescanAllBtn'), fb = $('folderFallbackBtn');
+  if (add) {
+    add.style.display = canSync ? '' : 'none';
+    if (rescan) rescan.style.display = canSync ? '' : 'none';
+    if (fb) {
+      fb.textContent = canSync ? 'Select folder (other browsers)' : 'Import audio files';
+      fb.className = canSync ? 'btn btn-ghost btn-sm' : 'btn btn-primary btn-sm';
+    }
+    const note = $('syncNote');
+    if (note) note.innerHTML = canSync ? '' :
+      '<div class="beta-note" style="margin:0 0 12px;">\u2139 <span>Continuous Folder Sync needs the File System Access API, which this browser does not support. Chrome or Edge on desktop gives you linked folders today; <b>SoundKeep for Mac</b> will bring native folder watching to every Mac. Importing here copies files into this browser instead of linking them, so keep it to a crate-sized selection.</span></div>';
+  }
   const sources = store.get('sources', []);
   el.innerHTML = sources.length ? '' :
     '<div style="color:var(--sk-text-3); font-size:12.5px;">No folders connected yet. Connect one and your whole library indexes at once.</div>';
@@ -2307,6 +2321,11 @@ document.addEventListener('change', (e) => {
   if (e.target.id !== 'folderFallbackInput') return;
   const files = Array.from(e.target.files).filter(f => AUDIO_EXT.indexOf(f.name.split('.').pop().toLowerCase()) > -1);
   e.target.value = '';
+  if (files.length > 200) {
+    if (!confirm(files.length + ' audio files selected. This browser copies files into local storage rather than linking them, which is not suited to a full library. Import the first 200 anyway?')) return;
+    importFiles(files.slice(0, 200));
+    return;
+  }
   if (files.length) importFiles(files);
   else toast('No audio files found in that folder');
 });
