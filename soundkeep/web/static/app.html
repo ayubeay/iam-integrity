@@ -876,6 +876,7 @@ textarea.input { min-height:88px; resize:vertical; }
   <button class="mp-next" id="mpNext" title="Next transition">⏭</button>
 </div>
 <div class="audiobar" id="audiobar">
+  <div id="ytHost" style="display:none; width:100%; height:0; overflow:hidden;"></div>
   <div class="ab-top">
     <div class="ab-info">
       <div class="ab-src">Playing in SoundKeep</div>
@@ -1047,27 +1048,12 @@ audioEl.addEventListener('ended', () => {
   if (abTrack) logListen('complete', abTrack.artist, abTrack.title, Math.round(audioEl.duration), Math.round(audioEl.duration));
   $('abToggle').textContent = '▶';
 });
-$('abToggle').addEventListener('click', () => {
-  if (audioEl.paused) { audioEl.play(); $('abToggle').textContent = '⏸'; }
-  else { audioEl.pause(); $('abToggle').textContent = '▶'; }
-});
-$('abSeek').addEventListener('input', () => {
-  if (audioEl.duration) audioEl.currentTime = audioEl.duration * $('abSeek').value / 1000;
-});
-$('abClose').addEventListener('click', () => {
-  abSkipReceipt();
-  audioEl.pause();
-  $('audiobar').classList.remove('show');
-  abTrack = null;
-});
+$('abToggle').addEventListener('click', () => { Playback.toggle(); });
+$('abSeek').addEventListener('input', () => { Playback.seek($('abSeek').value / 1000); });
+$('abClose').addEventListener('click', () => { Playback.stop(); });
 
 async function playTrack(artist, title) {
-  const blob = await resolveLocalBlob(artist, title);
-  if (blob) { playLocal(artist, title, blob); return; }
-  const p = store.get('provider', null);
-  if (!p || !PROVIDERS[p]) { pendingPlay = { artist: artist, title: title }; openProviderModal(); return; }
-  logPlay(artist, title);
-  window.open(PROVIDERS[p].url(artist, title), '_blank', 'noopener');
+  await Playback.play(artist, title);
 }
 
 /* ── Import + local files view ── */
@@ -2335,6 +2321,171 @@ document.addEventListener('change', (e) => {
   if (files.length) importFiles(files);
   else toast('No audio files found in that folder');
 });
+
+/* ---- Playback Adapter layer: Sonic asks for a track, adapters decide how ---- */
+const DEVICE = () => (window.innerWidth < 860 ? 'mobile' : 'desktop');
+
+function emitPlayback(event, ctx) {
+  const log = store.get('listen_log', []);
+  log.unshift({
+    e: event,
+    artist: ctx.artist, title: ctx.title,
+    provider: ctx.provider || 'unknown',
+    source: ctx.source || 'catalog',
+    pos: Math.round(ctx.pos || 0), dur: Math.round(ctx.dur || 0),
+    completion: ctx.dur ? Math.round(100 * (ctx.pos / ctx.dur)) / 100 : 0,
+    device: DEVICE(),
+    ts: Date.now()
+  });
+  store.set('listen_log', log.slice(0, 300));
+}
+
+/* --- Adapter: local files (owned) --- */
+const LocalAdapter = {
+  name: 'local',
+  async canPlay(t) { return !!(await resolveLocalBlob(t.artist, t.title)); },
+  async play(t) {
+    const blob = await resolveLocalBlob(t.artist, t.title);
+    if (!blob) return false;
+    if (Playback.url) URL.revokeObjectURL(Playback.url);
+    Playback.url = URL.createObjectURL(blob);
+    audioEl.src = Playback.url;
+    await audioEl.play();
+    return true;
+  },
+  toggle() { if (audioEl.paused) audioEl.play(); else audioEl.pause(); return !audioEl.paused; },
+  seek(f) { if (audioEl.duration) audioEl.currentTime = audioEl.duration * f; },
+  stop() { audioEl.pause(); },
+  pos() { return audioEl.currentTime || 0; },
+  dur() { return audioEl.duration || 0; }
+};
+
+/* --- Adapter: YouTube embedded (streaming, no account needed) --- */
+let ytPlayer = null, ytReady = false, ytPending = null;
+function ytBoot() {
+  if (window.YT && window.YT.Player) { ytInit(); return; }
+  if (document.getElementById('ytApi')) return;
+  const s = document.createElement('script');
+  s.id = 'ytApi'; s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+  window.onYouTubeIframeAPIReady = ytInit;
+}
+function ytInit() {
+  if (ytPlayer) return;
+  ytPlayer = new YT.Player('ytHost', {
+    height: '0', width: '0',
+    playerVars: { controls: 0, disablekb: 1, playsinline: 1 },
+    events: {
+      onReady: () => { ytReady = true; if (ytPending) { const p = ytPending; ytPending = null; ytPlayer.loadVideoById(p); } },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.ENDED) Playback.onEnded();
+        if (e.data === YT.PlayerState.PLAYING) $('abToggle').textContent = '\u23f8';
+        if (e.data === YT.PlayerState.PAUSED) $('abToggle').textContent = '\u25b6';
+      }
+    }
+  });
+}
+const YouTubeAdapter = {
+  name: 'youtube',
+  async canPlay(t) {
+    if (store.get('embed_off', false)) return false;
+    try {
+      const r = await fetch(API + '/api/resolve/youtube?artist=' + encodeURIComponent(t.artist) + '&title=' + encodeURIComponent(t.title));
+      if (!r.ok) return false;
+      const d = await r.json();
+      if (!d.video_id) return false;
+      this._id = d.video_id;
+      return true;
+    } catch (e) { return false; }
+  },
+  async play() {
+    ytBoot();
+    if (ytReady && ytPlayer) { ytPlayer.loadVideoById(this._id); ytPlayer.playVideo(); }
+    else ytPending = this._id;
+    return true;
+  },
+  toggle() {
+    if (!ytPlayer) return false;
+    const st = ytPlayer.getPlayerState();
+    if (st === 1) { ytPlayer.pauseVideo(); return false; }
+    ytPlayer.playVideo(); return true;
+  },
+  seek(f) { if (ytPlayer && ytPlayer.getDuration) ytPlayer.seekTo(ytPlayer.getDuration() * f, true); },
+  stop() { if (ytPlayer) ytPlayer.stopVideo(); },
+  pos() { return (ytPlayer && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : 0; },
+  dur() { return (ytPlayer && ytPlayer.getDuration) ? ytPlayer.getDuration() : 0; }
+};
+
+/* --- Adapter: redirect (Spotify / Apple / YouTube fallback) --- */
+const RedirectAdapter = {
+  name: 'redirect',
+  async canPlay() { return true; },
+  async play(t) {
+    const p = store.get('provider', null);
+    if (!p || !PROVIDERS[p]) { pendingPlay = { artist: t.artist, title: t.title }; openProviderModal(); return false; }
+    window.open(PROVIDERS[p].url(t.artist, t.title), '_blank', 'noopener');
+    return 'external';
+  },
+  toggle() { return false; }, seek() {}, stop() {}, pos() { return 0; }, dur() { return 0; }
+};
+
+/* --- The layer: precedence owned > embedded > redirect, receipted --- */
+const Playback = {
+  adapter: null, track: null, url: null, startedAt: 0, completed: false,
+  order: [LocalAdapter, YouTubeAdapter, RedirectAdapter],
+  async play(artist, title) {
+    const t = { artist: artist, title: title };
+    this.flushSkip();
+    for (let i = 0; i < this.order.length; i++) {
+      const a = this.order[i];
+      if (!(await a.canPlay(t))) continue;
+      const r = await a.play(t);
+      if (r === false) return;
+      this.adapter = a; this.track = t; this.startedAt = Date.now(); this.completed = false;
+      logPlay(artist, title);
+      emitPlayback('start', { artist: artist, title: title, provider: a.name,
+        source: a.name === 'local' ? 'owned' : 'catalog', pos: 0, dur: 0 });
+      if (r === 'external') { this.adapter = null; return; }
+      $('abName').textContent = artist + ' \u2014 ' + title;
+      document.querySelector('.ab-src').textContent = a.name === 'local' ? 'Playing in SoundKeep' : 'Streaming in SoundKeep \u00b7 YouTube';
+      $('abToggle').textContent = '\u23f8';
+      $('audiobar').classList.add('show');
+      return;
+    }
+  },
+  toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
+  seek(f) { if (this.adapter) this.adapter.seek(f); },
+  onEnded() {
+    if (!this.adapter || !this.track) return;
+    this.completed = true;
+    emitPlayback('complete', { artist: this.track.artist, title: this.track.title,
+      provider: this.adapter.name, source: this.adapter.name === 'local' ? 'owned' : 'catalog',
+      pos: this.adapter.dur(), dur: this.adapter.dur() });
+    $('abToggle').textContent = '\u25b6';
+  },
+  flushSkip() {
+    if (!this.adapter || !this.track || this.completed) return;
+    const p = this.adapter.pos(), d = this.adapter.dur();
+    if (d && p / d < 0.9) emitPlayback('skip', { artist: this.track.artist, title: this.track.title,
+      provider: this.adapter.name, source: this.adapter.name === 'local' ? 'owned' : 'catalog', pos: p, dur: d });
+  },
+  stop() {
+    this.flushSkip();
+    if (this.adapter) this.adapter.stop();
+    $('audiobar').classList.remove('show');
+    this.adapter = null; this.track = null;
+  },
+  tick() {
+    if (!this.adapter) return;
+    const p = this.adapter.pos(), d = this.adapter.dur();
+    if (!d) return;
+    $('abSeek').value = Math.round(1000 * p / d);
+    $('abCur').textContent = fmtTime(p);
+    $('abDur').textContent = fmtTime(d);
+  }
+};
+setInterval(() => Playback.tick(), 500);
+audioEl.addEventListener('ended', () => Playback.onEnded());
 
 renderRoute();
 updateMiniplayer();

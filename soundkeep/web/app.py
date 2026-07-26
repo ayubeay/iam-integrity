@@ -228,4 +228,48 @@ def read_feedback(key: str = ""):
     items = [_json.loads(l) for l in open(_FEEDBACK_FILE) if l.strip()]
     return {"count": len(items), "items": items}
 
+
+# -- YouTube video-id resolver (cached; no key = no embed, app falls back to redirect) --
+import urllib.request as _url, urllib.parse as _parse
+_YT_CACHE = {}
+_YT_FILE = Path(__file__).parent.parent / "data" / "yt_cache.json"
+try:
+    _YT_CACHE = _json.loads(_YT_FILE.read_text())
+except Exception:
+    _YT_CACHE = {}
+
+@app.get("/api/resolve/youtube")
+def resolve_youtube(artist: str = "", title: str = ""):
+    ck = (artist + "::" + title).lower().strip()
+    if not ck.strip(":"):
+        raise HTTPException(400, "artist and title required")
+    if ck in _YT_CACHE:
+        return {"video_id": _YT_CACHE[ck], "cached": True}
+    key = _os.environ.get("YOUTUBE_API_KEY", "")
+    if not key:
+        raise HTTPException(503, "embedded playback not configured")
+    q = _parse.urlencode({
+        "part": "snippet", "type": "video", "videoEmbeddable": "true",
+        "maxResults": "1", "q": artist + " " + title, "key": key,
+    })
+    try:
+        with _url.urlopen("https://www.googleapis.com/youtube/v3/search?" + q, timeout=8) as r:
+            data = _json.loads(r.read().decode())
+        items = data.get("items", [])
+        if not items:
+            raise HTTPException(404, "no embeddable video found")
+        vid = items[0]["id"]["videoId"]
+        _YT_CACHE[ck] = vid
+        try:
+            _YT_FILE.parent.mkdir(parents=True, exist_ok=True)
+            _YT_FILE.write_text(_json.dumps(_YT_CACHE))
+        except Exception:
+            pass
+        return {"video_id": vid, "cached": False}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("YT_RESOLVE_ERROR " + str(e), flush=True)
+        raise HTTPException(502, "resolver unavailable")
+
 app.mount("/", StaticFiles(directory=str(Path(__file__).parent / "static"), html=True), name="static")
