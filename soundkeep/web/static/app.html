@@ -452,6 +452,10 @@ textarea.input { min-height:88px; resize:vertical; }
 .xfader-card { background:var(--sk-card); border:1px solid var(--sk-border); border-radius:14px; padding:14px 18px; margin-top:14px; display:flex; align-items:center; gap:14px; }
 .xfader-card input { flex:1; accent-color:var(--sk-accent); }
 .xf-tag { font-family:'Space Grotesk'; font-weight:700; font-size:13px; color:var(--sk-text-2); }
+.src-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px; padding:11px 14px; margin-bottom:8px; }
+.src-name { font-size:13.5px; font-weight:600; }
+.src-meta { color:var(--sk-text-3); font-size:11.5px; margin-top:2px; }
+.new-badge { display:inline-flex; font-size:9.5px; font-weight:700; letter-spacing:.08em; color:#F5B94A; background:rgba(245,185,74,.1); border:1px solid rgba(245,185,74,.3); border-radius:999px; padding:2px 7px; text-transform:uppercase; margin-left:6px; }
 .lf-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:11px; padding:12px 14px; margin-bottom:9px; }
 .local-badge { display:inline-flex; font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--sk-positive); background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); border-radius:999px; padding:2px 8px; text-transform:uppercase; }
 .agent-hero-retired {
@@ -742,6 +746,19 @@ textarea.input { min-height:88px; resize:vertical; }
         <button class="btn btn-primary" id="importBtn">＋ Import audio files</button>
         <input type="file" id="importInput" accept="audio/*" multiple style="display:none;">
       </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="crate-title" style="font-size:15.5px; margin-bottom:6px;">Folder Sync</div>
+        <div style="color:var(--sk-text-2); font-size:12.5px; line-height:1.6; margin-bottom:14px;">Connect your music folder once. SoundKeep indexes everything inside it and finds new tracks on every rescan - your files stay where they are, nothing is copied or uploaded. Background watching while the app is closed arrives with the desktop build.</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <button class="btn btn-primary btn-sm" id="addSourceBtn">Connect a music folder</button>
+          <button class="btn btn-ghost btn-sm" id="rescanAllBtn">Rescan all</button>
+          <button class="btn btn-ghost btn-sm" id="folderFallbackBtn">Select folder (other browsers)</button>
+          <input type="file" id="folderFallbackInput" webkitdirectory directory multiple style="display:none;">
+        </div>
+        <div id="sourcesList"></div>
+        <div id="receiptSummary" class="locked-note" style="margin-top:10px;"></div>
+      </div>
+      <div id="newArrivals"></div>
       <div class="label">Imported Files</div>
       <div id="localFilesList"></div>
     </section>
@@ -916,7 +933,7 @@ function renderRoute() {
   if (v === 'library') renderLibrary();
   if (v === 'crates') renderCratesInto($('cratesContent'));
   if (v === 'stats') renderStats();
-  if (v === 'downloads') { renderLocalFiles(); }
+  if (v === 'downloads') { renderLocalFiles(); renderSources(); }
   if (v === 'decks') { initDecks(); }
   if (v === 'home') renderHome();
   if (v === 'session') renderSession();
@@ -986,7 +1003,7 @@ async function idbKeys() {
 /* ── Listening receipts (the behavioral graph seed, stored locally) ── */
 let localKeys = new Set();
 async function refreshLocalKeys() {
-  try { localKeys = new Set(await idbKeys()); } catch (e) {}
+  try { localKeys = new Set((await idbKeys()).concat(Object.keys(store.get('refs', {})))); } catch (e) {}
 }
 refreshLocalKeys().then(() => { try { renderRoute(); } catch (e) {} });
 
@@ -1044,7 +1061,7 @@ $('abClose').addEventListener('click', () => {
 });
 
 async function playTrack(artist, title) {
-  const blob = await idbGet((artist + '::' + title).toLowerCase());
+  const blob = await resolveLocalBlob(artist, title);
   if (blob) { playLocal(artist, title, blob); return; }
   const p = store.get('provider', null);
   if (!p || !PROVIDERS[p]) { pendingPlay = { artist: artist, title: title }; openProviderModal(); return; }
@@ -1963,7 +1980,7 @@ async function dkLoad(i, key) {
   dkEnsureCtx();
   const d = decks[i];
   if (d.audio) { d.audio.pause(); }
-  const blob = await idbGet(key);
+  const blob = await resolveLocalBlob(key.split('::')[0], key.split('::').slice(1).join('::'));
   if (!blob) { toast('File not found — re-import it in Downloads'); return; }
   if (!d.audio) {
     d.audio = new Audio();
@@ -2021,7 +2038,7 @@ function dkDrawWaveBase(i) {
   }
 }
 async function initDecks() {
-  const keys = await idbKeys();
+  const keys = Array.from(new Set((await idbKeys()).concat(Object.keys(store.get('refs', {})))));
   document.querySelectorAll('select[data-deck]').forEach(sel => {
     const i = sel.dataset.deck | 0;
     sel.innerHTML = '<option value="">— load an imported file —</option>' +
@@ -2072,6 +2089,226 @@ document.addEventListener('click', (e) => {
   if (!d.audio || !d.audio.duration) return;
   d.audio.currentTime = (e.offsetX / cv.clientWidth) * d.audio.duration;
   dkDrawHead(i);
+});
+
+/* ---- Autonomous Audio Intake: Folder Sync (reference mode) ---- */
+const AUDIO_EXT = ['mp3','wav','m4a','flac','aac','ogg','aiff','aif'];
+
+function hOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('sk-handles', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('dirs');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function hSet(id, handle) {
+  const db = await hOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('dirs', 'readwrite');
+    tx.objectStore('dirs').put(handle, id);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+async function hGet(id) {
+  const db = await hOpen();
+  return new Promise(res => {
+    const rq = db.transaction('dirs').objectStore('dirs').get(id);
+    rq.onsuccess = () => res(rq.result || null);
+    rq.onerror = () => res(null);
+  });
+}
+async function hDel(id) {
+  const db = await hOpen();
+  return new Promise(res => {
+    const tx = db.transaction('dirs', 'readwrite');
+    tx.objectStore('dirs').delete(id);
+    tx.oncomplete = res; tx.onerror = res;
+  });
+}
+
+async function sigOf(file) {
+  try {
+    const head = await file.slice(0, 131072).arrayBuffer();
+    const d = await crypto.subtle.digest('SHA-256', head);
+    return Array.from(new Uint8Array(d)).slice(0, 10).map(b => b.toString(16).padStart(2, '0')).join('') + '-' + file.size;
+  } catch (e) { return 'sz-' + file.size + '-' + (file.lastModified || 0); }
+}
+
+async function walkDir(dirHandle, path, out, cap) {
+  for await (const entry of dirHandle.entries()) {
+    if (out.length >= cap) return;
+    const name = entry[0], h = entry[1];
+    if (name.charAt(0) === '.') continue;
+    if (h.kind === 'directory') { await walkDir(h, path + name + '/', out, cap); }
+    else {
+      const ext = name.split('.').pop().toLowerCase();
+      if (AUDIO_EXT.indexOf(ext) > -1) out.push({ name: name, path: path + name, handle: h });
+    }
+  }
+}
+
+async function grantOK(dir, ask) {
+  if (!dir.queryPermission) return true;
+  let p = await dir.queryPermission({ mode: 'read' });
+  if (p !== 'granted' && ask) p = await dir.requestPermission({ mode: 'read' });
+  return p === 'granted';
+}
+
+async function addFolderSource() {
+  if (!window.showDirectoryPicker) { toast('This browser needs the folder-select fallback below'); return; }
+  let dir;
+  try { dir = await window.showDirectoryPicker({ id: 'skmusic', mode: 'read' }); } catch (e) { return; }
+  const id = 'src_' + Date.now().toString(36);
+  await hSet(id, dir);
+  const sources = store.get('sources', []);
+  sources.push({ id: id, name: dir.name, addedAt: Date.now(), lastScan: 0, count: 0 });
+  store.set('sources', sources);
+  toast('Connected ' + dir.name + ' - scanning');
+  await scanSource(id);
+}
+
+async function scanSource(id) {
+  const sources = store.get('sources', []);
+  const s = sources.filter(x => x.id === id)[0];
+  if (!s) return;
+  const dir = await hGet(id);
+  if (!dir) { toast('Folder access lost - reconnect it'); return; }
+  if (!(await grantOK(dir, true))) { toast('Permission needed to read ' + s.name); return; }
+
+  toast('Scanning ' + s.name + '...');
+  const found = [];
+  await walkDir(dir, '', found, 5000);
+
+  const refs = store.get('refs', {});
+  const sigs = {};
+  Object.keys(refs).forEach(k => { sigs[refs[k].sig] = 1; });
+  const lib = store.get('library', []);
+  const receipts = store.get('import_receipts', []);
+  let added = 0, dupes = 0;
+
+  for (let n = 0; n < found.length; n++) {
+    const f = found[n];
+    const meta = parseFilename(f.name);
+    const key = (meta.artist + '::' + meta.title).toLowerCase();
+    if (refs[key]) continue;
+    let file;
+    try { file = await f.handle.getFile(); } catch (e) { continue; }
+    const sig = await sigOf(file);
+    if (sigs[sig]) { dupes++; continue; }
+    sigs[sig] = 1;
+    refs[key] = { sourceId: id, path: f.path, sig: sig, size: file.size, name: f.name };
+    if (!lib.some(t => (t.artist + '::' + t.title).toLowerCase() === key)) {
+      lib.unshift({ artist: meta.artist, title: meta.title, genre: 'local file',
+        source: 'folder', track_id: 'ref_' + Date.now().toString(36) + n, local: true, is_new: true });
+    }
+    receipts.unshift({ id: 'imp_' + Date.now().toString(36) + '_' + n, ts: new Date().toISOString(),
+      source: s.name, path: f.path, mode: 'reference', format: f.name.split('.').pop().toLowerCase(),
+      size: file.size, sig: sig, duplicate: false });
+    added++;
+  }
+
+  store.set('refs', refs);
+  store.set('library', lib);
+  store.set('import_receipts', receipts.slice(0, 500));
+  s.lastScan = Date.now(); s.count = found.length;
+  store.set('sources', sources);
+  await refreshLocalKeys();
+  toast(added ? (added + ' new track' + (added > 1 ? 's' : '') + ' indexed' + (dupes ? ' - ' + dupes + ' duplicate skipped' : ''))
+              : ('No new tracks' + (dupes ? ' - ' + dupes + ' duplicate skipped' : '')));
+  renderSources();
+}
+
+async function resolveLocalBlob(artist, title) {
+  const key = (artist + '::' + title).toLowerCase();
+  const b = await idbGet(key);
+  if (b) return b;
+  const r = store.get('refs', {})[key];
+  if (!r) return null;
+  const dir = await hGet(r.sourceId);
+  if (!dir || !(await grantOK(dir, true))) return null;
+  try {
+    let h = dir;
+    const parts = r.path.split('/');
+    for (let i = 0; i < parts.length - 1; i++) { if (parts[i]) h = await h.getDirectoryHandle(parts[i]); }
+    const fh = await h.getFileHandle(parts[parts.length - 1]);
+    return await fh.getFile();
+  } catch (e) { return null; }
+}
+
+async function removeSource(id) {
+  if (!confirm('Disconnect this folder? Indexed tracks from it are removed from your library. Your files are untouched.')) return;
+  await hDel(id);
+  store.set('sources', store.get('sources', []).filter(s => s.id !== id));
+  const refs = store.get('refs', {});
+  const gone = {};
+  Object.keys(refs).forEach(k => { if (refs[k].sourceId === id) { gone[k] = 1; delete refs[k]; } });
+  store.set('refs', refs);
+  store.set('library', store.get('library', []).filter(t => !gone[(t.artist + '::' + t.title).toLowerCase()]));
+  await refreshLocalKeys();
+  toast('Folder disconnected');
+  renderSources();
+}
+
+function renderSources() {
+  const el = $('sourcesList');
+  if (!el) return;
+  const sources = store.get('sources', []);
+  el.innerHTML = sources.length ? '' :
+    '<div style="color:var(--sk-text-3); font-size:12.5px;">No folders connected yet. Connect one and your whole library indexes at once.</div>';
+  sources.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'src-row';
+    row.innerHTML = '<div style="min-width:0;"><div class="src-name">' + esc(s.name) + '</div>' +
+      '<div class="src-meta">' + s.count + ' audio files - last scan ' +
+      (s.lastScan ? new Date(s.lastScan).toLocaleString() : 'never') + '</div></div>' +
+      '<div class="tc-actions"><button class="btn btn-ghost btn-sm" data-rescan>Rescan</button>' +
+      '<button class="icon-btn" data-unsrc title="Disconnect">X</button></div>';
+    row.querySelector('[data-rescan]').onclick = () => scanSource(s.id);
+    row.querySelector('[data-unsrc]').onclick = () => removeSource(s.id);
+    el.appendChild(row);
+  });
+  const rc = store.get('import_receipts', []);
+  $('receiptSummary').textContent = rc.length ? (rc.length + ' import receipts on file - newest ' + new Date(rc[0].ts).toLocaleString()) : '';
+  renderNewArrivals();
+}
+
+function renderNewArrivals() {
+  const el = $('newArrivals');
+  if (!el) return;
+  const lib = store.get('library', []);
+  const fresh = lib.filter(t => t.is_new);
+  if (!fresh.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">' +
+    '<div class="label" style="margin:0;">New Arrivals <span class="new-badge">' + fresh.length + '</span></div>' +
+    '<button class="btn btn-ghost btn-sm" id="keepAllBtn">Keep all</button></div>' +
+    fresh.slice(0, 25).map(t =>
+      '<div class="lf-row"><div style="min-width:0;"><div class="tc-name" style="font-size:13.5px;">' +
+      esc(t.artist) + ' - ' + esc(t.title) + '</div><div class="tc-meta" style="font-size:11.5px;">' +
+      esc(t.genre) + ' <span class="local-badge">Local</span></div></div>' +
+      '<div class="tc-actions"><button class="icon-btn play-btn" data-play-artist="' + esc(t.artist) +
+      '" data-play-title="' + esc(t.title) + '" title="Play">&#9654;</button></div></div>').join('') +
+    (fresh.length > 25 ? '<div class="locked-note">and ' + (fresh.length - 25) + ' more</div>' : '');
+  $('keepAllBtn').onclick = () => {
+    const l = store.get('library', []);
+    l.forEach(t => { delete t.is_new; });
+    store.set('library', l);
+    toast('Filed into your library');
+    renderNewArrivals();
+  };
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'addSourceBtn') { addFolderSource(); return; }
+  if (e.target.id === 'rescanAllBtn') { store.get('sources', []).forEach(s => scanSource(s.id)); return; }
+  if (e.target.id === 'folderFallbackBtn') { $('folderFallbackInput').click(); }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id !== 'folderFallbackInput') return;
+  const files = Array.from(e.target.files).filter(f => AUDIO_EXT.indexOf(f.name.split('.').pop().toLowerCase()) > -1);
+  e.target.value = '';
+  if (files.length) importFiles(files);
+  else toast('No audio files found in that folder');
 });
 
 renderRoute();
