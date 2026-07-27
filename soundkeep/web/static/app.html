@@ -1063,6 +1063,8 @@ function looksLikeLabel(s) {
   const t = (s || '').trim();
   if (!t) return true;
   if (LABEL_RE.test(t)) return true;
+  if (/\b(mantra|frequency|freq|solfeggio|chakra|hertz|hz|binaural|meditation|healing|tone)\b/i.test(t)) return true;
+  if (/^\(\s*audio\s*\)/i.test(t)) return true;
   if (/^\(?\s*audio\s*\)?$/i.test(t)) return true;
   if (/^\d+$/.test(t)) return true;
   if (/\d\s*(hz|hertz)\b/i.test(t)) return true;
