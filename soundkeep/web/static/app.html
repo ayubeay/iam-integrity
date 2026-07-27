@@ -424,7 +424,7 @@ textarea.input { min-height:88px; resize:vertical; }
   padding:10px 14px;
 }
 .audiobar.show { display:block; }
-@media (min-width:861px) { .audiobar { left:auto; right:24px; bottom:24px; width:380px; } }
+@media (min-width:861px) { .audiobar { left:auto; right:24px; bottom:24px; width:420px; } }
 .ab-top { display:flex; align-items:center; gap:12px; }
 .ab-info { min-width:0; flex:1; }
 .ab-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -876,7 +876,7 @@ textarea.input { min-height:88px; resize:vertical; }
   <button class="mp-next" id="mpNext" title="Next transition">⏭</button>
 </div>
 <div class="audiobar" id="audiobar">
-  <div id="ytHost" style="display:none; width:100%; height:0; overflow:hidden;"></div>
+  <div id="ytPane" style="display:none; margin-bottom:10px;"><div id="ytHost" style="width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#000;"></div></div>
   <div class="ab-top">
     <div class="ab-info">
       <div class="ab-src">Playing in SoundKeep</div>
@@ -2473,8 +2473,8 @@ function ytBoot() {
 function ytInit() {
   if (ytPlayer) return;
   ytPlayer = new YT.Player('ytHost', {
-    height: '0', width: '0',
-    playerVars: { controls: 0, disablekb: 1, playsinline: 1 },
+    height: '100%', width: '100%',
+    playerVars: { controls: 1, playsinline: 1, rel: 0 },
     events: {
       onReady: () => { ytReady = true; if (ytPending) { const p = ytPending; ytPending = null; ytPlayer.loadVideoById(p); } },
       onStateChange: (e) => {
@@ -2560,6 +2560,7 @@ const Playback = {
       source: a.name === 'local' ? 'owned' : 'catalog', pos: 0, dur: 0 });
     $('abName').textContent = t.artist + ' \u2014 ' + t.title;
     document.querySelector('.ab-src').textContent = a.name === 'local' ? 'Playing in SoundKeep' : 'Streaming in SoundKeep \u00b7 YouTube';
+    $('ytPane').style.display = a.name === 'youtube' ? 'block' : 'none';
     $('abToggle').textContent = '\u23f8';
     $('audiobar').classList.add('show');
   },
@@ -2583,6 +2584,7 @@ const Playback = {
     this.flushSkip();
     if (this.adapter) this.adapter.stop();
     $('audiobar').classList.remove('show');
+    $('ytPane').style.display = 'none';
     this.adapter = null; this.track = null;
   },
   tick() {
