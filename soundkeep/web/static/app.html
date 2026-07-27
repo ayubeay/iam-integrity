@@ -2476,7 +2476,7 @@ const Playback = {
     $('abToggle').textContent = '\u23f8';
     $('audiobar').classList.add('show');
   },
-  toggle()  toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
+  toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
   seek(f) { if (this.adapter) this.adapter.seek(f); },
   onEnded() {
     if (!this.adapter || !this.track || this.completed) return;
