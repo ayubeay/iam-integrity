@@ -760,7 +760,7 @@ textarea.input { min-height:88px; resize:vertical; }
         <div id="receiptSummary" class="locked-note" style="margin-top:10px;"></div>
       </div>
       <div id="newArrivals"></div>
-      <div class="label">Imported Files</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><div class="label" style="margin:0;">Imported Files</div><button class="btn btn-ghost btn-sm" id="repairMetaBtn">Repair metadata</button></div>
       <div id="localFilesList"></div>
     </section>
 
@@ -1057,6 +1057,82 @@ async function playTrack(artist, title) {
 }
 
 /* ── Import + local files view ── */
+/* ---- Metadata integrity: embedded tags > conservative filename > unknown ---- */
+const LABEL_RE = /^(\(?\s*audio\s*\)?\s*)?(mantra|frequency|freq|morning|evening|night|day|track|part|pt|vol|volume|session|tone|solfeggio|chakra|hz|hertz)\b/i;
+function looksLikeLabel(s) {
+  const t = (s || '').trim();
+  if (!t) return true;
+  if (LABEL_RE.test(t)) return true;
+  if (/^\(?\s*audio\s*\)?$/i.test(t)) return true;
+  if (/^\d+$/.test(t)) return true;
+  if (/\d\s*(hz|hertz)\b/i.test(t)) return true;
+  return false;
+}
+function txt(bytes, enc) {
+  try {
+    const d = (enc === 1 || enc === 2) ? new TextDecoder('utf-16') : new TextDecoder('utf-8');
+    return d.decode(bytes).replace(/\0/g, '').trim();
+  } catch (e) { return ''; }
+}
+async function readTags(file) {
+  try {
+    const head = new Uint8Array(await file.slice(0, 1048576).arrayBuffer());
+    if (head[0] === 0x49 && head[1] === 0x44 && head[2] === 0x33) {
+      const ver = head[3];
+      const size = ((head[6] & 0x7f) << 21) | ((head[7] & 0x7f) << 14) | ((head[8] & 0x7f) << 7) | (head[9] & 0x7f);
+      const out = {};
+      let p = 10, end = Math.min(size + 10, head.length - 11);
+      while (p < end) {
+        const id = String.fromCharCode(head[p], head[p+1], head[p+2], head[p+3]);
+        if (!/^[A-Z0-9]{4}$/.test(id)) break;
+        let fs;
+        if (ver >= 4) fs = ((head[p+4] & 0x7f) << 21) | ((head[p+5] & 0x7f) << 14) | ((head[p+6] & 0x7f) << 7) | (head[p+7] & 0x7f);
+        else fs = (head[p+4] << 24) | (head[p+5] << 16) | (head[p+6] << 8) | head[p+7];
+        if (fs <= 0 || p + 10 + fs > head.length) break;
+        const val = txt(head.slice(p + 11, p + 10 + fs), head[p + 10]);
+        if (id === 'TIT2' && val) out.title = val;
+        if (id === 'TPE1' && val) out.artist = val;
+        if (id === 'TALB' && val) out.album = val;
+        p += 10 + fs;
+      }
+      if (out.title || out.artist) { out.src = 'embedded_tag'; return out; }
+    }
+    function atom(marker) {
+      for (let i = 0; i < head.length - 40; i++) {
+        if (head[i] === marker[0] && head[i+1] === marker[1] && head[i+2] === marker[2] && head[i+3] === marker[3]) {
+          const dsz = (head[i+4] << 24) | (head[i+5] << 16) | (head[i+6] << 8) | head[i+7];
+          if (head[i+8] === 0x64 && head[i+9] === 0x61 && head[i+10] === 0x74 && head[i+11] === 0x61 && dsz > 16 && i + 8 + dsz <= head.length)
+            return txt(head.slice(i + 24, i + 8 + dsz), 0);
+        }
+      }
+      return '';
+    }
+    const nam = atom([0xA9, 0x6E, 0x61, 0x6D]), art = atom([0xA9, 0x41, 0x52, 0x54]), alb = atom([0xA9, 0x61, 0x6C, 0x62]);
+    if (nam || art) return { title: nam || '', artist: art || '', album: alb || '', src: 'embedded_tag' };
+  } catch (e) {}
+  return null;
+}
+function parseFilenameSafe(name) {
+  const base = name.replace(/\.[^.]+$/, '').trim();
+  const m = base.split(/\s+[-\u2013\u2014]\s+/);
+  if (m.length >= 2 && !looksLikeLabel(m[0])) {
+    return { artist: m[0].trim(), title: m.slice(1).join(' - ').trim(), src: 'filename' };
+  }
+  return { artist: 'Unknown Artist', title: base, src: 'filename' };
+}
+async function extractMeta(file) {
+  const tags = await readTags(file);
+  if (tags && (tags.title || tags.artist)) {
+    return {
+      artist: (tags.artist || 'Unknown Artist').trim(),
+      title: (tags.title || file.name.replace(/\.[^.]+$/, '')).trim(),
+      album: (tags.album || '').trim(),
+      src: 'embedded_tag'
+    };
+  }
+  return parseFilenameSafe(file.name);
+}
+
 function parseFilename(name) {
   const base = name.replace(/\.[^.]+$/, '');
   const parts = base.split(' - ');
@@ -1065,20 +1141,27 @@ function parseFilename(name) {
     : { artist: 'Local', title: base.trim() };
 }
 async function importFiles(files) {
-  let added = 0;
+  let added = 0, skipped = 0;
   const lib = store.get('library', []);
+  const sigs = store.get('sigs', {});
   for (const f of files) {
-    const meta = parseFilename(f.name);
+    const sig = await sigOf(f);
+    if (sigs[sig]) { skipped++; continue; }
+    const meta = await extractMeta(f);
     const key = (meta.artist + '::' + meta.title).toLowerCase();
     await idbSet(key, f);
-    if (!lib.some(x => trackKey(x) === key)) {
-      lib.unshift({ artist: meta.artist, title: meta.title, genre: 'local file', source: 'localfile', track_id: 'local_' + Date.now().toString(36), local: true });
+    sigs[sig] = key;
+    if (!lib.some(x => (x.artist + '::' + x.title).toLowerCase() === key)) {
+      lib.unshift({ artist: meta.artist, title: meta.title, album: meta.album || '',
+        genre: 'local file', source: 'localfile', track_id: 'local_' + Date.now().toString(36) + added,
+        local: true, metadata_source: meta.src, sig: sig });
     }
     added++;
   }
+  store.set('sigs', sigs);
   store.set('library', lib);
   await refreshLocalKeys();
-  toast(added + ' file' + (added > 1 ? 's' : '') + ' imported — they play inside SoundKeep now');
+  toast(added + ' file' + (added === 1 ? '' : 's') + ' imported' + (skipped ? ' \u00b7 ' + skipped + ' already in library' : ''));
   renderLocalFiles();
 }
 async function renderLocalFiles() {
@@ -1102,8 +1185,10 @@ async function renderLocalFiles() {
       '</div>' +
       '<div class="tc-actions">' +
         '<button class="icon-btn play-btn" data-play-artist="' + esc(artist) + '" data-play-title="' + esc(title) + '" title="Play">▶</button>' +
+        '<button class="icon-btn" data-editlocal title="Edit artist and title">✎</button>' +
         '<button class="icon-btn" data-dellocal title="Remove file">✕</button>' +
       '</div>';
+    row.querySelector('[data-editlocal]').onclick = () => renameLocal(key);
     row.querySelector('[data-dellocal]').onclick = async () => {
       await idbDel(key);
       await refreshLocalKeys();
@@ -2509,6 +2594,68 @@ const Playback = {
 };
 setInterval(() => Playback.tick(), 500);
 audioEl.addEventListener('ended', () => Playback.onEnded());
+
+/* ---- Safe metadata migration: rekeys audio blobs in lockstep ---- */
+async function rekey(oldKey, newKey) {
+  if (oldKey === newKey) return;
+  const blob = await idbGet(oldKey);
+  if (blob) { await idbSet(newKey, blob); await idbDel(oldKey); }
+  const refs = store.get('refs', {});
+  if (refs[oldKey]) { refs[newKey] = refs[oldKey]; delete refs[oldKey]; store.set('refs', refs); }
+}
+async function repairMetadata() {
+  if (!confirm('Re-read embedded tags for your local files and correct artist/title?\n\nNothing is deleted, play history is kept, and anything you renamed yourself stays untouched.')) return;
+  const lib = store.get('library', []);
+  const keys = await idbKeys();
+  let changed = 0, kept = 0;
+  const receipt = [];
+  for (const key of keys) {
+    const entry = lib.filter(t => (t.artist + '::' + t.title).toLowerCase() === key)[0];
+    if (entry && entry.metadata_source === 'user') { kept++; continue; }
+    const blob = await idbGet(key);
+    if (!blob) continue;
+    const fname = blob.name || '';
+    const file = fname ? blob : new File([blob], 'unknown.mp3', { type: blob.type || 'audio/mpeg' });
+    const meta = await extractMeta(file);
+    const newKey = (meta.artist + '::' + meta.title).toLowerCase();
+    if (newKey === key) continue;
+    await rekey(key, newKey);
+    if (entry) {
+      receipt.push({ from: entry.artist + ' :: ' + entry.title, to: meta.artist + ' :: ' + meta.title, via: meta.src });
+      entry.artist = meta.artist; entry.title = meta.title; entry.metadata_source = meta.src;
+    }
+    changed++;
+  }
+  store.set('library', lib);
+  const rc = store.get('import_receipts', []);
+  rc.unshift({ id: 'mig_' + Date.now().toString(36), ts: new Date().toISOString(), kind: 'metadata_migration',
+    changed: changed, user_locked_kept: kept, details: receipt.slice(0, 50) });
+  store.set('import_receipts', rc.slice(0, 500));
+  await refreshLocalKeys();
+  toast(changed ? (changed + ' track' + (changed === 1 ? '' : 's') + ' corrected' + (kept ? ' \u00b7 ' + kept + ' of your edits kept' : '')) : 'Nothing to correct');
+  renderLocalFiles(); renderRoute();
+}
+async function renameLocal(oldKey) {
+  const parts = oldKey.split('::');
+  const artist = prompt('Artist:', parts[0] === 'unknown artist' ? '' : parts[0]);
+  if (artist === null) return;
+  const title = prompt('Title:', parts.slice(1).join('::'));
+  if (title === null) return;
+  const a2 = (artist.trim() || 'Unknown Artist'), t2 = title.trim();
+  if (!t2) return;
+  const newKey = (a2 + '::' + t2).toLowerCase();
+  await rekey(oldKey, newKey);
+  const lib = store.get('library', []);
+  const e = lib.filter(t => (t.artist + '::' + t.title).toLowerCase() === oldKey)[0];
+  if (e) { e.artist = a2; e.title = t2; e.metadata_source = 'user'; e.metadata_locked = true; }
+  store.set('library', lib);
+  await refreshLocalKeys();
+  toast('Renamed');
+  renderLocalFiles(); renderRoute();
+}
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'repairMetaBtn') repairMetadata();
+});
 
 renderRoute();
 updateMiniplayer();
