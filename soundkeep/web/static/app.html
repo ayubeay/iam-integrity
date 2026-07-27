@@ -1120,9 +1120,19 @@ function openProviderModal() {
   $('providerModal').style.display = 'flex';
 }
 function closeProviderModal() { $('providerModal').style.display = 'none'; pendingPlay = null; }
+let embedOK = null;
+(async function probeEmbed() {
+  try {
+    const r = await fetch(API + '/api/resolve/youtube?artist=Wizkid&title=Essence');
+    embedOK = r.ok;
+  } catch (e) { embedOK = false; }
+  try { renderRoute(); } catch (e) {}
+})();
+
 function playLabel(artist, title) {
   if (artist !== undefined && localKeys.has((artist + '::' + title).toLowerCase()))
     return 'Play in SoundKeep';
+  if (embedOK) return '\u25b6 Stream in SoundKeep';
   const p = store.get('provider', null);
   return p && PROVIDERS[p] ? 'Play on ' + PROVIDERS[p].name + ' \u2197' : '\u25b6 Play';
 }
