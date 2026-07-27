@@ -1132,7 +1132,7 @@ let embedOK = null;
 function playLabel(artist, title) {
   if (artist !== undefined && localKeys.has((artist + '::' + title).toLowerCase()))
     return 'Play in SoundKeep';
-  if (embedOK) return '\u25b6 Stream in SoundKeep';
+  if (embedOK) return '\u25b6 Stream in SoundKeep';  /* per-track embeddability verified at play time */
   const p = store.get('provider', null);
   return p && PROVIDERS[p] ? 'Play on ' + PROVIDERS[p].name + ' \u2197' : '\u25b6 Play';
 }
@@ -2341,6 +2341,9 @@ function emitPlayback(event, ctx) {
     e: event,
     artist: ctx.artist, title: ctx.title,
     provider: ctx.provider || 'unknown',
+    adapter: ctx.adapter || null,
+    video_id: ctx.video_id || null,
+    resolver_cache_hit: ctx.cache_hit === undefined ? null : ctx.cache_hit,
     source: ctx.source || 'catalog',
     pos: Math.round(ctx.pos || 0), dur: Math.round(ctx.dur || 0),
     completion: ctx.dur ? Math.round(100 * (ctx.pos / ctx.dur)) / 100 : 0,
@@ -2405,6 +2408,7 @@ const YouTubeAdapter = {
       const d = await r.json();
       if (!d.video_id) return false;
       this._id = d.video_id;
+      this._cacheHit = !!d.cached;
       return true;
     } catch (e) { return false; }
   },
@@ -2446,27 +2450,36 @@ const Playback = {
   async play(artist, title) {
     const t = { artist: artist, title: title };
     this.flushSkip();
-    for (let i = 0; i < this.order.length; i++) {
-      const a = this.order[i];
-      if (!(await a.canPlay(t))) continue;
-      const r = await a.play(t);
-      if (r === false) return;
-      this.adapter = a; this.track = t; this.startedAt = Date.now(); this.completed = false;
-      logPlay(artist, title);
-      emitPlayback('start', { artist: artist, title: title, provider: a.name,
-        source: a.name === 'local' ? 'owned' : 'catalog', pos: 0, dur: 0 });
-      if (r === 'external') { this.adapter = null; return; }
-      $('abName').textContent = artist + ' \u2014 ' + title;
-      document.querySelector('.ab-src').textContent = a.name === 'local' ? 'Playing in SoundKeep' : 'Streaming in SoundKeep \u00b7 YouTube';
-      $('abToggle').textContent = '\u23f8';
-      $('audiobar').classList.add('show');
-      return;
-    }
+    const local = await LocalAdapter.canPlay(t);
+    if (local) return this.start(LocalAdapter, t);
+    const embeddable = await YouTubeAdapter.canPlay(t);
+    if (embeddable) return this.start(YouTubeAdapter, t);
+    emitPlayback('playback_failed', { artist: artist, title: title, provider: 'youtube', adapter: 'YouTubeAdapter' });
+    const p = store.get('provider', null);
+    const where = p && PROVIDERS[p] ? PROVIDERS[p].name : 'your platform';
+    emitPlayback('fallback_offered', { artist: artist, title: title, provider: p || 'none' });
+    if (!confirm('This track cannot stream inside SoundKeep \u2014 the rights holder has embedding disabled.\n\nOpen it on ' + where + ' instead?')) return;
+    emitPlayback('fallback_opened', { artist: artist, title: title, provider: p || 'none' });
+    await RedirectAdapter.play(t);
   },
-  toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
+  async start(a, t) {
+    const r = await a.play(t);
+    if (r === false) return;
+    this.adapter = a; this.track = t; this.startedAt = Date.now(); this.completed = false;
+    logPlay(t.artist, t.title);
+    emitPlayback('start', { artist: t.artist, title: t.title, provider: a.name,
+      adapter: a === LocalAdapter ? 'LocalAdapter' : 'YouTubeAdapter',
+      video_id: a._id || null, cache_hit: a._cacheHit,
+      source: a.name === 'local' ? 'owned' : 'catalog', pos: 0, dur: 0 });
+    $('abName').textContent = t.artist + ' \u2014 ' + t.title;
+    document.querySelector('.ab-src').textContent = a.name === 'local' ? 'Playing in SoundKeep' : 'Streaming in SoundKeep \u00b7 YouTube';
+    $('abToggle').textContent = '\u23f8';
+    $('audiobar').classList.add('show');
+  },
+  toggle()  toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
   seek(f) { if (this.adapter) this.adapter.seek(f); },
   onEnded() {
-    if (!this.adapter || !this.track) return;
+    if (!this.adapter || !this.track || this.completed) return;
     this.completed = true;
     emitPlayback('complete', { artist: this.track.artist, title: this.track.title,
       provider: this.adapter.name, source: this.adapter.name === 'local' ? 'owned' : 'catalog',
