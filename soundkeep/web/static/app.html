@@ -883,7 +883,8 @@ textarea.input { min-height:88px; resize:vertical; }
       <div class="ab-name" id="abName"></div>
     </div>
     <button class="ab-btn" id="abToggle">⏸</button>
-    <button class="ab-close" id="abClose" title="Stop">✕</button>
+    <button class="ab-btn" id="abSkip" title="Skip this track" style="width:32px; height:32px; font-size:13px;">⏭</button>
+    <button class="ab-close" id="abClose" title="Stop playback">⏹</button>
   </div>
   <input type="range" class="ab-seek" id="abSeek" min="0" max="1000" value="0">
   <div class="ab-times"><span id="abCur">0:00</span><span id="abDur">0:00</span></div>
@@ -1051,6 +1052,7 @@ audioEl.addEventListener('ended', () => {
 $('abToggle').addEventListener('click', () => { Playback.toggle(); });
 $('abSeek').addEventListener('input', () => { Playback.seek($('abSeek').value / 1000); });
 $('abClose').addEventListener('click', () => { Playback.stop(); });
+$('abSkip').addEventListener('click', () => { Playback.skip(); });
 
 async function playTrack(artist, title) {
   await Playback.play(artist, title);
@@ -2494,6 +2496,7 @@ function emitPlayback(event, ctx) {
     video_id: ctx.video_id || null,
     resolver_cache_hit: ctx.cache_hit === undefined ? null : ctx.cache_hit,
     session_id: sessionRecord(event, ctx),
+    intent: ctx.intent || null,
     source: ctx.source || 'catalog',
     pos: Math.round(ctx.pos || 0), dur: Math.round(ctx.dur || 0),
     completion: ctx.dur ? Math.round(100 * (ctx.pos / ctx.dur)) / 100 : 0,
@@ -2667,6 +2670,25 @@ const Playback = {
     const p = this.adapter.pos(), d = this.adapter.dur();
     if (d && p / d < 0.9) emitPlayback('skip', { artist: this.track.artist, title: this.track.title,
       provider: this.adapter.name, source: this.adapter.name === 'local' ? 'owned' : 'catalog', pos: p, dur: d });
+  },
+  /* deliberate rejection of the current track, as opposed to stopping playback */
+  skip() {
+    if (!this.adapter || !this.track) return;
+    if (!this.completed) {
+      emitPlayback('skip', {
+        artist: this.track.artist, title: this.track.title,
+        provider: this.adapter.name,
+        adapter: this.adapter === LocalAdapter ? 'LocalAdapter' : 'YouTubeAdapter',
+        source: this.adapter.name === 'local' ? 'owned' : 'catalog',
+        pos: this.adapter.pos(), dur: this.adapter.dur(),
+        intent: 'skipped_by_user',
+      });
+      this.completed = true;   // flushSkip must not double-log on the stop that follows
+    }
+    this.adapter.stop();
+    $('audiobar').classList.remove('show');
+    $('ytPane').style.display = 'none';
+    this.adapter = null; this.track = null;
   },
   stop() {
     this.flushSkip();
