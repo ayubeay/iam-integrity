@@ -1816,6 +1816,7 @@ function renderStats() {
     [store.get('library', []).filter(t => t.local).length, 'Local files'],
     [store.get('listen_log', []).filter(l => l.e === 'complete').length, 'Full listens'],
     [store.get('listen_log', []).filter(l => l.e === 'skip').length, 'Skips'],
+    [store.get('sessions', []).length, 'Sessions'],
     [getSession() ? 1 : 0, 'Active session']
   ];
   el.innerHTML = '<div class="stat-grid">' + stats.map(s =>
@@ -2422,6 +2423,67 @@ document.addEventListener('change', (e) => {
 /* ---- Playback Adapter layer: Sonic asks for a track, adapters decide how ---- */
 const DEVICE = () => (window.innerWidth < 860 ? 'mobile' : 'desktop');
 
+/* ---- Session Architecture v1 ----
+   Groups playback receipts into sessions. Capture only - replay, scoring and
+   mood/energy inference are future work per the reserve doc. */
+const SESSION_IDLE_MS = 30 * 60 * 1000;
+
+function newSessionId() {
+  try { return crypto.randomUUID(); }
+  catch (e) { return 'sess_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+}
+
+function closeSession(s) {
+  if (!s || s.ended_at) return;
+  s.ended_at = new Date(s.last_event_at).toISOString();
+  s.total_duration_ms = s.last_event_at - Date.parse(s.started_at);
+  const all = store.get('sessions', []);
+  all.unshift(s);
+  store.set('sessions', all.slice(0, 100));
+  store.set('session_current', null);
+}
+
+function ensureSession() {
+  let s = store.get('session_current', null);
+  if (s && Date.now() - s.last_event_at > SESSION_IDLE_MS) { closeSession(s); s = null; }
+  if (s) return s;
+  const rp = store.get('recent_pathway', null);
+  s = {
+    session_id: newSessionId(),
+    started_at: new Date().toISOString(),
+    ended_at: null,
+    device: DEVICE(),
+    tracks_played: 0, tracks_completed: 0, tracks_skipped: 0,
+    provider_mix: {},
+    pathway_id: (rp && (rp.id || (rp.anchor && rp.anchor.track_id))) || null,
+    mood: null,        // not derivable from playback events - reserved
+    energy_band: null, // not derivable from playback events - reserved
+    last_event_at: Date.now(),
+  };
+  store.set('session_current', s);
+  return s;
+}
+
+function sessionRecord(event, ctx) {
+  const s = ensureSession();
+  s.last_event_at = Date.now();
+  if (event === 'start') {
+    s.tracks_played++;
+    const p = ctx.provider || 'unknown';
+    s.provider_mix[p] = (s.provider_mix[p] || 0) + 1;
+  }
+  if (event === 'complete') s.tracks_completed++;
+  if (event === 'skip') s.tracks_skipped++;
+  store.set('session_current', s);
+  return s.session_id;
+}
+
+// close a session left open from a previous visit
+(function reapStaleSession() {
+  const s = store.get('session_current', null);
+  if (s && Date.now() - s.last_event_at > SESSION_IDLE_MS) closeSession(s);
+})();
+
 function emitPlayback(event, ctx) {
   const log = store.get('listen_log', []);
   log.unshift({
@@ -2431,6 +2493,7 @@ function emitPlayback(event, ctx) {
     adapter: ctx.adapter || null,
     video_id: ctx.video_id || null,
     resolver_cache_hit: ctx.cache_hit === undefined ? null : ctx.cache_hit,
+    session_id: sessionRecord(event, ctx),
     source: ctx.source || 'catalog',
     pos: Math.round(ctx.pos || 0), dur: Math.round(ctx.dur || 0),
     completion: ctx.dur ? Math.round(100 * (ctx.pos / ctx.dur)) / 100 : 0,
@@ -2479,6 +2542,11 @@ function ytInit() {
       onReady: () => { ytReady = true; if (ytPending) { const p = ytPending; ytPending = null; ytPlayer.loadVideoById(p); } },
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.ENDED) Playback.onEnded();
+        if (e.data === YT.PlayerState.PAUSED && Playback.adapter === YouTubeAdapter && !Playback.completed) Playback.emitTransport('pause');
+        if (e.data === YT.PlayerState.PLAYING && Playback.adapter === YouTubeAdapter) {
+          if (Playback._skipNextResume) Playback._skipNextResume = false;
+          else Playback.emitTransport('resume');
+        }
         if (e.data === YT.PlayerState.PLAYING) $('abToggle').textContent = '\u23f8';
         if (e.data === YT.PlayerState.PAUSED) $('abToggle').textContent = '\u25b6';
       }
@@ -2553,6 +2621,7 @@ const Playback = {
     const r = await a.play(t);
     if (r === false) return;
     this.adapter = a; this.track = t; this.startedAt = Date.now(); this.completed = false;
+    this._skipNextResume = true;
     logPlay(t.artist, t.title);
     emitPlayback('start', { artist: t.artist, title: t.title, provider: a.name,
       adapter: a === LocalAdapter ? 'LocalAdapter' : 'YouTubeAdapter',
@@ -2565,7 +2634,21 @@ const Playback = {
     $('audiobar').classList.add('show');
   },
   toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
-  seek(f) { if (this.adapter) this.adapter.seek(f); },
+  seek(f) {
+    if (!this.adapter) return;
+    this.adapter.seek(f);
+    this.emitTransport('seek');
+  },
+  emitTransport(kind) {
+    if (!this.adapter || !this.track) return;
+    emitPlayback(kind, {
+      artist: this.track.artist, title: this.track.title,
+      provider: this.adapter.name,
+      adapter: this.adapter === LocalAdapter ? 'LocalAdapter' : 'YouTubeAdapter',
+      source: this.adapter.name === 'local' ? 'owned' : 'catalog',
+      pos: this.adapter.pos(), dur: this.adapter.dur(),
+    });
+  },
   onEnded() {
     if (!this.adapter || !this.track || this.completed) return;
     this.completed = true;
@@ -2598,6 +2681,17 @@ const Playback = {
 };
 setInterval(() => Playback.tick(), 500);
 audioEl.addEventListener('ended', () => Playback.onEnded());
+audioEl.addEventListener('pause', () => {
+  if (Playback.adapter === LocalAdapter && !Playback.completed && !audioEl.ended) Playback.emitTransport('pause');
+});
+audioEl.addEventListener('play', () => {
+  if (Playback.adapter !== LocalAdapter) return;
+  if (Playback._skipNextResume) { Playback._skipNextResume = false; return; }
+  Playback.emitTransport('resume');
+});
+audioEl.addEventListener('seeked', () => {
+  if (Playback.adapter === LocalAdapter && Playback.startedAt) Playback.emitTransport('seek');
+});
 
 /* ---- Safe metadata migration: rekeys audio blobs in lockstep ---- */
 async function rekey(oldKey, newKey) {
