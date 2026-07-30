@@ -2637,7 +2637,12 @@ const Playback = {
   seek(f) {
     if (!this.adapter) return;
     this.adapter.seek(f);
-    this.emitTransport('seek');
+    this.emitSeek();
+  },
+  /* a drag fires input on every pixel; emit once when it settles */
+  emitSeek() {
+    clearTimeout(this._seekTimer);
+    this._seekTimer = setTimeout(() => this.emitTransport('seek'), 400);
   },
   emitTransport(kind) {
     if (!this.adapter || !this.track) return;
@@ -2690,7 +2695,7 @@ audioEl.addEventListener('play', () => {
   Playback.emitTransport('resume');
 });
 audioEl.addEventListener('seeked', () => {
-  if (Playback.adapter === LocalAdapter && Playback.startedAt) Playback.emitTransport('seek');
+  if (Playback.adapter === LocalAdapter && Playback.startedAt) Playback.emitSeek();
 });
 
 /* ---- Safe metadata migration: rekeys audio blobs in lockstep ---- */
