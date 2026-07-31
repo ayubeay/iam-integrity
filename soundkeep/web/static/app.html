@@ -883,8 +883,9 @@ textarea.input { min-height:88px; resize:vertical; }
       <div class="ab-name" id="abName"></div>
     </div>
     <button class="ab-btn" id="abToggle">⏸</button>
-    <button class="ab-btn" id="abSkip" title="Skip this track" style="width:32px; height:32px; font-size:13px;">⏭</button>
-    <button class="ab-close" id="abClose" title="Stop playback">⏹</button>
+    <button class="ab-btn" id="abSkip" title="Next track" style="width:32px; height:32px; font-size:13px;">⏭</button>
+    <button class="ab-close" id="abStop" title="Stop playback">⏹</button>
+    <button class="ab-close" id="abClose" title="Close player">✕</button>
   </div>
   <input type="range" class="ab-seek" id="abSeek" min="0" max="1000" value="0">
   <div class="ab-times"><span id="abCur">0:00</span><span id="abDur">0:00</span></div>
@@ -1051,8 +1052,9 @@ audioEl.addEventListener('ended', () => {
 });
 $('abToggle').addEventListener('click', () => { Playback.toggle(); });
 $('abSeek').addEventListener('input', () => { Playback.seek($('abSeek').value / 1000); });
-$('abClose').addEventListener('click', () => { Playback.stop(); });
-$('abSkip').addEventListener('click', () => { Playback.skip(); });
+$('abStop').addEventListener('click', () => { Playback.halt(); });
+$('abClose').addEventListener('click', () => { Playback.close(); });
+$('abSkip').addEventListener('click', () => { Playback.next(); });
 
 async function playTrack(artist, title) {
   await Playback.play(artist, title);
@@ -2635,6 +2637,7 @@ const Playback = {
     $('ytPane').style.display = a.name === 'youtube' ? 'block' : 'none';
     $('abToggle').textContent = '\u23f8';
     $('audiobar').classList.add('show');
+    this.refreshControls();
   },
   toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
   seek(f) {
@@ -2646,6 +2649,65 @@ const Playback = {
   emitSeek() {
     clearTimeout(this._seekTimer);
     this._seekTimer = setTimeout(() => this.emitTransport('seek'), 400);
+  },
+  /* the queue is whatever ordered collection playback started from */
+  queueContext() {
+    const s = getSession();
+    if (!s || !this.track) return null;
+    const list = sessionTracks(s).map(x => x.track);
+    const key = (this.track.artist + '::' + this.track.title).toLowerCase();
+    const i = list.findIndex(t => (t.artist + '::' + t.title).toLowerCase() === key);
+    if (i < 0) return null;
+    return { list: list, idx: i, session: s };
+  },
+  hasNext() {
+    const q = this.queueContext();
+    return !!(q && q.idx < q.list.length - 1);
+  },
+  refreshControls() {
+    const btn = $('abSkip');
+    if (!btn) return;
+    const can = this.hasNext();
+    btn.disabled = !can;
+    btn.style.opacity = can ? '1' : '0.3';
+    btn.title = can ? 'Next track' : 'No next track in this session';
+  },
+  /* advance within the session; logs the skip only if the track was abandoned early */
+  next() {
+    const q = this.queueContext();
+    if (!q) { toast('No queue \u2014 play from a Session to use next'); return; }
+    if (q.idx >= q.list.length - 1) { toast('End of session'); return; }
+    if (!this.completed) {
+      const p = this.adapter.pos(), d = this.adapter.dur();
+      if (d && p / d < 0.9) emitPlayback('skip', {
+        artist: this.track.artist, title: this.track.title,
+        provider: this.adapter.name,
+        adapter: this.adapter === LocalAdapter ? 'LocalAdapter' : 'YouTubeAdapter',
+        source: this.adapter.name === 'local' ? 'owned' : 'catalog',
+        pos: p, dur: d, intent: 'skipped_by_user',
+      });
+      this.completed = true;
+    }
+    q.session.idx = q.idx + 1;
+    setSession(q.session);
+    try { renderSession(); } catch (e) {}
+    const nt = q.list[q.idx + 1];
+    this.play(nt.artist, nt.title);
+  },
+  /* halt playback, keep the bar so it can be restarted */
+  halt() {
+    this.flushSkip();
+    if (this.adapter) this.adapter.stop();
+    this.completed = true;
+    $('abToggle').textContent = '\u25b6';
+  },
+  /* dismiss the player entirely */
+  close() {
+    this.flushSkip();
+    if (this.adapter) this.adapter.stop();
+    $('audiobar').classList.remove('show');
+    $('ytPane').style.display = 'none';
+    this.adapter = null; this.track = null;
   },
   emitTransport(kind) {
     if (!this.adapter || !this.track) return;
@@ -2664,6 +2726,7 @@ const Playback = {
       provider: this.adapter.name, source: this.adapter.name === 'local' ? 'owned' : 'catalog',
       pos: this.adapter.dur(), dur: this.adapter.dur() });
     $('abToggle').textContent = '\u25b6';
+    if (this.hasNext()) setTimeout(() => this.next(), 400);
   },
   flushSkip() {
     if (!this.adapter || !this.track || this.completed) return;
