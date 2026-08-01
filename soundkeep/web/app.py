@@ -158,12 +158,19 @@ def pathway(track_id: str, steps: int = 5):
     return {"anchor": anchor, "pathway": pathway_result}
 
 @app.get("/api/dynamic_pathway")
-def dynamic_pathway(artist: str, steps: int = 5):
+def dynamic_pathway(artist: str, steps: int = 5, title: str = ""):
     lastfm_tracks = lastfm_search(artist)
     if not lastfm_tracks:
         return {"error": "Artist not found"}
 
+    # honour the track the user actually selected, not just the first result
     anchor = lastfm_tracks[0]
+    if title:
+        want = title.strip().lower()
+        for t in lastfm_tracks:
+            if (t.get("title") or "").strip().lower() == want:
+                anchor = t
+                break
     local_tracks = load_tracks()
 
     pathway_result = []

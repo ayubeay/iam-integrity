@@ -1299,7 +1299,7 @@ async function getPathway(track) {
   try {
     let data;
     if (track.source === 'lastfm') {
-      data = await (await fetch(API + '/api/dynamic_pathway?artist=' + encodeURIComponent(track.artist) + '&steps=' + PATHWAY_STEPS)).json();
+      data = await (await fetch(API + '/api/dynamic_pathway?artist=' + encodeURIComponent(track.artist) + '&title=' + encodeURIComponent(track.title) + '&steps=' + PATHWAY_STEPS)).json();
     } else {
       data = await (await fetch(API + '/api/pathway/' + encodeURIComponent(track.track_id) + '?steps=' + PATHWAY_STEPS)).json();
     }
