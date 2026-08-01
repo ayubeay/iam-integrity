@@ -17,33 +17,38 @@ def score_candidate(anchor, candidate):
     score = 0
     reasons = []
 
-    if candidate['genre'] == anchor['genre']:
+    if anchor.get('genre') and candidate.get('genre') == anchor.get('genre'):
         score += 3
         reasons.append(f"same genre ({anchor['genre']})")
 
-    if candidate['region'] == anchor['region']:
+    if anchor.get('region') and candidate.get('region') == anchor.get('region'):
         score += 2
         reasons.append(f"same region ({anchor['region']})")
 
+    # Signals below are scored only when both sides were actually measured.
+    # Last.fm sourced tracks carry None for energy, era and set position; a
+    # default would produce reasons for observations that never happened.
     energy_map = {"low": 1, "medium": 2, "high": 3}
-    a_e = energy_map.get(anchor['energy'], 2)
-    c_e = energy_map.get(candidate['energy'], 2)
-    if c_e >= a_e:
-        score += 2
-        reasons.append("maintains or builds energy")
-    else:
-        score += 1
-        reasons.append("energy winds down")
+    a_e = energy_map.get(anchor.get('energy'))
+    c_e = energy_map.get(candidate.get('energy'))
+    if a_e is not None and c_e is not None:
+        if c_e >= a_e:
+            score += 2
+            reasons.append("maintains or builds energy")
+        else:
+            score += 1
+            reasons.append("energy winds down")
 
-    next_pos = next_set_position(anchor['set_position'])
-    if candidate['set_position'] == next_pos:
-        score += 3
-        reasons.append(f"correct set progression → {next_pos}")
-    elif candidate['set_position'] == anchor['set_position']:
-        score += 1
-        reasons.append("holds set position")
+    if anchor.get('set_position') and candidate.get('set_position'):
+        next_pos = next_set_position(anchor['set_position'])
+        if candidate['set_position'] == next_pos:
+            score += 3
+            reasons.append(f"correct set progression → {next_pos}")
+        elif candidate['set_position'] == anchor['set_position']:
+            score += 1
+            reasons.append("holds set position")
 
-    if candidate['era'] == anchor['era']:
+    if anchor.get('era') and candidate.get('era') and candidate['era'] == anchor['era']:
         score += 1
         reasons.append(f"same era ({anchor['era']})")
 

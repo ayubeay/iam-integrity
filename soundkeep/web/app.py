@@ -15,6 +15,51 @@ app = FastAPI()
 LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/"
 
+def lastfm_similar_pool(artist: str, limit_artists: int = 8, per_artist: int = 4):
+    """Tracks by artists Last.fm considers similar. Genre and region are inferred
+    from tags; energy, bpm, era, mood and set position are left unset because we
+    do not measure them for these sources."""
+    pool = []
+    try:
+        res = requests.get(LASTFM_BASE, params={
+            "method": "artist.getsimilar", "artist": artist,
+            "api_key": LASTFM_API_KEY, "format": "json", "limit": limit_artists
+        }, timeout=6)
+        similars = res.json().get("similarartists", {}).get("artist", [])
+    except Exception as e:
+        print(f"Last.fm similar error: {e}")
+        return pool
+
+    for s in similars:
+        name = s.get("name")
+        if not name:
+            continue
+        try:
+            tr = requests.get(LASTFM_BASE, params={
+                "method": "artist.gettoptracks", "artist": name,
+                "api_key": LASTFM_API_KEY, "format": "json", "limit": per_artist
+            }, timeout=6).json().get("toptracks", {}).get("track", [])
+            info = requests.get(LASTFM_BASE, params={
+                "method": "artist.getinfo", "artist": name,
+                "api_key": LASTFM_API_KEY, "format": "json"
+            }, timeout=6).json()
+            tags = info.get("artist", {}).get("tags", {}).get("tag", [])
+            tag_names = [t["name"].lower() for t in tags[:5]] if tags else []
+            g, r = infer_genre(tag_names, name), infer_region(tag_names, name)
+            for i, t in enumerate(tr):
+                pool.append({
+                    "track_id": f"lfm_sim_{name.lower().replace(' ', '_')}_{i}",
+                    "artist": name, "title": t.get("name", "Unknown"),
+                    "genre": g, "region": r,
+                    "energy": None, "bpm_range": None, "era": None,
+                    "mood": None, "set_position": None,
+                    "source": "lastfm", "tags": tag_names,
+                })
+        except Exception:
+            continue
+    return pool
+
+
 def lastfm_search(artist: str):
     try:
         res = requests.get(LASTFM_BASE, params={
@@ -22,7 +67,7 @@ def lastfm_search(artist: str):
             "artist": artist,
             "api_key": LASTFM_API_KEY,
             "format": "json",
-            "limit": 5
+            "limit": 15
         }, timeout=5)
         data = res.json()
         tracks = data.get("toptracks", {}).get("track", [])
@@ -52,12 +97,12 @@ def lastfm_search(artist: str):
                 "artist": track_artist,
                 "title": track.get("name", "Unknown"),
                 "genre": genre,
-                "energy": "medium",
-                "bpm_range": "90-110",
+                "energy": None,          # not measured for lastfm sources
+                "bpm_range": None,       # not measured
                 "region": region,
-                "era": "2020s",
-                "mood": "vibe",
-                "set_position": "warm-up",
+                "era": None,             # not measured
+                "mood": None,            # not measured
+                "set_position": None,    # not measured
                 "source": "lastfm",
                 "tags": tag_names
             })
@@ -171,14 +216,19 @@ def dynamic_pathway(artist: str, steps: int = 5, title: str = ""):
             if (t.get("title") or "").strip().lower() == want:
                 anchor = t
                 break
+    # candidates: the curated seed catalog plus artists Last.fm considers similar
     local_tracks = load_tracks()
+    pool = local_tracks + lastfm_similar_pool(anchor.get("artist", artist))
 
     pathway_result = []
     used_ids = {anchor['track_id']}
+    seen_titles = {(anchor.get('artist','') + '::' + anchor.get('title','')).lower()}
     current = anchor
 
     for _ in range(steps):
-        candidates = [t for t in local_tracks if t['track_id'] not in used_ids]
+        candidates = [t for t in pool
+                      if t['track_id'] not in used_ids
+                      and (t.get('artist','') + '::' + t.get('title','')).lower() not in seen_titles]
         if not candidates:
             break
         scored = sorted(
@@ -189,6 +239,7 @@ def dynamic_pathway(artist: str, steps: int = 5, title: str = ""):
         best = scored[0][1]
         pathway_result.append({"track": best, "score": best_score, "reasons": best_reasons})
         used_ids.add(best['track_id'])
+        seen_titles.add((best.get('artist','') + '::' + best.get('title','')).lower())
         current = best
 
     return {"anchor": anchor, "pathway": pathway_result}
