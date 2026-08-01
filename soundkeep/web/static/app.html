@@ -1299,9 +1299,9 @@ async function getPathway(track) {
   try {
     let data;
     if (track.source === 'lastfm') {
-      data = await (await fetch(API + '/api/dynamic_pathway?artist=' + encodeURIComponent(track.artist))).json();
+      data = await (await fetch(API + '/api/dynamic_pathway?artist=' + encodeURIComponent(track.artist) + '&steps=' + PATHWAY_STEPS)).json();
     } else {
-      data = await (await fetch(API + '/api/pathway/' + encodeURIComponent(track.track_id))).json();
+      data = await (await fetch(API + '/api/pathway/' + encodeURIComponent(track.track_id) + '?steps=' + PATHWAY_STEPS)).json();
     }
     $('searchLoading').style.display = 'none';
     if (data.error) { showSearchError(data.error); return; }
@@ -2038,6 +2038,37 @@ function renderTokenGraph() {
 
 /* ── Feedback with receipts ── */
 const APP_VERSION = 'v17-beta';
+const PATHWAY_STEPS = 12;        // per fetch
+const CONTINUOUS_PLAY = true;    // extend the pathway from the last track rather than ending
+
+/* When a session runs out, walk on from wherever it got to. */
+async function extendSession() {
+  const s = getSession();
+  if (!s || s._extending) return false;
+  s._extending = true;
+  setSession(s);
+  try {
+    const tracks = sessionTracks(s);
+    const last = tracks[tracks.length - 1].track;
+    const url = last.source === 'lastfm' || !last.track_id
+      ? API + '/api/dynamic_pathway?artist=' + encodeURIComponent(last.artist) + '&steps=' + PATHWAY_STEPS
+      : API + '/api/pathway/' + encodeURIComponent(last.track_id) + '?steps=' + PATHWAY_STEPS;
+    const data = await (await fetch(url)).json();
+    const seen = new Set(tracks.map(x => (x.track.artist + '::' + x.track.title).toLowerCase()));
+    const fresh = (data.pathway || []).filter(x =>
+      !seen.has((x.track.artist + '::' + x.track.title).toLowerCase()));
+    if (!fresh.length) { s._extending = false; setSession(s); return false; }
+    s.pathway = s.pathway.concat(fresh);
+    s._extending = false;
+    setSession(s);
+    try { renderSession(); } catch (e) {}
+    toast('Pathway continued \u2014 ' + fresh.length + ' more tracks');
+    return true;
+  } catch (e) {
+    s._extending = false; setSession(s);
+    return false;
+  }
+}
 let fbCategory = null, fbContext = null;
 
 function openFeedback(ctx) {
@@ -2695,7 +2726,8 @@ const Playback = {
   },
   hasNext() {
     const q = this.queueContext();
-    return !!(q && q.idx < q.list.length - 1);
+    if (!q) return false;
+    return q.idx < q.list.length - 1 || CONTINUOUS_PLAY;
   },
   syncSessionUI() {
     if ((location.hash || '').indexOf('session') === -1) return;
@@ -2713,7 +2745,12 @@ const Playback = {
   next() {
     const q = this.queueContext();
     if (!q) { toast('No queue \u2014 play from a Session to use next'); return; }
-    if (q.idx >= q.list.length - 1) { toast('End of session'); return; }
+    if (q.idx >= q.list.length - 1) {
+      if (!CONTINUOUS_PLAY) { toast('End of session'); return; }
+      toast('Extending pathway\u2026');
+      extendSession().then(ok => { if (ok) this.next(); else toast('No further tracks found'); });
+      return;
+    }
     if (!this.completed) {
       const p = this.adapter.pos(), d = this.adapter.dur();
       if (d && p / d < 0.9) emitPlayback('skip', {
@@ -2763,7 +2800,10 @@ const Playback = {
       provider: this.adapter.name, source: this.adapter.name === 'local' ? 'owned' : 'catalog',
       pos: this.adapter.dur(), dur: this.adapter.dur() });
     $('abToggle').textContent = '\u25b6';
-    if (this.hasNext()) setTimeout(() => this.next(), 400);
+    if (this.hasNext()) { setTimeout(() => this.next(), 400); return; }
+    if (CONTINUOUS_PLAY && this.queueContext()) {
+      extendSession().then(ok => { if (ok) setTimeout(() => this.next(), 400); });
+    }
   },
   flushSkip() {
     if (!this.adapter || !this.track || this.completed) return;
