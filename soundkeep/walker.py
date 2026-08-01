@@ -16,11 +16,16 @@ def next_set_position(current):
 def score_candidate(anchor, candidate):
     score = 0
     reasons = []
+    available = 0   # points that were on the table given what both sides measured
 
+    if anchor.get('genre') and candidate.get('genre'):
+        available += 3
     if anchor.get('genre') and candidate.get('genre') == anchor.get('genre'):
         score += 3
         reasons.append(f"same genre ({anchor['genre']})")
 
+    if anchor.get('region') and candidate.get('region'):
+        available += 2
     if anchor.get('region') and candidate.get('region') == anchor.get('region'):
         score += 2
         reasons.append(f"same region ({anchor['region']})")
@@ -32,6 +37,7 @@ def score_candidate(anchor, candidate):
     a_e = energy_map.get(anchor.get('energy'))
     c_e = energy_map.get(candidate.get('energy'))
     if a_e is not None and c_e is not None:
+        available += 2
         if c_e >= a_e:
             score += 2
             reasons.append("maintains or builds energy")
@@ -40,6 +46,7 @@ def score_candidate(anchor, candidate):
             reasons.append("energy winds down")
 
     if anchor.get('set_position') and candidate.get('set_position'):
+        available += 3
         next_pos = next_set_position(anchor['set_position'])
         if candidate['set_position'] == next_pos:
             score += 3
@@ -48,6 +55,8 @@ def score_candidate(anchor, candidate):
             score += 1
             reasons.append("holds set position")
 
+    if anchor.get('era') and candidate.get('era'):
+        available += 1
     if anchor.get('era') and candidate.get('era') and candidate['era'] == anchor['era']:
         score += 1
         reasons.append(f"same era ({anchor['era']})")
@@ -58,7 +67,14 @@ def score_candidate(anchor, candidate):
         score += 2
         reasons.append(f"natural bridge: {anchor['genre']} → {candidate['genre']}")
 
-    return score, reasons
+    # Normalize to a 0-10 scale over the signals that were actually comparable, so a
+    # track we know two things about is not automatically beaten by one we know five
+    # things about. Bridge bonus is added after, as it is a genuine extra.
+    bridge_bonus = 2 if reasons and reasons[-1].startswith("natural bridge") else 0
+    base = score - bridge_bonus
+    base_available = available if available > 0 else 1
+    normalized = round((base / base_available) * 10, 2) + bridge_bonus
+    return normalized, reasons
 
 def generate_pathway(anchor_id, tracks, length=5):
     anchor = next((t for t in tracks if t['track_id'] == anchor_id), None)
