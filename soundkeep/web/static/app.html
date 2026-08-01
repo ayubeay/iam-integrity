@@ -1910,14 +1910,25 @@ function startSession() {
 }
 $('startSessionBtn').onclick = startSession;
 
-function sessionStep(delta) {
+/* Authoritative session transition. Index and playback move together;
+   nothing else may change s.idx independently. */
+function activateSessionTrack(idx, opts) {
+  const autoplay = !opts || opts.autoplay !== false;
   const s = getSession(); if (!s) return;
-  const total = sessionTracks(s).length;
-  const ni = s.idx + delta;
-  if (ni < 0 || ni >= total) return;
-  s.idx = ni;
+  const tracks = sessionTracks(s);
+  if (idx < 0 || idx >= tracks.length) return;
+  s.idx = idx;
   setSession(s);
   renderSession();
+  if (autoplay) {
+    const t = tracks[idx].track;
+    Playback.play(t.artist, t.title);
+  }
+}
+
+function sessionStep(delta) {
+  const s = getSession(); if (!s) return;
+  activateSessionTrack(s.idx + delta);
 }
 
 function endSession() {
@@ -1925,6 +1936,27 @@ function endSession() {
   updateMiniplayer();
   nav('home');
   toast('Session ended');
+}
+
+/* True if the adapter is currently on this exact track */
+function isPlayingTrack(t) {
+  if (!Playback.adapter || !Playback.track) return false;
+  return (Playback.track.artist + '::' + Playback.track.title).toLowerCase() ===
+         (t.artist + '::' + t.title).toLowerCase();
+}
+function sessionPlayIcon(t) {
+  if (!isPlayingTrack(t)) return '\u25b6';
+  const paused = Playback.adapter === LocalAdapter
+    ? audioEl.paused
+    : (ytPlayer && ytPlayer.getPlayerState ? ytPlayer.getPlayerState() !== 1 : true);
+  return paused ? '\u25b6' : '\u23f8';
+}
+function sessionToggle() {
+  const s = getSession(); if (!s) return;
+  const t = sessionTracks(s)[s.idx].track;
+  if (isPlayingTrack(t)) Playback.toggle();
+  else Playback.play(t.artist, t.title);
+  setTimeout(() => { try { renderSession(); } catch (e) {} }, 250);
 }
 
 function renderSession() {
@@ -1954,7 +1986,7 @@ function renderSession() {
       '</span></div>' +
       '<div class="session-controls">' +
         '<button class="sc-btn" onclick="sessionStep(-1)" ' + (s.idx === 0 ? 'disabled' : '') + '>⏮</button>' +
-        '<button class="sc-play play-btn" data-play-artist="' + esc(t.artist) + '" data-play-title="' + esc(t.title) + '">▶</button>' +
+        '<button class="sc-play" id="sesPlay" onclick="sessionToggle()">' + sessionPlayIcon(t) + '</button>' +
         '<button class="sc-btn" onclick="sessionStep(1)" ' + (s.idx === tracks.length - 1 ? 'disabled' : '') + '>⏭</button>' +
       '</div>' +
       '<div class="session-progress">' + segs + '</div>' +
@@ -1983,7 +2015,7 @@ function updateMiniplayer() {
   $('mpPos').textContent = 'Session · track ' + (s.idx + 1) + ' of ' + tracks.length;
   mp.classList.add('show');
 }
-$('mpNext').addEventListener('click', (e) => { e.stopPropagation(); sessionStep(1); const s = getSession(); if (s) toast('Next: track ' + (s.idx + 1)); });
+$('mpNext').addEventListener('click', (e) => { e.stopPropagation(); sessionStep(1); });
 window.addEventListener('hashchange', updateMiniplayer);
 
 /* SK ecosystem sparkline — living motif; wires to real chain data when SK launches */
@@ -2638,6 +2670,7 @@ const Playback = {
     $('abToggle').textContent = '\u23f8';
     $('audiobar').classList.add('show');
     this.refreshControls();
+    this.syncSessionUI();
   },
   toggle() { if (!this.adapter) return; $('abToggle').textContent = this.adapter.toggle() ? '\u23f8' : '\u25b6'; },
   seek(f) {
@@ -2663,6 +2696,10 @@ const Playback = {
   hasNext() {
     const q = this.queueContext();
     return !!(q && q.idx < q.list.length - 1);
+  },
+  syncSessionUI() {
+    if ((location.hash || '').indexOf('session') === -1) return;
+    try { renderSession(); } catch (e) {}
   },
   refreshControls() {
     const btn = $('abSkip');
