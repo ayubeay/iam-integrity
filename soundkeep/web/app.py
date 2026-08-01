@@ -194,8 +194,21 @@ def pathway(track_id: str, steps: int = 5):
             [(score_candidate(current, c), c) for c in candidates],
             key=lambda x: -x[0][0]
         )
-        best_score, best_reasons = scored[0][0]
-        best = scored[0][1]
+        # avoid one similar artist dominating the whole walk
+        artist_counts = {}
+        for p in pathway_result:
+            k = (p['track'].get('artist') or '').lower()
+            artist_counts[k] = artist_counts.get(k, 0) + 1
+        pick = None
+        for sc, cand in scored:
+            k = (cand.get('artist') or '').lower()
+            if artist_counts.get(k, 0) < 2:
+                pick = (sc, cand)
+                break
+        if pick is None:
+            pick = scored[0]
+        best_score, best_reasons = pick[0]
+        best = pick[1]
         pathway_result.append({"track": best, "score": best_score, "reasons": best_reasons})
         used_ids.add(best['track_id'])
         current = best
@@ -235,8 +248,21 @@ def dynamic_pathway(artist: str, steps: int = 5, title: str = ""):
             [(score_candidate(current, c), c) for c in candidates],
             key=lambda x: -x[0][0]
         )
-        best_score, best_reasons = scored[0][0]
-        best = scored[0][1]
+        # avoid one similar artist dominating the whole walk
+        artist_counts = {}
+        for p in pathway_result:
+            k = (p['track'].get('artist') or '').lower()
+            artist_counts[k] = artist_counts.get(k, 0) + 1
+        pick = None
+        for sc, cand in scored:
+            k = (cand.get('artist') or '').lower()
+            if artist_counts.get(k, 0) < 2:
+                pick = (sc, cand)
+                break
+        if pick is None:
+            pick = scored[0]
+        best_score, best_reasons = pick[0]
+        best = pick[1]
         pathway_result.append({"track": best, "score": best_score, "reasons": best_reasons})
         used_ids.add(best['track_id'])
         seen_titles.add((best.get('artist','') + '::' + best.get('title','')).lower())

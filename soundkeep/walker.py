@@ -73,7 +73,12 @@ def score_candidate(anchor, candidate):
     bridge_bonus = 2 if reasons and reasons[-1].startswith("natural bridge") else 0
     base = score - bridge_bonus
     base_available = available if available > 0 else 1
-    normalized = round((base / base_available) * 10, 2) + bridge_bonus
+    # Fit over comparable signals, then weight by how much was comparable. A perfect
+    # match on two signals is worth less than a perfect match on five - fewer signals
+    # means less evidence, not more certainty.
+    fit = base / base_available
+    confidence = base_available / 11.0          # 11 = all signals present
+    normalized = round(fit * (0.6 + 0.4 * confidence) * 10, 3) + bridge_bonus
     return normalized, reasons
 
 def generate_pathway(anchor_id, tracks, length=5):
