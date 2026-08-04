@@ -1608,6 +1608,16 @@ function analyzeSetShape(tracks) {
   return out;
 }
 
+function playCrate(id) {
+  var c = (store.get('crates', []) || []).find(function (x) { return x.id === id; });
+  if (!c || !c.tracks.length) { toast('Crate is empty'); return; }
+  store.set('active_crate', id);
+  store.set('active_session', null);   // one queue source at a time
+  var t = c.tracks[0];
+  toast('Playing ' + c.name + ' \u2014 ' + c.tracks.length + ' tracks');
+  Playback.play(t.artist, t.title);
+}
+
 function renderCratesInto(el) {
   const crates = store.get('crates', []);
   let html = '<div class="row-gap" style="margin-bottom:16px;">' +
@@ -1662,6 +1672,7 @@ function renderCratesInto(el) {
         '<div><div class="crate-title">' + esc(crate.name) + '</div>' +
         '<div class="tc-meta" style="margin-top:3px;">' + meta + energyBars + '</div></div>' +
         '<div style="display:flex; gap:6px; align-items:center;">' +
+          '<button class="btn btn-primary btn-sm" data-playcrate title="Play this crate in order" style="margin-right:4px;">\u25b6 Play set</button>' +
           '<button class="icon-btn" data-renamecrate title="Rename">\u270e</button>' +
           '<button class="icon-btn" data-delcrate title="Delete crate">\u2715</button>' +
         '</div>' +
@@ -1674,6 +1685,13 @@ function renderCratesInto(el) {
       })() +
       '<div data-cratetracks></div>' +
       '<button class="btn btn-ghost btn-sm" data-cratenotes style="margin-top:6px;">' + (crate.notes ? 'Edit set notes' : '\uff0b Set notes') + '</button>';
+
+    var playBtn = box.querySelector('[data-playcrate]');
+    if (playBtn) {
+      playBtn.disabled = !crate.tracks.length;
+      playBtn.style.opacity = crate.tracks.length ? '1' : '0.4';
+      playBtn.onclick = function () { playCrate(crate.id); };
+    }
 
     const wrap = box.querySelector('[data-cratetracks]');
     if (!crate.tracks.length) {
@@ -1692,10 +1710,15 @@ function renderCratesInto(el) {
           '<div class="ct-btns">' +
             '<button class="ct-btn" data-up ' + (ti === 0 ? 'disabled' : '') + ' title="Move up">\u25b2</button>' +
             '<button class="ct-btn" data-down ' + (ti === crate.tracks.length - 1 ? 'disabled' : '') + ' title="Move down">\u25bc</button>' +
-            '<button class="ct-btn play-btn" data-play-artist="' + esc(t.artist) + '" data-play-title="' + esc(t.title) + '" title="Play">\u25b6</button>' +
+            '<button class="ct-btn" data-playfrom title="Play from here">\u25b6</button>' +
             '<button class="ct-btn" data-note title="Transition note">\u270e</button>' +
             '<button class="ct-btn" data-removetrack title="Remove">\u2715</button>' +
           '</div>';
+        row.querySelector('[data-playfrom]').onclick = function () {
+          store.set('active_crate', crate.id);
+          store.set('active_session', null);
+          Playback.play(t.artist, t.title);
+        };
         row.querySelector('[data-up]').onclick = () => mutate(cs => {
           const c = cs.find(x => x.id === crate.id);
           if (c && ti > 0) { const tmp = c.tracks[ti-1]; c.tracks[ti-1] = c.tracks[ti]; c.tracks[ti] = tmp; }
@@ -2715,7 +2738,27 @@ const Playback = {
     this._seekTimer = setTimeout(() => this.emitTransport('seek'), 400);
   },
   /* the queue is whatever ordered collection playback started from */
+  /* Playback can be driven by a Session pathway or by a crate. Crates are the DJ
+     preparation surface: ordered tracks with transition scores already computed between
+     adjacent pairs. A crate you cannot play in order is a list, not a set. */
+  activeCrate() {
+    var id = store.get('active_crate', null);
+    if (!id) return null;
+    var c = (store.get('crates', []) || []).find(function (x) { return x.id === id; });
+    return c && c.tracks && c.tracks.length ? c : null;
+  },
   queueContext() {
+    var crate = this.activeCrate();
+    if (crate && this.track) {
+      var key = (this.track.artist + '::' + this.track.title).toLowerCase();
+      var ci = crate.tracks.findIndex(function (t) {
+        return (t.artist + '::' + t.title).toLowerCase() === key;
+      });
+      if (ci >= 0) return { list: crate.tracks, idx: ci, source: 'crate', crate: crate };
+    }
+    return this.sessionQueueContext();
+  },
+  sessionQueueContext() {
     const s = getSession();
     if (!s || !this.track) return null;
     const list = sessionTracks(s).map(x => x.track);
@@ -2761,6 +2804,11 @@ const Playback = {
         pos: p, dur: d, intent: 'skipped_by_user',
       });
       this.completed = true;
+    }
+    if (q.source === 'crate') {
+      var crateNext = q.list[q.idx + 1];
+      this.play(crateNext.artist, crateNext.title);
+      return;
     }
     q.session.idx = q.idx + 1;
     setSession(q.session);
