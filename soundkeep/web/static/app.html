@@ -1636,14 +1636,15 @@ function renderCratesInto(el) {
     cs.unshift({ id: Date.now().toString(36), name: name, tracks: [], notes: '' });
     store.set('crates', cs);
     toast('Crate created');
-    renderCratesInto(el);
+    $('newCrateName').value = '';
+    renderCratesInto($('cratesContent'));
   };
 
   function mutate(fn) {
     const cs = store.get('crates', []);
     fn(cs);
     store.set('crates', cs);
-    renderCratesInto(el);
+    renderCratesInto($('cratesContent'));
   }
 
   crates.forEach(crate => {
