@@ -883,6 +883,7 @@ textarea.input { min-height:88px; resize:vertical; }
       <div class="ab-name" id="abName"></div>
     </div>
     <button class="ab-btn" id="abToggle">⏸</button>
+    <button class="ab-btn" id="abPrev" title="Previous track" style="width:32px; height:32px; font-size:13px;">⏮</button>
     <button class="ab-btn" id="abSkip" title="Next track" style="width:32px; height:32px; font-size:13px;">⏭</button>
     <button class="ab-close" id="abStop" title="Stop playback">⏹</button>
     <button class="ab-close" id="abClose" title="Close player">✕</button>
@@ -905,18 +906,53 @@ const store = {
   set(k, v)  { try { localStorage.setItem('sk_' + k, JSON.stringify(v)); } catch (e) {} }
 };
 
-/* theme */
+/* theme - three modes cycling on click: auto, day, night.
+   The stored preference is the MODE, not the resulting appearance, so auto can be told
+   apart from a manual choice that happens to match the current hour. */
+function themeForHour(h) { return (h >= 19 || h < 6) ? 'night' : 'day'; }
+
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
-  document.querySelectorAll('[data-theme-icon]').forEach(el => el.textContent = t === 'night' ? '🌙' : '☀️');
-  document.querySelectorAll('[data-theme-label]').forEach(el => el.textContent = t === 'night' ? 'Night Session' : 'Day Session');
+  var mode = store.get('theme_mode', 'auto');
+  var icon = mode === 'auto' ? '\u25d1' : (t === 'night' ? '\ud83c\udf19' : '\u2600\ufe0f');
+  var label = mode === 'auto'
+    ? 'Auto \u00b7 ' + (t === 'night' ? 'Night' : 'Day')
+    : (t === 'night' ? 'Night Session' : 'Day Session');
+  document.querySelectorAll('[data-theme-icon]').forEach(el => el.textContent = icon);
+  document.querySelectorAll('[data-theme-label]').forEach(el => el.textContent = label);
   store.set('session', t);
 }
+
+function resolveTheme() {
+  var mode = store.get('theme_mode', 'auto');
+  return mode === 'auto' ? themeForHour(new Date().getHours()) : mode;
+}
+
+function cycleThemeMode() {
+  var order = ['auto', 'day', 'night'];
+  var cur = store.get('theme_mode', 'auto');
+  var next = order[(order.indexOf(cur) + 1) % order.length];
+  store.set('theme_mode', next);
+  applyTheme(resolveTheme());
+  toast(next === 'auto' ? 'Follows the clock \u2014 night from 7pm' : (next === 'day' ? 'Day session pinned' : 'Night session pinned'));
+}
+
 document.querySelectorAll('[data-toggle-theme]').forEach(b =>
-  b.addEventListener('click', () =>
-    applyTheme(document.documentElement.getAttribute('data-theme') === 'night' ? 'day' : 'night'))
+  b.addEventListener('click', cycleThemeMode)
 );
-applyTheme(store.get('session', 'night'));
+
+/* migrate an existing manual preference: if the user had picked one, keep it pinned */
+if (store.get('theme_mode', null) === null) {
+  store.set('theme_mode', 'auto');
+}
+applyTheme(resolveTheme());
+
+/* in auto, follow the clock without a reload */
+setInterval(function () {
+  if (store.get('theme_mode', 'auto') !== 'auto') return;
+  var want = themeForHour(new Date().getHours());
+  if (document.documentElement.getAttribute('data-theme') !== want) applyTheme(want);
+}, 60000);
 
 /* toast */
 let toastTimer;
@@ -1055,6 +1091,7 @@ $('abSeek').addEventListener('input', () => { Playback.seek($('abSeek').value / 
 $('abStop').addEventListener('click', () => { Playback.halt(); });
 $('abClose').addEventListener('click', () => { Playback.close(); });
 $('abSkip').addEventListener('click', () => { Playback.next(); });
+$('abPrev').addEventListener('click', () => { Playback.prev(); });
 
 async function playTrack(artist, title) {
   await Playback.play(artist, title);
@@ -2778,12 +2815,37 @@ const Playback = {
     try { renderSession(); } catch (e) {}
   },
   refreshControls() {
+    var pb = $('abPrev');
+    if (pb) {
+      var canPrev = this.hasPrev();
+      pb.disabled = !canPrev;
+      pb.style.opacity = canPrev ? '1' : '0.3';
+      pb.title = canPrev ? 'Previous track' : 'Start of set';
+    }
     const btn = $('abSkip');
     if (!btn) return;
     const can = this.hasNext();
     btn.disabled = !can;
     btn.style.opacity = can ? '1' : '0.3';
     btn.title = can ? 'Next track' : 'No next track in this session';
+  },
+  hasPrev() {
+    var q = this.queueContext();
+    return !!(q && q.idx > 0);
+  },
+  /* Going back is not rejecting a track, so no skip event is emitted - Sonic learns from
+     those receipts and a rewind is not a rejection. */
+  prev() {
+    var q = this.queueContext();
+    if (!q) { toast('No queue \u2014 play from a crate or Session'); return; }
+    if (q.idx <= 0) { toast('Start of set'); return; }
+    this.completed = true;
+    var pt = q.list[q.idx - 1];
+    if (q.source === 'crate') { this.play(pt.artist, pt.title); return; }
+    q.session.idx = q.idx - 1;
+    setSession(q.session);
+    try { renderSession(); } catch (e) {}
+    this.play(pt.artist, pt.title);
   },
   /* advance within the session; logs the skip only if the track was abandoned early */
   next() {
