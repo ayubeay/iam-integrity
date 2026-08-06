@@ -787,6 +787,7 @@ textarea.input { min-height:88px; resize:vertical; }
     <!-- STATS -->
     <section class="view" id="view-decks">
       <div class="beta-note">🎛 <span><b>Practice Decks</b> — load two of your imported files, hear them together, practice the blend. Prep tool, not a performance rig: tempo shift affects pitch (no time-stretch yet), and only local files load here.</span></div>
+      <div id="deckCrateBanner" style="display:none; background:var(--sk-card-2); border:1px solid var(--sk-border); border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:12.5px; color:var(--sk-text-2);"></div>
       <div class="deck-grid">
         <div class="deck" id="deckA">
           <div class="deck-tag">Deck A</div>
@@ -1661,7 +1662,7 @@ function renderCratesInto(el) {
     '<input class="input" id="newCrateName" placeholder="New crate name (e.g. Warm-up, Peak Hour, Wedding Set)\u2026">' +
     '<button class="btn btn-primary" id="newCrateBtn">Create</button>' +
   '</div>' +
-  '<button class="btn btn-ghost btn-sm" onclick="nav(\'decks\')" style="margin-bottom:16px;">🎛 Practice this set in Decks</button>';
+  '';
   if (!crates.length) {
     html += emptyState('\u25a6', 'No crates yet', 'Crates are how DJs organize sets \u2014 warm-up, build, peak. Create one, then add tracks from Library \u2192 Tracks.');
   }
@@ -1711,6 +1712,7 @@ function renderCratesInto(el) {
         '<div class="tc-meta" style="margin-top:3px;">' + meta + energyBars + '</div></div>' +
         '<div style="display:flex; gap:6px; align-items:center;">' +
           '<button class="btn btn-primary btn-sm" data-playcrate title="Play this crate in order" style="margin-right:4px;">\u25b6 Play set</button>' +
+          '<button class="btn btn-ghost btn-sm" data-practicecrate title="Load this crate into the decks" style="margin-right:4px;">\ud83c\udf9b Practice</button>' +
           '<button class="icon-btn" data-renamecrate title="Rename">\u270e</button>' +
           '<button class="icon-btn" data-delcrate title="Delete crate">\u2715</button>' +
         '</div>' +
@@ -1723,6 +1725,17 @@ function renderCratesInto(el) {
       })() +
       '<div data-cratetracks></div>' +
       '<button class="btn btn-ghost btn-sm" data-cratenotes style="margin-top:6px;">' + (crate.notes ? 'Edit set notes' : '\uff0b Set notes') + '</button>';
+
+    var pracBtn = box.querySelector('[data-practicecrate]');
+    if (pracBtn) {
+      pracBtn.disabled = !crate.tracks.length;
+      pracBtn.style.opacity = crate.tracks.length ? '1' : '0.4';
+      pracBtn.onclick = function () {
+        store.set('deck_crate', crate.id);
+        decks[0].key = null; decks[1].key = null;
+        nav('decks');
+      };
+    }
 
     var playBtn = box.querySelector('[data-playcrate]');
     if (playBtn) {
@@ -2299,14 +2312,50 @@ function dkDrawWaveBase(i) {
     g.fillRect(n * (cv.width / N), (cv.height - h) / 2, Math.max(1, cv.width / N - 1), h);
   }
 }
+/* Decks can be scoped to a crate. Preparing a set and practising it should be one
+   workflow, not two screens with the whole library between them. */
 async function initDecks() {
-  const keys = Array.from(new Set((await idbKeys()).concat(Object.keys(store.get('refs', {})))));
+  const allKeys = Array.from(new Set((await idbKeys()).concat(Object.keys(store.get('refs', {})))));
+  const crateId = store.get('deck_crate', null);
+  const crate = crateId ? (store.get('crates', []) || []).find(c => c.id === crateId) : null;
+
+  let keys = allKeys, ordered = false;
+  if (crate && crate.tracks.length) {
+    const want = crate.tracks.map(t => trackKey(t));
+    const inLib = want.filter(k => allKeys.indexOf(k) !== -1);
+    if (inLib.length) { keys = inLib; ordered = true; }
+  }
+
+  const banner = document.getElementById('deckCrateBanner');
+  if (banner) {
+    if (ordered) {
+      banner.innerHTML = 'Loaded from crate <strong>' + esc(crate.name) + '</strong> \u00b7 ' + keys.length +
+        ' track' + (keys.length === 1 ? '' : 's') +
+        ' <button class="btn btn-ghost btn-sm" id="deckAllLib" style="margin-left:8px;">Show whole library</button>';
+      banner.style.display = '';
+      var ab = document.getElementById('deckAllLib');
+      if (ab) ab.onclick = function () { store.set('deck_crate', null); initDecks(); };
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
   document.querySelectorAll('select[data-deck]').forEach(sel => {
     const i = sel.dataset.deck | 0;
     sel.innerHTML = '<option value="">— load an imported file —</option>' +
       keys.map(k => '<option value="' + esc(k) + '"' + (decks[i].key === k ? ' selected' : '') + '>' + esc(k.replace('::', ' — ')) + '</option>').join('');
     sel.onchange = () => { if (sel.value) dkLoad(i, sel.value); };
   });
+
+  if (ordered) {
+    if (!decks[0].key && keys[0]) { await dkLoad(0, keys[0]); }
+    if (!decks[1].key && keys[1]) { await dkLoad(1, keys[1]); }
+    document.querySelectorAll('select[data-deck]').forEach(sel => {
+      const i = sel.dataset.deck | 0;
+      if (decks[i].key) sel.value = decks[i].key;
+    });
+  }
+
   if (!keys.length) toast('Import files in Downloads first — decks play your own audio');
 }
 document.addEventListener('click', (e) => {
