@@ -1902,16 +1902,65 @@ function renderStats() {
 }
 
 function addToCratePrompt(t) {
-  const crates = store.get('crates', []);
-  if (!crates.length) { toast('Create a crate first (Library → Crates)'); return; }
-  const names = crates.map((c, i) => (i + 1) + '. ' + c.name).join('\n');
-  const pick = prompt('Add to which crate?\n' + names + '\n\nEnter number:');
-  const idx = parseInt(pick, 10) - 1;
-  if (isNaN(idx) || !crates[idx]) return;
-  if (crates[idx].tracks.some(x => trackKey(x) === trackKey(t))) { toast('Already in that crate'); return; }
-  crates[idx].tracks.push(t);
-  store.set('crates', crates);
-  toast('Added to ' + crates[idx].name);
+  var crates = store.get('crates', []);
+  var existing = document.getElementById('cratePicker');
+  if (existing) existing.remove();
+
+  var ov = document.createElement('div');
+  ov.id = 'cratePicker';
+  ov.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;';
+
+  var rows = crates.map(function (c) {
+    var has = c.tracks.some(function (x) { return trackKey(x) === trackKey(t); });
+    return '<button class="cp-row" data-crate="' + c.id + '"' + (has ? ' disabled' : '') +
+      ' style="width:100%; text-align:left; background:var(--sk-card-2); border:1px solid var(--sk-border); color:var(--sk-text); border-radius:10px; padding:11px 13px; margin-bottom:7px; cursor:' + (has ? 'default' : 'pointer') + '; opacity:' + (has ? '.45' : '1') + '; font-family:inherit; font-size:13.5px;">' +
+      '<div style="font-weight:600;">' + esc(c.name) + '</div>' +
+      '<div style="font-size:11.5px; color:var(--sk-text-3); margin-top:2px;">' +
+        c.tracks.length + ' track' + (c.tracks.length === 1 ? '' : 's') + (has ? ' \u00b7 already in this crate' : '') +
+      '</div></button>';
+  }).join('');
+
+  ov.innerHTML = '<div style="background:var(--sk-card); border:1px solid var(--sk-border); border-radius:16px; padding:18px; width:100%; max-width:420px; max-height:80vh; overflow:auto;">' +
+      '<div style="font-weight:700; font-size:15px; margin-bottom:3px;">Add to crate</div>' +
+      '<div style="font-size:12px; color:var(--sk-text-3); margin-bottom:14px;">' + esc(t.artist) + ' \u2014 ' + esc(t.title) + '</div>' +
+      (crates.length ? rows : '<div style="font-size:13px; color:var(--sk-text-3); margin-bottom:12px;">No crates yet.</div>') +
+      '<div style="display:flex; gap:7px; margin-top:12px;">' +
+        '<input id="cpNew" class="input" placeholder="\uff0b New crate name\u2026" style="flex:1;">' +
+        '<button class="btn btn-primary btn-sm" id="cpCreate">Create &amp; add</button>' +
+      '</div>' +
+      '<button class="btn btn-ghost btn-sm" id="cpCancel" style="width:100%; margin-top:9px;">Cancel</button>' +
+    '</div>';
+
+  document.body.appendChild(ov);
+
+  function addTo(id) {
+    var cs = store.get('crates', []);
+    var c = cs.find(function (x) { return x.id === id; });
+    if (!c) return;
+    c.tracks.push(t);
+    store.set('crates', cs);
+    toast('Added to ' + c.name);
+    ov.remove();
+    if ((location.hash || '').indexOf('crates') !== -1) renderCratesInto($('cratesContent'));
+  }
+
+  ov.querySelectorAll('[data-crate]').forEach(function (b) {
+    if (b.disabled) return;
+    b.onclick = function () { addTo(b.getAttribute('data-crate')); };
+  });
+  ov.querySelector('#cpCreate').onclick = function () {
+    var name = ov.querySelector('#cpNew').value.trim();
+    if (!name) { toast('Name the crate first'); return; }
+    var cs = store.get('crates', []);
+    var id = Date.now().toString(36);
+    cs.unshift({ id: id, name: name, tracks: [], notes: '' });
+    store.set('crates', cs);
+    addTo(id);
+  };
+  ov.querySelector('#cpCancel').onclick = function () { ov.remove(); };
+  ov.onclick = function (e) { if (e.target === ov) ov.remove(); };
+  var inp = ov.querySelector('#cpNew');
+  inp.onkeydown = function (e) { if (e.key === 'Enter') ov.querySelector('#cpCreate').click(); };
 }
 
 /* SAVED PATHWAYS */
