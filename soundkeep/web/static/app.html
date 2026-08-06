@@ -2314,6 +2314,17 @@ function dkDrawWaveBase(i) {
 }
 /* Decks can be scoped to a crate. Preparing a set and practising it should be one
    workflow, not two screens with the whole library between them. */
+/* The storage key is lowercased for lookup and dedupe. Display should come from the
+   track object's preserved artist and title, falling back to the key only when nothing
+   better exists. */
+function deckLabel(key, crate) {
+  var t = crate && crate.tracks ? crate.tracks.find(function (x) { return trackKey(x) === key; }) : null;
+  if (t) return (t.artist || 'Unknown Artist') + ' \u2014 ' + (t.title || 'Untitled');
+  var lib = (store.get('library', []) || []).find(function (x) { return trackKey(x) === key; });
+  if (lib) return (lib.artist || 'Unknown Artist') + ' \u2014 ' + (lib.title || 'Untitled');
+  return key.replace('::', ' \u2014 ');
+}
+
 async function initDecks() {
   const allKeys = Array.from(new Set((await idbKeys()).concat(Object.keys(store.get('refs', {})))));
   const crateId = store.get('deck_crate', null);
@@ -2329,9 +2340,12 @@ async function initDecks() {
   const banner = document.getElementById('deckCrateBanner');
   if (banner) {
     if (ordered) {
-      banner.innerHTML = 'Loaded from crate <strong>' + esc(crate.name) + '</strong> \u00b7 ' + keys.length +
-        ' track' + (keys.length === 1 ? '' : 's') +
-        ' <button class="btn btn-ghost btn-sm" id="deckAllLib" style="margin-left:8px;">Show whole library</button>';
+      var posIdx = decks[0].key ? keys.indexOf(decks[0].key) : -1;
+      var upNext = posIdx >= 0 && keys[posIdx + 1] ? deckLabel(keys[posIdx + 1], crate) : null;
+      banner.innerHTML = '<strong>' + esc(crate.name) + '</strong> \u00b7 ' +
+        (posIdx >= 0 ? 'track ' + (posIdx + 1) + ' of ' + keys.length : keys.length + ' tracks') +
+        (upNext ? '<div style="margin-top:3px; color:var(--sk-text-3); font-size:11.5px;">Up next \u00b7 ' + esc(upNext) + '</div>' : '') +
+        '<button class="btn btn-ghost btn-sm" id="deckAllLib" style="margin-left:8px;">Show whole library</button>';
       banner.style.display = '';
       var ab = document.getElementById('deckAllLib');
       if (ab) ab.onclick = function () { store.set('deck_crate', null); initDecks(); };
@@ -2343,7 +2357,7 @@ async function initDecks() {
   document.querySelectorAll('select[data-deck]').forEach(sel => {
     const i = sel.dataset.deck | 0;
     sel.innerHTML = '<option value="">— load an imported file —</option>' +
-      keys.map(k => '<option value="' + esc(k) + '"' + (decks[i].key === k ? ' selected' : '') + '>' + esc(k.replace('::', ' — ')) + '</option>').join('');
+      keys.map(k => '<option value="' + esc(k) + '"' + (decks[i].key === k ? ' selected' : '') + '>' + esc(deckLabel(k, crate)) + '</option>').join('');
     sel.onchange = () => { if (sel.value) dkLoad(i, sel.value); };
   });
 
