@@ -61,3 +61,66 @@ One quote worth keeping:
 - Do not pitch. Show, then shut up.
 - Do not explain a confusing screen — write down WHERE they got confused instead.
 - Do not count politeness ("this is cool") as signal. Only gates count.
+
+---
+
+# v2 - Hands-On Session Protocol (added 2026-08-07)
+
+**Occasion:** DJ Taf, Tuesday, at his house, several hours, HIS library on HIS setup.
+**Why a v2:** the v1 script was built for 15-20 minute structured interviews. This is a
+different instrument - long, unstructured, with a real library. The v1 gates still stand;
+this adds what a long session can reveal that a short one cannot.
+
+## What this session is for
+Not a demo. Not a feature tour. The product should disappear into the workflow while an
+actual DJ manages actual music. Every place he pauses is data.
+
+The v1 anti-patterns apply with more force over several hours: do not pitch, do not explain
+a confusing screen, do not count politeness as signal.
+
+## The one thing a long session reveals that a short one cannot
+Scale. His library may be thousands of tracks. Import speed, library rendering, crate
+operations and search have only ever been exercised against ~29 files. Whatever breaks
+will break in the first ten minutes, in front of him.
+
+Test this BEFORE Tuesday against a seeded library of several hundred to a few thousand
+entries. If the UI collapses, that outranks every feature.
+
+## Priority order for the build before Tuesday
+1. **Fast library import.** Whatever he has, ingested without a fight. Report library
+   statistics afterward - artists, albums, genres, duplicates, missing metadata.
+2. **Metadata intelligence.** Detect and EXPLAIN rather than silently fix: duplicates,
+   split albums, inconsistent album artists, inconsistent years, missing artwork, missing
+   BPM, missing key, missing genre. Recommendations, not mutations.
+3. **Library health report.** Where cleanup is needed, at a glance.
+4. **Duplicate classification.** Not deletion. Exact duplicate, different bitrate, radio
+   edit, extended mix, explicit version, remaster, live recording.
+5. **Explain every recommendation.** Same ID, same track count, capitalisation differs -
+   the reason, not a verdict. No black-box behaviour.
+
+Stretch only if time allows: BPM estimation, harmonic key, artwork recovery, cue point
+suggestions, energy analysis.
+
+## What to watch for
+Where he pauses to think. Where he searches manually. Where he renames a file. Where he
+fixes metadata by hand. Where he hesitates. Where he switches applications. Where he copies
+files himself. Where he asks where something is. Where he gets confused.
+
+Each is a feature request that has not been written down yet.
+
+## Session receipt
+Afterward, record: duration, library size, issues found by category, manual corrections
+prevented, top pain points in his words, and the next priorities that follow from them.
+
+## The question this session should answer
+Can SoundKeep become the intelligence layer above an existing music collection - turning
+hours of manual library management into minutes, while keeping trust through explainable
+recommendations?
+
+If that trends yes, the roadmap continues toward knowledge, organisation, provenance and
+explainable automation rather than more playback features.
+
+## Relationship to the v1 gates
+Gates A, B and C remain. A long hands-on session can satisfy Gate B directly - if he opens
+SoundKeep while planning or playing a real set, that is the strong signal. It cannot
+satisfy Gate A alone; BPM promotion still needs 3 of 5 DJs.
