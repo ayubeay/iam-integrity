@@ -2337,6 +2337,23 @@ async function initDecks() {
     if (inLib.length) { keys = inLib; ordered = true; }
   }
 
+  document.querySelectorAll('select[data-deck]').forEach(sel => {
+    const i = sel.dataset.deck | 0;
+    sel.innerHTML = '<option value="">— load an imported file —</option>' +
+      keys.map(k => '<option value="' + esc(k) + '"' + (decks[i].key === k ? ' selected' : '') + '>' + esc(deckLabel(k, crate)) + '</option>').join('');
+    sel.onchange = () => { if (sel.value) dkLoad(i, sel.value); };
+  });
+
+  if (ordered) {
+    if (!decks[0].key && keys[0]) { await dkLoad(0, keys[0]); }
+    if (!decks[1].key && keys[1]) { await dkLoad(1, keys[1]); }
+    document.querySelectorAll('select[data-deck]').forEach(sel => {
+      const i = sel.dataset.deck | 0;
+      if (decks[i].key) sel.value = decks[i].key;
+    });
+  }
+
+  /* banner last: position depends on what actually loaded */
   const banner = document.getElementById('deckCrateBanner');
   if (banner) {
     if (ordered) {
@@ -2352,22 +2369,6 @@ async function initDecks() {
     } else {
       banner.style.display = 'none';
     }
-  }
-
-  document.querySelectorAll('select[data-deck]').forEach(sel => {
-    const i = sel.dataset.deck | 0;
-    sel.innerHTML = '<option value="">— load an imported file —</option>' +
-      keys.map(k => '<option value="' + esc(k) + '"' + (decks[i].key === k ? ' selected' : '') + '>' + esc(deckLabel(k, crate)) + '</option>').join('');
-    sel.onchange = () => { if (sel.value) dkLoad(i, sel.value); };
-  });
-
-  if (ordered) {
-    if (!decks[0].key && keys[0]) { await dkLoad(0, keys[0]); }
-    if (!decks[1].key && keys[1]) { await dkLoad(1, keys[1]); }
-    document.querySelectorAll('select[data-deck]').forEach(sel => {
-      const i = sel.dataset.deck | 0;
-      if (decks[i].key) sel.value = decks[i].key;
-    });
   }
 
   if (!keys.length) toast('Import files in Downloads first — decks play your own audio');
