@@ -1616,11 +1616,14 @@ function scoreTransition(a, b) {
   if (typeof a.bpm === 'number' && typeof b.bpm === 'number') {
     var d = Math.abs(a.bpm - b.bpm);
     var half = Math.abs(a.bpm * 2 - b.bpm) <= 3 || Math.abs(b.bpm * 2 - a.bpm) <= 3;
-    if (d <= 3) { pts += 25; oks.push('BPM matched (' + Math.round(a.bpm) + ' \u2194 ' + Math.round(b.bpm) + ')'); }
-    else if (half) { pts += 20; oks.push('Half/double time (' + Math.round(a.bpm) + ' \u2194 ' + Math.round(b.bpm) + ')'); }
-    else if (d <= 6) { pts += 18; oks.push('Pitch ride \u2014 ' + d.toFixed(1) + ' BPM apart'); }
-    else if (d <= 12) { pts += 9; warns.push('Wide tempo gap (' + Math.round(a.bpm) + ' \u2192 ' + Math.round(b.bpm) + ')'); }
-    else warns.push('Tempo mismatch (' + Math.round(a.bpm) + ' vs ' + Math.round(b.bpm) + ')');
+    var shift = a.bpm > 0 ? ((b.bpm - a.bpm) / a.bpm * 100) : 0;
+    var shiftStr = (shift >= 0 ? '+' : '') + shift.toFixed(1) + '%';
+    var span = Math.round(a.bpm) + ' \u2192 ' + Math.round(b.bpm) + ' BPM \u00b7 ' + shiftStr;
+    if (d <= 3) { pts += 25; oks.push('BPM matched (' + span + ')'); }
+    else if (half) { pts += 20; oks.push('Half/double time (' + span + ')'); }
+    else if (d <= 6) { pts += 18; oks.push('Pitch ride (' + span + ')'); }
+    else if (d <= 12) { pts += 9; warns.push('Wide tempo gap (' + span + ')'); }
+    else warns.push('Tempo mismatch (' + span + ')');
   } else {
   const ba = parseBpm(a.bpm_range), bb = parseBpm(b.bpm_range);
   if (ba && bb) {
@@ -1634,9 +1637,10 @@ function scoreTransition(a, b) {
     max += 15;
     var ka = camelot(a.musical_key), kb = camelot(b.musical_key);
     if (ka && kb) {
-      if (ka === kb) { pts += 15; oks.push('Same key (' + a.musical_key + ')'); }
-      else if (harmonicNeighbour(ka, kb)) { pts += 13; oks.push('Harmonic (' + a.musical_key + ' \u2192 ' + b.musical_key + ')'); }
-      else { pts += 3; warns.push('Key clash (' + a.musical_key + ' \u2192 ' + b.musical_key + ')'); }
+      var kSpan = a.musical_key + ' (' + ka + ') \u2192 ' + b.musical_key + ' (' + kb + ')';
+      if (ka === kb) { pts += 15; oks.push('Same key (' + a.musical_key + ' \u00b7 ' + ka + ')'); }
+      else if (harmonicNeighbour(ka, kb)) { pts += 13; oks.push('Harmonic neighbour (' + kSpan + ')'); }
+      else { pts += 3; warns.push('Key clash (' + kSpan + ')'); }
     } else { max -= 15; }
   }
   // Genre (20)
@@ -1862,7 +1866,16 @@ function renderCratesInto(el) {
             chip.className = 'trans-chip ' + tier;
             chip.innerHTML = '<span class="trans-arrow">\u2193</span>' +
               '<span class="trans-pct">' + s.pct + '%</span>' +
-              '<span>' + esc(s.oks.slice(0, 2).map(o => o.split(' (')[0]).join(' \u00b7 ') || 'Review this transition') + '</span>' +
+              /* Show the measured values, not just the label. "BPM matched (124 -> 128
+                 BPM, +3.2%)" is what a DJ reads; "BPM matched" is not. Tempo and key lead
+                 where present, because those are the two signals DJs rank first. */
+              '<span>' + esc((function () {
+                var lead = s.oks.filter(function (o) { return /^(BPM|Pitch ride|Half\/double|Same key|Harmonic)/.test(o); });
+                var rest = s.oks.filter(function (o) { return lead.indexOf(o) === -1; })
+                  .map(function (o) { return o.split(' (')[0]; });
+                var parts = lead.concat(rest).slice(0, 2);
+                return parts.join(' \u00b7 ') || 'Review this transition';
+              })()) + '</span>' +
               '<span style="margin-left:auto; color:var(--sk-text-3);">Why?</span>';
             const detail = document.createElement('div');
             detail.className = 'trans-detail';
