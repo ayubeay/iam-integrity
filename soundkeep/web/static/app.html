@@ -984,7 +984,12 @@ window.addEventListener('hashchange', renderRoute);
 
 /* helpers */
 function trackMeta(t) {
-  const bits = [t.genre, t.energy ? t.energy + ' energy' : null, t.bpm_range ? t.bpm_range + ' BPM' : null, t.region, t.set_position].filter(Boolean);
+  /* An exact tagged BPM is shown instead of the coarse range when we have one, and a
+     tagged musical key beside it - the two things a DJ reads first. */
+  const bpmBit = typeof t.bpm === 'number' ? Math.round(t.bpm) + ' BPM'
+               : (t.bpm_range ? t.bpm_range + ' BPM' : null);
+  const keyBit = t.musical_key ? (camelot(t.musical_key) ? t.musical_key + ' (' + camelot(t.musical_key) + ')' : t.musical_key) : null;
+  const bits = [t.tag_genre || t.genre, bpmBit, keyBit, t.energy ? t.energy + ' energy' : null, t.region, t.set_position].filter(Boolean);
   return bits.map(esc).join(' · ');
 }
 const PROVIDERS = {
@@ -1137,6 +1142,13 @@ async function readTags(file) {
         if (id === 'TIT2' && val) out.title = val;
         if (id === 'TPE1' && val) out.artist = val;
         if (id === 'TALB' && val) out.album = val;
+        /* A working DJ has spent years tagging BPM and key. Reading what is already
+           there beats analysing audio we cannot analyse yet. */
+        if (id === 'TBPM' && val) out.bpm = parseFloat(val) || null;
+        if (id === 'TKEY' && val) out.key = val.trim();
+        if (id === 'TCON' && val) out.genre = val.replace(/^\(\d+\)/, '').trim();
+        if (id === 'TYER' && val) out.year = val.trim();
+        if (id === 'TDRC' && val) out.year = val.trim().slice(0, 4);
         p += 10 + fs;
       }
       if (out.title || out.artist) { out.src = 'embedded_tag'; return out; }
@@ -1171,6 +1183,10 @@ async function extractMeta(file) {
       artist: (tags.artist || 'Unknown Artist').trim(),
       title: (tags.title || file.name.replace(/\.[^.]+$/, '')).trim(),
       album: (tags.album || '').trim(),
+      bpm: tags.bpm ?? null,
+      musical_key: tags.key || null,
+      tag_genre: tags.genre || null,
+      year: tags.year || null,
       src: 'embedded_tag'
     };
   }
@@ -1197,6 +1213,9 @@ async function importFiles(files) {
     sigs[sig] = key;
     if (!lib.some(x => (x.artist + '::' + x.title).toLowerCase() === key)) {
       lib.unshift({ artist: meta.artist, title: meta.title, album: meta.album || '',
+        bpm: meta.bpm ?? null, musical_key: meta.musical_key || null,
+        year: meta.year || null, tag_genre: meta.tag_genre || null,
+        metadata_source: meta.src,
         genre: 'local file', source: 'localfile', track_id: 'local_' + Date.now().toString(36) + added,
         local: true, metadata_source: meta.src, sig: sig });
     }
@@ -1565,16 +1584,61 @@ function parseBpm(r) {
 }
 function genreKey(a, b) { return [String(a).toLowerCase(), String(b).toLowerCase()].sort().join('|'); }
 
+/* Camelot wheel: 1A..12A minor, 1B..12B major. Harmonic neighbours are the same number
+   in the other mode, or one step around the wheel in the same mode - the rule DJs use. */
+var KEY_TO_CAMELOT = {
+  'Abm':'1A','G#m':'1A','B':'1B','Ebm':'2A','D#m':'2A','F#':'2B','Gb':'2B',
+  'Bbm':'3A','A#m':'3A','Db':'3B','C#':'3B','Fm':'4A','Ab':'4B','G#':'4B',
+  'Cm':'5A','Eb':'5B','D#':'5B','Gm':'6A','Bb':'6B','A#':'6B',
+  'Dm':'7A','F':'7B','Am':'8A','C':'8B','Em':'9A','G':'9B',
+  'Bm':'10A','D':'10B','F#m':'11A','Gbm':'11A','A':'11B','Dbm':'12A','C#m':'12A','E':'12B'
+};
+function camelot(k) {
+  if (!k) return null;
+  var s = String(k).trim();
+  if (/^\d{1,2}[AB]$/i.test(s)) return s.toUpperCase();          // already Camelot
+  var norm = s.replace(/\s+/g, '').replace(/minor$/i, 'm').replace(/major$/i, '');
+  norm = norm.charAt(0).toUpperCase() + norm.slice(1);
+  return KEY_TO_CAMELOT[norm] || null;
+}
+function harmonicNeighbour(x, y) {
+  var nx = parseInt(x, 10), ny = parseInt(y, 10);
+  var mx = x.slice(-1), my = y.slice(-1);
+  if (nx === ny && mx !== my) return true;                        // relative major/minor
+  if (mx === my && (Math.abs(nx - ny) === 1 || Math.abs(nx - ny) === 11)) return true;
+  return false;
+}
+
 function scoreTransition(a, b) {
   let pts = 0, max = 0; const oks = [], warns = [];
-  // BPM (25)
+  // BPM (25) - an exact tagged BPM beats the coarse range where both tracks have one
   max += 25;
+  if (typeof a.bpm === 'number' && typeof b.bpm === 'number') {
+    var d = Math.abs(a.bpm - b.bpm);
+    var half = Math.abs(a.bpm * 2 - b.bpm) <= 3 || Math.abs(b.bpm * 2 - a.bpm) <= 3;
+    if (d <= 3) { pts += 25; oks.push('BPM matched (' + Math.round(a.bpm) + ' \u2194 ' + Math.round(b.bpm) + ')'); }
+    else if (half) { pts += 20; oks.push('Half/double time (' + Math.round(a.bpm) + ' \u2194 ' + Math.round(b.bpm) + ')'); }
+    else if (d <= 6) { pts += 18; oks.push('Pitch ride \u2014 ' + d.toFixed(1) + ' BPM apart'); }
+    else if (d <= 12) { pts += 9; warns.push('Wide tempo gap (' + Math.round(a.bpm) + ' \u2192 ' + Math.round(b.bpm) + ')'); }
+    else warns.push('Tempo mismatch (' + Math.round(a.bpm) + ' vs ' + Math.round(b.bpm) + ')');
+  } else {
   const ba = parseBpm(a.bpm_range), bb = parseBpm(b.bpm_range);
   if (ba && bb) {
     if (ba[0] <= bb[1] && bb[0] <= ba[1]) { pts += 25; oks.push('BPM compatible (' + a.bpm_range + ' \u2194 ' + b.bpm_range + ')'); }
     else if (Math.min(Math.abs(ba[1]-bb[0]), Math.abs(bb[1]-ba[0])) <= 10) { pts += 14; oks.push('BPM stretch \u2014 pitch ride needed'); }
     else warns.push('Tempo mismatch (' + a.bpm_range + ' vs ' + b.bpm_range + ')');
   } else { max -= 25; }
+  }
+  // Musical key (15) - only scored when both tracks carry a tagged key
+  if (a.musical_key && b.musical_key) {
+    max += 15;
+    var ka = camelot(a.musical_key), kb = camelot(b.musical_key);
+    if (ka && kb) {
+      if (ka === kb) { pts += 15; oks.push('Same key (' + a.musical_key + ')'); }
+      else if (harmonicNeighbour(ka, kb)) { pts += 13; oks.push('Harmonic (' + a.musical_key + ' \u2192 ' + b.musical_key + ')'); }
+      else { pts += 3; warns.push('Key clash (' + a.musical_key + ' \u2192 ' + b.musical_key + ')'); }
+    } else { max -= 15; }
+  }
   // Genre (20)
   max += 20;
   if (a.genre && b.genre) {
