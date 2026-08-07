@@ -502,6 +502,10 @@ Founder Attention & Execution Allocation Layer; AI Capability Registry.
 
 Eight formal documents promoted directly to canonical:
 
+- **Zircon** — docs/reserve/zircon.md. Engineering and scientific
+  knowledge layer: dependency intelligence, future-dependency posture per
+  product, three subordinate research programs, engineering receipts.
+  Promoted from staging 2026-08-07.
 - **Hidden Asset Discovery Engine** — docs/reserve/hidden-asset-discovery-engine.md.
   Zircon capability: secondary outputs (waste heat, idle compute, empty
   routes, unused data) surfaced as economic opportunities before new
