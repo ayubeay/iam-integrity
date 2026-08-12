@@ -1200,8 +1200,12 @@ function parseFilename(name) {
     ? { artist: parts[0].trim(), title: parts.slice(1).join(' - ').trim() }
     : { artist: 'Local', title: base.trim() };
 }
-async function importFiles(files) {
+/* crateName groups these tracks into a DJ crate as well as the library. A DJ who imports
+   "NAIJA HITZ 2K25" has already told us how the music is organised - discarding the folder
+   name and leaving 553 tracks in one flat list throws that away and makes them scroll. */
+async function importFiles(files, crateName) {
   let added = 0, skipped = 0;
+  const importedTracks = [];
   const lib = store.get('library', []);
   const sigs = store.get('sigs', {});
   for (const f of files) {
@@ -1211,21 +1215,49 @@ async function importFiles(files) {
     const key = (meta.artist + '::' + meta.title).toLowerCase();
     await idbSet(key, f);
     sigs[sig] = key;
-    if (!lib.some(x => (x.artist + '::' + x.title).toLowerCase() === key)) {
-      lib.unshift({ artist: meta.artist, title: meta.title, album: meta.album || '',
+    const existing = lib.filter(x => (x.artist + '::' + x.title).toLowerCase() === key)[0];
+    if (existing) { importedTracks.push(existing); }
+    if (!existing) {
+      const entry = { artist: meta.artist, title: meta.title, album: meta.album || '',
         bpm: meta.bpm ?? null, musical_key: meta.musical_key || null,
         year: meta.year || null, tag_genre: meta.tag_genre || null,
         metadata_source: meta.src,
         genre: 'local file', source: 'localfile', track_id: 'local_' + Date.now().toString(36) + added,
-        local: true, metadata_source: meta.src, sig: sig });
+        local: true, metadata_source: meta.src, sig: sig };
+      lib.unshift(entry);
+      importedTracks.push(entry);
     }
     added++;
   }
   store.set('sigs', sigs);
   store.set('library', lib);
+
+  let crateMsg = '';
+  if (crateName && importedTracks.length) {
+    const cs = store.get('crates', []);
+    let crate = cs.filter(c => c.name === crateName)[0];
+    if (!crate) {
+      /* origin records WHY these tracks are grouped. A folder the DJ chose is not the same
+         claim as a grouping we inferred, and the two must stay distinguishable. */
+      crate = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                name: crateName, tracks: [], notes: '', origin: 'IMPORTED_FOLDER' };
+      cs.unshift(crate);
+    }
+    const have = {};
+    crate.tracks.forEach(t => { have[trackKey(t)] = 1; });
+    let addedToCrate = 0;
+    importedTracks.forEach(t => {
+      if (!have[trackKey(t)]) { crate.tracks.push(t); have[trackKey(t)] = 1; addedToCrate++; }
+    });
+    store.set('crates', cs);
+    crateMsg = ' \u00b7 crate "' + crateName + '" (' + addedToCrate + ')';
+  }
+
   await refreshLocalKeys();
-  toast(added + ' file' + (added === 1 ? '' : 's') + ' imported' + (skipped ? ' \u00b7 ' + skipped + ' already in library' : ''));
+  toast(added + ' file' + (added === 1 ? '' : 's') + ' imported' +
+        (skipped ? ' \u00b7 ' + skipped + ' already in library' : '') + crateMsg);
   renderLocalFiles();
+  return importedTracks;
 }
 async function renderLocalFiles() {
   const el = $('localFilesList');
@@ -2725,17 +2757,42 @@ document.addEventListener('click', (e) => {
   if (e.target.id === 'rescanAllBtn') { store.get('sources', []).forEach(s => scanSource(s.id)); return; }
   if (e.target.id === 'folderFallbackBtn') { $('folderFallbackInput').click(); }
 });
-document.addEventListener('change', (e) => {
+document.addEventListener('change', async (e) => {
   if (e.target.id !== 'folderFallbackInput') return;
   const files = Array.from(e.target.files).filter(f => AUDIO_EXT.indexOf(f.name.split('.').pop().toLowerCase()) > -1);
   e.target.value = '';
-  if (files.length > 200) {
-    if (!confirm(files.length + ' audio files selected. This browser copies files into local storage rather than linking them, which is not suited to a full library. Import the first 200 anyway?')) return;
-    importFiles(files.slice(0, 200));
-    return;
+  if (!files.length) { toast('No audio files found in that folder'); return; }
+
+  /* webkitRelativePath arrives as "NAIJA HITZ 2K25/track.mp3", or
+     "Music/RNB 90s/track.mp3" for a nested selection. Group by the LAST directory - that
+     is the folder the track actually sits in, and the name a DJ recognises. */
+  const groups = {};
+  files.forEach(f => {
+    const path = f.webkitRelativePath || '';
+    const parts = path.split('/').filter(Boolean);
+    const folder = parts.length > 1 ? parts[parts.length - 2] : null;
+    const key = folder || '\u0000loose';
+    (groups[key] = groups[key] || []).push(f);
+  });
+
+  const folders = Object.keys(groups).filter(k => k !== '\u0000loose');
+  const loose = groups['\u0000loose'] || [];
+
+  const summary = folders.length
+    ? folders.length + ' folder' + (folders.length === 1 ? '' : 's') + ', ' + files.length + ' tracks'
+    : files.length + ' tracks';
+  if (!confirm('Import ' + summary + '?' +
+      (folders.length ? '\n\nEach folder becomes a DJ crate:\n' +
+        folders.slice(0, 8).map(f => '  ' + f + '  (' + groups[f].length + ')').join('\n') +
+        (folders.length > 8 ? '\n  \u2026and ' + (folders.length - 8) + ' more' : '') : '') +
+      '\n\nThis browser copies files into local storage rather than linking them.')) return;
+
+  for (const folder of folders) {
+    await importFiles(groups[folder], folder);
   }
-  if (files.length) importFiles(files);
-  else toast('No audio files found in that folder');
+  if (loose.length) await importFiles(loose);
+  try { renderCratesInto($('cratesContent')); } catch (err) {}
+  if (folders.length) toast(folders.length + ' crate' + (folders.length === 1 ? '' : 's') + ' created');
 });
 
 /* ---- Playback Adapter layer: Sonic asks for a track, adapters decide how ---- */
