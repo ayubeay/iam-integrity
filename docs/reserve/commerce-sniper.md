@@ -119,3 +119,74 @@ Not "a marketplace for buying and selling" — **a verified commercial
 opportunity and execution engine.** Marketplaces show listings; Commerce
 Sniper determines which opportunity is real, which route is profitable,
 which parties can be trusted, and whether execution is admissible.
+
+---
+
+## Inventory-to-Market Execution Primitive (IMEP) — refinement 2026-08-23
+
+Status: RESERVED / NOT ACTIVE BUILD. A future execution primitive WITHIN
+Commerce Sniper (not a separate product). Origin: a vertically specialized
+coin-inventory listing/distribution tool; the abstraction is the general loop
+from owned inventory → appropriate markets → reconciled inventory + settlement,
+not coin collecting or marketplace automation.
+
+**Gap it fills:** the operational layer between "we own/control an asset" and
+"the asset has been represented in appropriate markets, sold, settled, and
+reconciled." Commerce Sniper already reserves discovery/intelligence/routing/
+verification; IMEP adds owned-inventory sell-side execution and reconciliation.
+
+**Loop:** ASSET → EVIDENCE/PROVENANCE → INVENTORY STATE → VALUATION/MARKET
+INTELLIGENCE → MARKET DISCOVERY → CHANNEL ELIGIBILITY → MARKET REPRESENTATION →
+CHANNEL SELECTION → EXECUTION ADMISSIBILITY → DISTRIBUTION → INQUIRIES/OFFERS →
+COUNTERPARTY ASSESSMENT → NEGOTIATION/TRANSACTION → SETTLEMENT → INVENTORY +
+CHANNEL RECONCILIATION → OUTCOME MEASUREMENT → RECEIPT.
+
+**Governing principle:** the canonical asset stays distinct from its market
+representations. A listing is not the asset. One canonical asset may spawn many
+channel-specific MARKET_REPRESENTATION objects differing in title/description/
+price/currency/media/fees/terms/audience/duration — changing a representation
+must never silently alter the underlying factual asset record.
+
+**Multi-channel reconciliation:** solve the double-sale/stale-listing problem —
+when one channel's transaction becomes authoritative, canonical inventory state
+governs the rest (AVAILABLE → RESERVED/TRANSACTION_PENDING → SOLD →
+RECONCILE_ALL_REPRESENTATIONS; remaining representations WITHDRAW_PENDING/
+WITHDRAWN/EXPIRED/FAILED_TO_WITHDRAW/MANUAL_ACTION_REQUIRED). Requesting
+withdrawal ≠ withdrawal occurred; reconcile channel state from evidence.
+
+**Channel capability model:** do not hard-code around individual marketplaces;
+channel adapters declare capabilities (LIST/UPDATE/WITHDRAW/READ_STATUS/
+INGEST_INQUIRY/INGEST_OFFER/NEGOTIATE/TRANSACT/READ_SETTLEMENT/RECONCILE).
+Absent capability → explicit human/manual boundary, not simulated automation.
+Governed execution separates DISCOVERED/RECOMMENDED/PREPARED/AUTHORIZED/
+DISTRIBUTED/TRANSACTION_PENDING/EXECUTED/SETTLED/RECONCILED — discovery ≠
+authorization. Market intelligence optimizes policy-defined expected net
+outcome, not headline asking price. Feedback loop compares predicted vs
+realized (price, time-to-sale, fees, liquidity, counterparty risk).
+
+**Relationship (cross-reference):** VERITY (listing/marketplace/counterparty
+trust) · vLOID (commercial execution admissibility) · OROS (multi-step
+execution) · IAM (who may list/modify/negotiate/approve/override) · Shield
+Router/SURVIVOR (transaction boundaries) · Universal Money Router (settlement) ·
+KONIGO Connect (continuity) · DRIFT (price/liquidity/demand regime change) ·
+HelixAtlas (assets/markets/representations/reconciliation) · Computable
+Accountability (evidence→recommendation→authorization→execution→settlement→
+reconciliation) · Confluence Governance Principle (marketplace/settlement
+confluence) · EIF/NCR (intent/need-capacity composition).
+
+**Non-goals:** do not build now; do not clone the observed coin tool; no
+marketplace scraping/automation in violation of terms; no autonomous listing/
+selling merely because a channel supports it; asking price ≠ market value;
+listing ≠ ownership/provenance; generated listing text must not overwrite
+canonical asset evidence; offer accepted ≠ transaction complete (settlement +
+reconciliation are separate states); no marketplace-specific logic in the core
+where a capability adapter belongs.
+
+**Activation:** when Commerce Sniper enters active development and needs
+owned-inventory execution; a real business needs the same inventory across
+multiple channels; Earthwise or another business needs governed multi-market
+distribution; a resale/sourcing workflow needs automated channel selection +
+reconciliation; multiple projects independently build inventory→listing→txn
+logic; or a real user validates the workflow. At activation, begin with the
+smallest canonical-asset + market-representation + reconciliation state machine
+— not a generalized marketplace platform. RESERVE ONLY.
