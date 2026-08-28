@@ -39,3 +39,26 @@ humanos-personal-operating-system.md,HumanOS Personal Operating System,Module,Ex
 RESERVE.md#11,Enterprise Knowledge Integrity,Layer,Verify (knowledge),Reserved,"API Connect, VERITY, Execution Governance, Receipts",api-connect
 RESERVE.md#10,Capability Intelligence Layer (Phase B/C),Layer,Route (capability telemetry),Reserved,API Connect router,api-connect
 RESERVE.md#1,Backpack Research Operating System,Module,Learning (research),Reserved,"vLOID, OROS, HELIX, Proof Before Promotion",backpack-engine
+counterfactual-execution-governor.md,Counterfactual Execution Governor,Layer,Admissibility (pre-execution consequence),Reserved,"vLOID, VERITY, DRIFT, OROS",iam-integrity
+helix-builders.md,HELIX Builders,Module,Match / Route (capability),Reserved,"VERITY, IAM, OROS, Governed Work Attribution",iam-integrity
+governed-work-attribution.md,Governed Work Attribution,Layer,Economic Attribution / Execution,Reserved,"Receipts, VERITY, IAM",iam-integrity
+contributor-continuity-handoff-gate.md,Contributor Continuity / Handoff Gate,Layer,Continuity (organizational + agent),Reserved,"IAM, OROS, VERITY",iam-integrity
+organizational-state-transition-governor.md,Organizational State Transition Governor,Module,Coordinate (organization),Reserved,"vLOID, IAM, OROS, VERITY",iam-integrity
+evidence-lifecycle-state-provenance-envelope.md,Evidence Lifecycle State & Provenance Envelope,Layer,Evidence (temporal state),Reserved,"VERITY, Information Admissibility",iam-integrity
+agent-metacognition-calibration-layer.md,Agent Metacognition & Calibration Layer,Layer,Learning (reflective control),Reserved,"VERITY, DRIFT, Receipts",iam-integrity
+repository-execution-intelligence.md,Repository Execution Intelligence / Architectural Admissibility Graph,Module,Verify (software architecture),Reserved,"vLOID, IAM, VERITY, OROS",iam-integrity
+iam-external-identity-risk-signals.md,IAM External Identity-Risk Signal Ingestion,Layer,Admissibility (identity),Reserved,"IAM, VERITY, vLOID",iam-integrity
+adaptive-infrastructure-topology.md,Adaptive Infrastructure Topology,Module,Coordinate (physical infrastructure),Reserved,"vLOID, DRIFT, VERITY, KONIGO",iam-integrity
+emerging-product-pain-loop-intelligence.md,Emerging Product Pain-Loop Intelligence,Doctrine,Opportunity Evaluation,Canonical,"VERITY, Opportunity Intelligence",iam-integrity
+execution-jurisdiction-gap.md,Execution Jurisdiction Gap / Cross-Border Admissibility Routing,Layer,Admissibility (institutional),Reserved,"vLOID, VERITY, IAM, DRIFT",iam-integrity
+transaction-gap-financing-primitive.md,Transaction-Gap Financing Primitive,Layer,Admissibility (capital gap),Reserved,"VERITY, vLOID, Capital Admissibility Framework",iam-integrity
+default-state-admissibility.md,Default-State Admissibility / Inaction Semantics,Doctrine,Admissibility (intent provenance),Canonical,"vLOID, VERITY",iam-integrity
+instrument-admissibility-envelope.md,Instrument Admissibility Envelope,Layer,Admissibility (financial instrument),Reserved,"vLOID, VERITY, DRIFT",iam-integrity
+executable-asset-semantics.md,Executable Asset Semantics / Governed Stateful Asset Primitive,Layer,Admissibility (asset lifecycle),Reserved,"Ownership Proofs vs Execution Rights, VERITY",iam-integrity
+extraordinary-claim-evidence-tree.md,Extraordinary Claim Evidence Tree / Unknown-Preservation Test,Layer,Evidence (claim evaluation),Reserved,"Proof Before Promotion, VERITY",iam-integrity
+prospective-claim-commitment.md,Prospective Claim Commitment,Layer,Receipts (prospective),Reserved,"Evidence Commitment & Anchoring, VERITY",iam-integrity
+intelligence-resource-governance-layer.md,Intelligence Resource Governance Layer,Layer,Execution (intelligence resources),Reserved,"Model Intelligence Router, Sovereign Intelligence Routing, Execution Economics, Context Integrity",iam-integrity
+attention-value-intelligence.md,Attention Value / Consumption Retention Intelligence,Module,Learning (attention),Reserved,"Revealed Preference Measurement, VERITY",iam-integrity
+vloid-collaborative-validation-doctrine.md,vLOID Collaborative Validation Doctrine,Doctrine,Global (validation),Canonical,vLOID,iam-integrity
+sportgpt-intelligence-layer.md,SportGPT Intelligence Layer + Market-Divergence Intelligence,Module,Opportunity Evaluation (sport),Reserved,"EventPulse (staging), VERITY, Prospective Claim Commitment",iam-integrity
+../soundkeep-intent-to-patch-reserve.md,SoundKeep Intent-to-Patch / Synthesis Knowledge Layer,Module,Knowledge to Capability (audio),Reserved,"SoundKeep, VKOS, VERITY",iam-integrity

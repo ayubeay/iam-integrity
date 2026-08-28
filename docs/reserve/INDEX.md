@@ -1,5 +1,13 @@
 # Reserve Index
 
+> **INDEX COVERAGE WARNING — 2026-08-27.** This index is not currently exhaustive.
+> A reconciliation audit found **43 pre-existing canonical reserve files absent from this
+> index before the Aug-27 batch** (81 files in `docs/reserve/` against 38 indexed rows).
+> New entries from the Aug-27 batch are recorded below, but **absence from this index MUST
+> NOT be interpreted as absence of a canonical reserve.** Full index reconciliation remains
+> a separate evidence-backed task — see `staging/reserves-2026-08-27.md`.
+
+
 Table of contents for the reserve architecture — not a reserve itself.
 Generated 2026-07-25. Maintain per IMPLEMENTATION_STATUS doctrine rule 1
 (update in the same session that adds or changes a reserve). Machine-readable
@@ -81,3 +89,34 @@ converge.
 build order. Doctrines marked "All" are cross-cutting lenses applied to every
 reserve rather than runtime dependencies. For the end-to-end progression that
 threads these together, see `meta-architecture-observation-to-moat.md`.
+
+## Aug-27 batch additions (2026-08-27)
+
+Not merged into the table above, which predates them and is itself incomplete — see the
+coverage warning. Twenty-two canonical reserves plus one top-level SoundKeep reserve.
+
+| Reserve | Type | Layer / node | Status | Depends on |
+|---|---|---|---|---|
+| Counterfactual Execution Governor (incl. embodied branch) | Layer | Admissibility (pre-execution consequence) | Reserved | vLOID, VERITY, DRIFT, OROS |
+| HELIX Builders | Module | Match / Route (capability) | Reserved | VERITY, IAM, OROS, Governed Work Attribution |
+| Governed Work Attribution | Layer | Economic Attribution / Execution | Reserved | Receipts, VERITY, IAM |
+| Contributor Continuity / Handoff Gate | Layer | Continuity (organizational + agent) | Reserved | IAM, OROS, VERITY |
+| Organizational State Transition Governor | Module | Coordinate (organization) | Reserved | vLOID, IAM, OROS, VERITY |
+| Evidence Lifecycle State & Provenance Envelope | Layer | Evidence (temporal state) | Reserved | VERITY, Information Admissibility |
+| Agent Metacognition & Calibration Layer | Layer | Learning (reflective control) | Reserved | VERITY, DRIFT, Receipts |
+| Repository Execution Intelligence / AAG | Module | Verify (software architecture) | Reserved | vLOID, IAM, VERITY, OROS |
+| IAM External Identity-Risk Signal Ingestion | Layer | Admissibility (identity) | Reserved | IAM, VERITY, vLOID |
+| Adaptive Infrastructure Topology | Module | Coordinate (physical infrastructure) | Reserved | vLOID, DRIFT, VERITY, KONIGO |
+| Emerging Product Pain-Loop Intelligence | Doctrine | Opportunity Evaluation | Canonical | VERITY, Opportunity Intelligence |
+| Execution Jurisdiction Gap | Layer | Admissibility (institutional) | Reserved | vLOID, VERITY, IAM, DRIFT |
+| Transaction-Gap Financing Primitive | Layer | Admissibility (capital gap) | Reserved | VERITY, vLOID, Capital Admissibility |
+| Default-State Admissibility / Inaction Semantics | Doctrine | Admissibility (intent provenance) | Canonical | vLOID, VERITY |
+| Instrument Admissibility Envelope | Layer | Admissibility (financial instrument) | Reserved | vLOID, VERITY, DRIFT |
+| Executable Asset Semantics | Layer | Admissibility (asset lifecycle) | Reserved | Ownership vs Execution Rights, VERITY |
+| Extraordinary Claim Evidence Tree | Layer | Evidence (claim evaluation) | Reserved | Proof Before Promotion, VERITY |
+| Prospective Claim Commitment | Layer | Receipts (prospective) | Reserved | Evidence Commitment & Anchoring, VERITY |
+| Intelligence Resource Governance Layer | Layer | Execution (intelligence resources) | Reserved | Model Intelligence Router, SIR, Execution Economics, Context Integrity |
+| Attention Value Intelligence | Module | Learning (attention) | Reserved | Revealed Preference Measurement, VERITY |
+| vLOID Collaborative Validation Doctrine | Doctrine | Global (validation) | Canonical | vLOID |
+| SportGPT Intelligence Layer | Module | Opportunity Evaluation (sport) | Reserved | EventPulse (staging), VERITY, Prospective Claim Commitment |
+| SoundKeep Intent-to-Patch (docs/soundkeep-intent-to-patch-reserve.md) | Module | Knowledge to Capability (audio) | Reserved | SoundKeep, VKOS, VERITY |

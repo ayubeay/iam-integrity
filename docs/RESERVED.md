@@ -587,3 +587,99 @@ patterns.
 **Why deferred:** The layer sits above five subsystems of which several
 are themselves reserved. The doctrine (especially the boundary rule) is
 binding NOW for design decisions; the interface build waits.
+
+---
+
+## Aug 27 canonical batch — notepad-to-canon reconciliation (index)
+
+Twenty-two formal reserve documents promoted directly to canonical, two existing reserves
+extended, one top-level SoundKeep reserve, and six PROPOSED experiment definitions.
+One-line index; each file carries its own activation doctrine.
+
+Governing rule for this batch: *canonical concept ownership beats the name we happened to
+use in the notepad — preserve responsibility boundaries, not names.* Session provenance and
+declined placements: `docs/reserve/staging/reserves-2026-08-27.md`.
+
+- **Counterfactual Execution Governor** — docs/reserve/counterfactual-execution-governor.md.
+  Pre-execution consequence forecasting: counterfactual branches, minority-risk
+  preservation, least-irreversible intervention, calibration. Includes the embodied /
+  robotic-compromise safety branch — authentication proves origin, not physical safety.
+- **HELIX Builders** — docs/reserve/helix-builders.md. Capability-through-work formation:
+  bottleneck diagnosis before matching, founder-dependency mapping, bounded collaboration
+  sprints, collaboration receipts, capability graph / minimum viable team, AI-augmented
+  work units. Adjacent to RESERVE-founder-due-diligence.md, not merged into it.
+- **Governed Work Attribution** — docs/reserve/governed-work-attribution.md. Cross-cutting:
+  stage-gated attribution, outcome attribution graph, opportunity readiness gate,
+  persistent contribution attribution, bounded responsibility. Consumed by HELIX Builders,
+  WIRE, ShiftTrust and agent teams; owned by none of them.
+- **Contributor Continuity / Handoff Gate** — docs/reserve/contributor-continuity-handoff-gate.md.
+  Departure is a human event; continuity completion is an operational event. Extends to
+  agent replacement and version migration.
+- **Organizational State Transition Governor** — docs/reserve/organizational-state-transition-governor.md.
+  Organizational events as governed state transitions with an obligation propagation graph.
+  Sits above GhostLedger; preserves the GhostLedger/ILF escalation boundary.
+- **Evidence Lifecycle State & Provenance Envelope** — docs/reserve/evidence-lifecycle-state-provenance-envelope.md.
+  DELETED ≠ UNAVAILABLE ≠ UNVERIFIABLE. Source observability is asymmetric; absence from a
+  provider is not proof of deletion.
+- **Agent Metacognition & Calibration Layer** — docs/reserve/agent-metacognition-calibration-layer.md.
+  Computable self-monitoring, prediction receipts, calibration, epistemic yield. Explicitly
+  not chain-of-thought storage and not a claim of machine consciousness.
+- **Repository Execution Intelligence / AAG** — docs/reserve/repository-execution-intelligence.md.
+  Retrieval ≠ understanding ≠ architectural understanding ≠ authorization ≠ verified
+  execution. "Unused in this repository" is not "unused."
+- **IAM External Identity-Risk Signal Ingestion** — docs/reserve/iam-external-identity-risk-signals.md.
+  Authentication establishes who is presenting an identity; risk intelligence informs how
+  much authority it should currently hold. Graduated response, blast radius, recovery.
+- **Adaptive Infrastructure Topology** — docs/reserve/adaptive-infrastructure-topology.md.
+  Infrastructure functions reconfigured under hazard, governed by physical-world
+  admissibility. Synthetic inspiration explicitly preserved as non-evidence.
+- **Emerging Product Pain-Loop Intelligence** — docs/reserve/emerging-product-pain-loop-intelligence.md.
+  Do not chase what founders are building; study what their existence reveals. L3–L5 depth
+  test; a product launch is not validation.
+- **Execution Jurisdiction Gap** — docs/reserve/execution-jurisdiction-gap.md. Discover the
+  legitimate admissible route or DENY — never manufacture eligibility. Introduces the
+  Execution Gap Primitives family.
+- **Transaction-Gap Financing Primitive** — docs/reserve/transaction-gap-financing-primitive.md.
+  Finance only the measured gap in a verified transaction with a verified repayment source.
+  Research only; no capital deployment. Sibling of Execution Jurisdiction Gap.
+- **Default-State Admissibility / Inaction Semantics** — docs/reserve/default-state-admissibility.md.
+  Defaults may optimize execution but must not counterfeit intent. Governance friction
+  budget proportional to consequence.
+- **Instrument Admissibility Envelope** — docs/reserve/instrument-admissibility-envelope.md.
+  Transaction value ≠ economic exposure. Distinct from Capital Admissibility Framework.
+- **Executable Asset Semantics** — docs/reserve/executable-asset-semantics.md. A governed
+  asset is not portable merely because ownership is; meaning, constraints, authority chain
+  and lifecycle must be portable too. Zero-bilateral-integration test.
+- **Extraordinary Claim Evidence Tree** — docs/reserve/extraordinary-claim-evidence-tree.md.
+  Operational method under Proof Before Promotion: claim atomization, source independence,
+  discriminating predictions, falsification receipts, UNKNOWN preservation.
+- **Prospective Claim Commitment** — docs/reserve/prospective-claim-commitment.md. Child of
+  Evidence Commitment & Anchoring. Immutability ≠ completeness; claim integrity ≠ selection
+  integrity. Includes the SportGPT commitment-ledger application.
+- **Intelligence Resource Governance Layer** — docs/reserve/intelligence-resource-governance-layer.md.
+  Only what Model Intelligence Router, Sovereign Intelligence Routing, Execution Economics
+  and Context Integrity do not own: the NO_MODEL gate, memory admission, progressive
+  capability admission, total-objective-cost accounting, waste classification.
+- **Attention Value Intelligence** — docs/reserve/attention-value-intelligence.md. What did
+  the user actually receive from the attention they spent? Measurement separated from
+  interpretation; privacy-preserving by construction.
+- **vLOID Collaborative Validation Doctrine** — docs/reserve/vloid-collaborative-validation-doctrine.md.
+  Collaborations as heterogeneous validation environments. vLOID adapts around legitimate
+  external workflows rather than requiring collaborators to build around it.
+- **SportGPT Intelligence Layer** — docs/reserve/sportgpt-intelligence-layer.md. Market
+  divergence with explanation and no retrospective intelligence leakage. Divergence ≠
+  opportunity. Does not promote the staged EventPulse/SportGPT material.
+
+Extended in place: **Browser Fair Compute** (docs/browser-fair-compute-reserve.md) — scope
+widened to Fair Useful Compute; Phases 1 and 2A banked as evidence, 2B–5 reserved.
+**Provider Qualification & Workload-Aware Routing** (docs/reserve/provider-qualification-and-routing.md)
+— Intelligence Supply Continuity and the Social-Evidence Provider Validation Case.
+
+Top-level: **SoundKeep Intent-to-Patch / Synthesis Knowledge Layer** —
+docs/soundkeep-intent-to-patch-reserve.md.
+
+Research: six PROPOSED experiment definitions in
+docs/research/EXPERIMENT_CANDIDATES_2026-08-27.md — pointer-level only, referencing the
+canonical reserves rather than duplicating them. None has been run.
+
+**Zircon remains reserve-only. Earthwise material excluded from this batch by instruction.**
