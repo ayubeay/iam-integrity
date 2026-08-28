@@ -144,7 +144,7 @@ The genuine finding is semantic: the score carries **two incompatible claims** �
 
 LP capped at 85; LP removed with weight redistributed; LP as a bounded bonus. Each rejected on population-level measurement.
 
-*Provenance:* cited in `survivor-oracle docs/SHADOW_DENOMINATOR_RESULT.md`; primary source `docs/LP_SIGNAL_APPLICABILITY_RESEARCH.md` **not read during this audit** → **boundary:** status carried on citation, not verification. Re-verify before relying on it.
+*Provenance:* cited in `survivor-oracle docs/SHADOW_DENOMINATOR_RESULT.md`; primary source `survivor-oracle docs/LP_SIGNAL_APPLICABILITY_RESEARCH.md` **not read during this audit** → **boundary:** status carried on citation, not verification. Re-verify before relying on it.
 
 ---
 
