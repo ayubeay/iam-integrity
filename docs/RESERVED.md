@@ -683,3 +683,54 @@ docs/research/EXPERIMENT_CANDIDATES_2026-08-27.md — pointer-level only, refere
 canonical reserves rather than duplicating them. None has been run.
 
 **Zircon remains reserve-only. Earthwise material excluded from this batch by instruction.**
+
+---
+
+## Batch 2026-08-28 (Batch 2)
+
+Fifteen accumulated candidates reconciled against commit `30e41f1`. Outcome: 10 canonical
+reserves, 3 extensions to existing reserves, 4 experiment specs, 2 test specs.
+
+**Canonical reserves**
+
+- `docs/reserve/physical-system-boundary-accounting.md` — energy-boundary accounting and
+  causal reconstruction for physical systems. **No claim of anomalous energy or new physics
+  is implied.**
+- `docs/reserve/protocol-independent-capability-envelope.md` — PICE. Semantic capability
+  normalization across invocation protocols. *Govern the action, not the adapter.*
+- `docs/reserve/executable-capacity-thinnest-leg.md` — could the opportunity actually have
+  been executed at the assumed size and conditions?
+- `docs/reserve/temporal-evidence-admissibility.md` — signal decay, half-life, and the five
+  separated times. Child of the evidence-lifecycle envelope.
+- `docs/reserve/demand-sovereign-market-infrastructure.md` — DSMI. Reusable market primitive;
+  no generic marketplace-as-a-service product authorized.
+- `docs/reserve/underwater-duration-edge-decay-admissibility.md` — UDEA. Distinguishing pain
+  from evidence of failure. **Does not authorize any strategy parameter change.**
+- `docs/reserve/loyalty-value-routing.md` — conditional-value routing under changing rules,
+  bounded to loyalty and travel. **A technically executable route is not an admissible one.**
+- `docs/reserve/architecture-triage-service.md` — sell technical judgment before
+  implementation. No software build authorized.
+- `docs/reserve/human-fairness-dignity-accountability-institute.md` — HFAI. *Defend the
+  human, not the narrative.* **Do not incorporate, fundraise, investigate people, or make
+  public accusations.**
+- `docs/reserve/human-machine-sovereignty-boundary.md` — HMSB. Capability does not create
+  authority. Names the *sovereignty laundering* failure state.
+
+**Extensions**
+
+- `docs/reserve/computable-accountability.md` — Human-Mediated Execution / Decision Influence
+  Accountability. *Human execution does not erase machine influence.*
+- `docs/reserve/proof-before-promotion.md` — Extraordinary Technology Admissibility and the
+  source-credibility separation: *source credibility changes the prior confidence assigned to
+  a proposition; it does not determine the proposition's truth value.*
+- `docs/reserve/ownership-proofs-vs-execution-rights.md` — Knowledge Execution Rights.
+
+**Specs** — `docs/research/experiments/` (4) and `docs/research/tests/` (2), with their own
+indexes and status vocabularies. A test `PASS` is never evidence that an external-world
+hypothesis is validated.
+
+**Excluded:** SIGOME (personal ritual practice, not an architecture) · Earthwise · Deliverable
+B (EVIDENCE_DISCIPLINE.md and the 2026-08-27 candidate migration). **Zircon remains
+reserve-only.**
+
+Batch record: `docs/reserve/staging/reserves-2026-08-28.md`

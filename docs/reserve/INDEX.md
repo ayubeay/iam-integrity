@@ -120,3 +120,30 @@ coverage warning. Twenty-two canonical reserves plus one top-level SoundKeep res
 | vLOID Collaborative Validation Doctrine | Doctrine | Global (validation) | Canonical | vLOID |
 | SportGPT Intelligence Layer | Module | Opportunity Evaluation (sport) | Reserved | EventPulse (staging), VERITY, Prospective Claim Commitment |
 | SoundKeep Intent-to-Patch (docs/soundkeep-intent-to-patch-reserve.md) | Module | Knowledge to Capability (audio) | Reserved | SoundKeep, VKOS, VERITY |
+
+---
+
+## Batch 2026-08-28 — added reserves
+
+The coverage warning above still applies: **this index remains explicitly incomplete.**
+These rows record the Batch 2 additions only. They do not close the outstanding deficit
+between indexed rows and files present in `docs/reserve/`.
+
+| File | Type | Note |
+|---|---|---|
+| `physical-system-boundary-accounting.md` | Doctrine | energy-boundary accounting + causal reconstruction; no anomalous-physics claim |
+| `protocol-independent-capability-envelope.md` | Layer | semantic capability normalization; transport defers to EAF, stack to UEI |
+| `executable-capacity-thinnest-leg.md` | Module | owns thinnest-leg; consumed by DSMI and UDEA |
+| `temporal-evidence-admissibility.md` | Layer | child of the evidence-lifecycle envelope |
+| `demand-sovereign-market-infrastructure.md` | Doctrine | DSMI |
+| `underwater-duration-edge-decay-admissibility.md` | Module | Momentum Sniper / JANUS measurement primitive |
+| `loyalty-value-routing.md` | Module | recovered direction; conditional-value routing, bounded to loyalty |
+| `architecture-triage-service.md` | Doctrine | service opportunity; no software build |
+| `human-fairness-dignity-accountability-institute.md` | Doctrine | HFAI institutional design |
+| `human-machine-sovereignty-boundary.md` | Doctrine | non-delegable authority only |
+
+Extensions were appended in place to `computable-accountability.md`,
+`proof-before-promotion.md` and `ownership-proofs-vs-execution-rights.md`; they did not
+create new index rows because they did not create new reserves.
+
+Batch record: `docs/reserve/staging/reserves-2026-08-28.md`

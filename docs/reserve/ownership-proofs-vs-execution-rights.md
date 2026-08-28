@@ -71,3 +71,56 @@ authority — not ownership — should determine what autonomous systems may do.
 Future Rights Exchange · Governed Capital Eligibility · HelixShield Execution
 Governance · Execution Assurance Layer · HELIX Universal Execution Lifecycle
 (admissibility stage) · IAM / VERITY / vLOID.
+
+---
+
+## Extension 2026-08-28 — Knowledge Execution Rights
+
+Status: RESERVED — research only.
+Origin: the Information-to-Execution Integrity research family. Knowledge Execution Rights
+folds into this reserve rather than becoming a separate file, because this document already
+owns the `possession ≠ permission` invariant and this is that invariant applied to
+knowledge rather than to assets.
+
+### The proposition
+
+Conventional `READ` / `WRITE` authorization may be insufficient for agent knowledge. A
+single datum may warrant separately governed permissions:
+
+    OBSERVE      may the system perceive it at all
+    STORE        may it be retained, and for how long
+    RETRIEVE     may it be surfaced into a working context
+    CORRELATE    may it be joined with other data
+    INFER        may conclusions be drawn from it
+    DISCLOSE     may it be communicated onward, and to whom
+    EXECUTE_FROM may an action be authorized on its basis
+    DELEGATE     may any of the above be passed to another agent
+
+The claim under test: **an agent lawfully permitted to `OBSERVE` and `STORE` a datum is
+not thereby permitted to `CORRELATE`, `INFER`, `DISCLOSE` or `EXECUTE_FROM` it.** Access
+and epistemic authority are separate grants, exactly as possession and execution right are
+separate in the parent doctrine.
+
+### Why this is not merely access control
+
+Access control governs a boundary crossing at one moment. Knowledge rights govern what may
+be *done with what has already legitimately crossed*. The distinction becomes consequential
+when the agent's own inference is the harmful act — for example when individually
+admissible facts compose into a capability nobody granted. That composition case is
+specified as `docs/research/tests/TEST-CONCENTRATION-001.md`; the restraint case as
+`docs/research/tests/TEST-RESTRAINT-001.md`.
+
+### Open questions
+
+Which of the eight rights are genuinely separable in practice, and which collapse into one
+another? Can they be expressed without an unmaintainable per-datum permission matrix? How
+do rights propagate to a derived artifact — does an inference inherit the most restrictive
+right among its inputs? What revokes a right already exercised, given that inference cannot
+be un-drawn? How does `DELEGATE` interact with agent-to-agent handoff?
+
+### Activation
+
+Reserve only. Do not implement a knowledge-rights schema before the two tests above
+establish whether the existing admissibility primitives can already express these
+constraints without semantic distortion. If they can, extend those primitives rather than
+building a new layer.
