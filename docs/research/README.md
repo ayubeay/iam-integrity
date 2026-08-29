@@ -33,3 +33,25 @@ Ledgers are dated. New experiment epochs get new dated files rather than being a
 Inclusion in this directory is **not** implementation authorization. A documented experiment, a promising result, and a ranked candidate are all still research. Build activation is a separate decision made elsewhere.
 
 **Zircon remains reserve-only.**
+
+---
+
+## Directory structure — 2026-08-29
+
+    docs/research/
+      EVIDENCE_DISCIPLINE.md          how this portfolio decides that it knows something
+      EXPERIMENT_LEDGER_<date>.md     dated snapshot of what measurement taught us
+      EXPERIMENT_CANDIDATES_<date>.md dated intake, with migration record
+      experiments/                    falsifiable propositions about the world
+      tests/                          implementation invariants
+      collaborations/                 live external collaboration records — operational
+
+**[`EVIDENCE_DISCIPLINE.md`](./EVIDENCE_DISCIPLINE.md)** records the rules that produced
+everything else here: the experiment/test distinction, claim-level status, evidence
+boundaries, pre-registration, instrument discipline, and the finding-classification taxonomy
+a gate must use. It is **not a gate** — nothing waits on it. Later work, Zircon included,
+inherits the discipline rather than passing through it.
+
+**`collaborations/` is operational, not architectural.** It holds live obligations to named
+counterparties. A stale reserve is inert; a stale obligation is a broken commitment. Those
+belong in different places with different review cadences.

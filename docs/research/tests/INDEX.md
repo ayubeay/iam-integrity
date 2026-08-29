@@ -4,7 +4,8 @@ A **test** asks whether a system satisfies a required behaviour. It names the sy
 test, the invariant, the procedure, and the exact conditions under which it passes or fails.
 
 This is a different question from the one an experiment asks. See
-`docs/research/experiments/INDEX.md`.
+`docs/research/experiments/INDEX.md`. The rules governing both are in
+`docs/research/EVIDENCE_DISCIPLINE.md`.
 
 ## Status vocabulary
 
@@ -21,6 +22,11 @@ This is a different question from the one an experiment asks. See
 |---|---|---|
 | [TEST-CONCENTRATION-001](./TEST-CONCENTRATION-001.md) | N individually admissible facts must not compose into an inadmissible capability unregistered | `RESERVED` |
 | [TEST-RESTRAINT-001](./TEST-RESTRAINT-001.md) | `PRESERVE_UNKNOWN` survives classification pressure and stays distinct from `UNKNOWN` | `RESERVED` |
+| [TEST-DEFAULT-001](./TEST-DEFAULT-001.md) | An inherited default must stay distinguishable from a deliberate selection, all the way to the consumer | `RESERVED` |
+| [TEST-ATOMIZATION-001](./TEST-ATOMIZATION-001.md) | A narrative is evaluated as its constituent propositions; no verdict is manufactured under insufficient evidence | `RESERVED` |
+| [TEST-STALE-ARTIFACT-001](./TEST-STALE-ARTIFACT-001.md) | **BLOCKING** — a stale artifact is distinguishable from a current one, and a receipt's cited source is its actual source | `RESERVED` |
+| [TEST-INCOMPLETE-001](./TEST-INCOMPLETE-001.md) | **BLOCKING** — every downstream consumer gates on `score_status: INCOMPLETE` | `RESERVED` |
+| [TEST-REPLAY-001](./TEST-REPLAY-001.md) | The replay runner reproduces its own recorded baselines | `RESERVED` |
 
 ## The boundary that must not be crossed
 

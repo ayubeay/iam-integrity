@@ -134,3 +134,53 @@ and 5 respectively and should be reconciled before either is run, so the same qu
 not executed twice under two names.
 
 **Zircon remains reserve-only.**
+
+---
+
+## MIGRATION — 2026-08-29
+
+All six candidates have been migrated to individual specifications. **The text above is
+preserved unchanged as the dated record of how these questions were first framed.** Where
+a later classification differs, the spec states why rather than silently superseding.
+
+| Candidate | Migrated to | Classification |
+|---|---|---|
+| C1 · Counterfactual Execution Governor | [`experiments/EXP-PRECURSOR-001.md`](./experiments/EXP-PRECURSOR-001.md) | experiment |
+| C2 · Fair Useful Compute 2B/2C/3 | [`experiments/EXP-FAIR-COMPUTE-002.md`](./experiments/EXP-FAIR-COMPUTE-002.md) | experiment · 2B `BLOCKED` |
+| C3 · Default-State Admissibility | [`tests/TEST-DEFAULT-001.md`](./tests/TEST-DEFAULT-001.md) | **test** |
+| C4 · AMCL calibration | [`experiments/EXP-CALIBRATION-001.md`](./experiments/EXP-CALIBRATION-001.md) | experiment |
+| C5 · Prospective Claim Commitment | [`experiments/EXP-SELECTION-001.md`](./experiments/EXP-SELECTION-001.md) | experiment |
+| C6 · Extraordinary Claim Evidence Tree | [`tests/TEST-ATOMIZATION-001.md`](./tests/TEST-ATOMIZATION-001.md) | **test**, scoped — see below |
+
+### Reconciliations performed during migration
+
+**C6 split three ways.** Deliberate declining to resolve was already owned by
+`tests/TEST-RESTRAINT-001.md`; source count versus independent evidence count by
+`experiments/EXP-GENEALOGY-001.md`. `TEST-ATOMIZATION-001` owns only what remained — claim
+atomization and verdict restraint under insufficient evidence — and states both boundaries
+rather than restating either mechanism.
+
+**C5 ↔ ledger candidate 5 confirmed.** Epoch 2's deferral receipts are exactly the
+abstention accounting `EXP-SELECTION-001` requires. Epoch 2 remains E2 in the ledger and is
+**not** duplicated as a spec.
+
+**C1 ↔ ledger candidate 1 not confirmed.** This file asserted the two were close relatives.
+On inspection they share only the theme of governance catching something before harm: C1
+concerns precursor prediction of agent behaviour, ledger candidate 1 concerns whether a
+consumer distinguishes a stale artifact from a current one. They are recorded as distinct.
+The earlier assertion is superseded, not inherited.
+
+### Top-5 pre-Zircon candidates
+
+Also migrated from `EXPERIMENT_LEDGER_2026-08-27.md`:
+
+| Ledger candidate | Migrated to | Classification |
+|---|---|---|
+| 1 · Stale-but-valid artifact | [`tests/TEST-STALE-ARTIFACT-001.md`](./tests/TEST-STALE-ARTIFACT-001.md) | **test**, two independent invariants |
+| 2 · Consumers honour `INCOMPLETE` | [`tests/TEST-INCOMPLETE-001.md`](./tests/TEST-INCOMPLETE-001.md) | **test** |
+| 3 · Replay harness reproduces baselines | [`tests/TEST-REPLAY-001.md`](./tests/TEST-REPLAY-001.md) | **test** |
+| 4 · Two providers agree | [`experiments/EXP-PROVIDER-AGREEMENT-001.md`](./experiments/EXP-PROVIDER-AGREEMENT-001.md) | experiment |
+| 5 · Complete Epoch 2 with a real deferral | **no spec created** | already E2, `ACTIVE` in the ledger |
+
+The ledger itself is **not** modified. It is a dated snapshot; adding forward references to
+later work would break that property. The specs cite the ledger, not the reverse.
