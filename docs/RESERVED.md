@@ -734,3 +734,33 @@ B (EVIDENCE_DISCIPLINE.md and the 2026-08-27 candidate migration). **Zircon rema
 reserve-only.**
 
 Batch record: `docs/reserve/staging/reserves-2026-08-28.md`
+
+---
+
+## Batch 3 — Commit A: new canonical reserves (2026-08-29)
+
+Twenty-seven submissions were collision-checked against 106 canonical reserves. **Four
+created a new reserve.** The remainder resolved to appends, dissolutions or deferrals and
+are recorded with Commit B, which carries the batch record.
+
+- `docs/reserve/decision-leverage-attention-admissibility.md` — attention as a scarce
+  governed resource. *Event importance is not attention priority.* Names the silent
+  degradation of human review from ATTENTIVE to CEREMONIAL, where the receipt is identical
+  at every rung.
+- `docs/reserve/operational-sovereignty-dependency-independence.md` — common-control
+  ancestry across dependency classes. *Redundancy is not sovereignty; three providers on
+  one substrate are one provider with three invoices.* `UNRESOLVED` never defaults to
+  `INDEPENDENT`.
+- `docs/reserve/trust-graph-provenance-credibility-laundering.md` — trust transitivity,
+  credibility laundering, verification scope expansion. *Endorsement count is not
+  independent trust roots.* Endorsement-side sibling of
+  `docs/reserve/iam-external-identity-risk-signals.md`, which runs the same substrate in
+  the opposite direction. **The Trust Independence Ratio stays a research concept; no
+  formula is defined.**
+- `docs/reserve/multi-embodiment-identity-authority-continuity.md` — execution leases.
+  *Identity persists; authority does not travel with it.* Expiry is the default and
+  renewal is an event requiring evidence. Cross-links
+  `docs/reserve/human-machine-sovereignty-boundary.md` without being hosted by it, per
+  that reserve's own scope constraint.
+
+**Batch record:** lands with Commit B.

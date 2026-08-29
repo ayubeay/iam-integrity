@@ -72,3 +72,7 @@ docs/reserve/loyalty-value-routing.md,Loyalty Value Routing & Stranded Value Int
 docs/reserve/architecture-triage-service.md,Architecture Triage / Production Readiness Service,Doctrine,Service,RESERVED,,iam-integrity
 docs/reserve/human-fairness-dignity-accountability-institute.md,Human Fairness Dignity & Accountability Institute,Doctrine,Institution,RESERVED,computable-accountability.md;human-machine-sovereignty-boundary.md,iam-integrity
 docs/reserve/human-machine-sovereignty-boundary.md,Human-Machine Sovereignty Boundary,Doctrine,Authority,RESERVED,ownership-proofs-vs-execution-rights.md;computable-accountability.md,iam-integrity
+docs/reserve/decision-leverage-attention-admissibility.md,Decision Leverage & Attention Admissibility,Layer,Authority,RESERVED,emaa-external-machine-action-admissibility.md;computable-accountability.md,iam-integrity
+docs/reserve/operational-sovereignty-dependency-independence.md,Operational Sovereignty & Dependency Independence,Doctrine,Routing,RESERVED,provider-qualification-and-routing.md;independent-validation-capability-promotion.md,iam-integrity
+docs/reserve/trust-graph-provenance-credibility-laundering.md,Trust-Graph Provenance & Credibility Laundering,Layer,Evidence,RESERVED,independent-validation-capability-promotion.md;iam-external-identity-risk-signals.md,iam-integrity
+docs/reserve/multi-embodiment-identity-authority-continuity.md,Multi-Embodiment Identity & Authority Continuity,Layer,Authority,RESERVED,human-machine-sovereignty-boundary.md;ownership-proofs-vs-execution-rights.md,iam-integrity

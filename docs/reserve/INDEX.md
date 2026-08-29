@@ -147,3 +147,17 @@ Extensions were appended in place to `computable-accountability.md`,
 create new index rows because they did not create new reserves.
 
 Batch record: `docs/reserve/staging/reserves-2026-08-28.md`
+
+## Batch 3 — Commit A: new canonical reserves (2026-08-29)
+
+The coverage warning above still applies: **this index remains explicitly incomplete.**
+These rows record the four Batch 3 reserves that survived collision analysis. Twenty-three
+further submissions resolved to appends, dissolutions or deferrals and created no new
+reserve; those are recorded with Commit B.
+
+| File | Type | Note |
+|---|---|---|
+| `decision-leverage-attention-admissibility.md` | Layer | attention as a governed resource; answers Computable Accountability's alert-fatigue question |
+| `operational-sovereignty-dependency-independence.md` | Doctrine | common-control ancestry across dependency classes; consumes PQR, does not restate it |
+| `trust-graph-provenance-credibility-laundering.md` | Layer | endorsement-side sibling of `iam-external-identity-risk-signals.md`; no trust ratio |
+| `multi-embodiment-identity-authority-continuity.md` | Layer | execution leases; HMSB cross-link only, never host |
