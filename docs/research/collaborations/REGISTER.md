@@ -1,12 +1,12 @@
 # External Collaboration Register
 
 Live operational record. Governance: [`README.md`](./README.md).
-Last reviewed: 2026-08-29.
+Last reviewed: 2026-08-31.
 
 **Next-action summary**
 
     WAITING_ON_US / READY_TO_RUN ....... 5
-    AWAITING_COUNTERPARTY .............. 1
+    AWAITING_COUNTERPARTY .............. 2
     PROPOSED (lead only) ............... 1
     UNRESOLVED VERIFICATION ............ 1  (see final section)
 
@@ -192,6 +192,45 @@ Last reviewed: 2026-08-29.
 
     note  Architecture comparison and discovery. Recorded as a lead so it is not
           mistaken for an experiment, and not lost.
+
+---
+
+## Bantex29 / VectorStep
+
+    platform             UNRECORDED — platform not stated in intake
+    canonical spec       none — the central architectural distinction is already
+                        owned by docs/reserve/computable-accountability.md; no
+                        experiment protocol agreed
+    question             Where does observability / traceability end and operational
+                        accountability begin, when telemetry transport exists but
+                        identity, policy, authority, admissibility and responsibility
+                        semantics remain separate?
+    their contribution   response pending
+    our commitment       preserve their response as stated, including disagreement
+                        with our framing; do not normalize it into existing
+                        architecture merely to make it fit
+    evidence boundary    pending — no response received and nothing independently
+                        reproduced
+    IP boundary          their implementation and material remain theirs; no
+                        proprietary observability or runtime design enters canon;
+                        our internal architecture and methodology are not disclosed
+                        beyond what the conversation requires
+    next-action owner    COUNTERPARTY
+    next action          receive response to the probe
+    last interaction     2026-08 — probe sent
+    status               AWAITING_COUNTERPARTY
+    result               —
+
+    context  Counterparty described as an observability engineer associated with
+             VectorStep. That is counterparty-reported context, not verified
+             capability, and no claim of theirs has been independently reproduced.
+
+    note  The distinction prompting the probe already collides with
+          computable-accountability.md, which separates telemetry, interpretation,
+          recommendation, admissibility, authority, execution and receipts. This
+          record does not establish that the counterparty agrees with, validates or
+          disproves that doctrine — no response has arrived. A counterparty response
+          is not canonical validation, and self-reported material is never VERIFIED.
 
 ---
 
