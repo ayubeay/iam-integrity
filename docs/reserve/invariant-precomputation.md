@@ -52,3 +52,61 @@ somewhere else.
 ## Future
 HelixAtlas could visualise reusable computation nodes and their invalidation relationships,
 making it visible what was recomputed versus safely reused.
+
+---
+
+## Extension 2026-08-29 — Cognitive Artifacts as a Reuse Class
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+A proposal arrived for a separate "cognitive object store." This reserve already owns
+verified reuse: the state classes, the correctness constraint that *reuse must never
+silently sacrifice freshness*, invalidation conditions, and the requirement that execution
+receipts reference reused artifacts. It already names context engineering as the same
+shape. A separate store would duplicate that machinery for one artifact type, so what
+follows is a state-class refinement rather than a new mechanism.
+
+### Cognitive artifacts
+
+Artifacts an agent produces by reasoning rather than by computation: derived plans,
+intermediate conclusions, summaries of retrieved material, judged evidence, tool-output
+interpretations, task decompositions, and assessments of another agent's output.
+
+### The distinction that matters
+
+This reserve's origin is numerical — eigendecompositions reused across a parameter sweep,
+where reuse is **exact** and invalidation is **observable** from dependency change.
+
+**Reusing a cognitive artifact reuses a judgment, not a computation.** A judgment carries
+the assumptions, uncertainty, context window and evidence state present when it was made,
+and none of those appear in a dependency graph. A cached conclusion can be stale in a way
+a cached matrix cannot: its inputs are unchanged while its *warrant* has expired.
+
+    invariant artifact    same inputs → same output, and staleness is detectable
+    cognitive artifact    same inputs → same output, and staleness may not be
+
+### Additional invalidation conditions
+
+Beyond the triggers already listed, a cognitive artifact should invalidate on: objective
+or mission change · admissibility or policy change affecting what the judgment may
+influence · arrival of contradicting evidence · expiry of the evidence the judgment rested
+on · model or method change that would alter the judgment · and the artifact's own stated
+confidence falling below the threshold its consumer requires.
+
+Where warrant cannot be established, the correct state is **recompute**, not reuse. The
+existing constraint governs: reuse must never silently sacrifice freshness — and for a
+judgment, freshness means the reasoning would still be made the same way, not that the
+bytes are current.
+
+### Provenance requirement
+
+A reused cognitive artifact carries, in addition to this reserve's existing fields: what
+question it answered · what evidence it rested on · what uncertainty it carried · what it
+is admissible to influence. Without the last, a conclusion reached for one purpose is
+silently reused to authorize another — which is the failure
+`ownership-proofs-vs-execution-rights.md` names for knowledge, applied to cached
+reasoning.
+
+RESERVED — DO NOT BUILD.

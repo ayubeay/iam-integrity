@@ -764,3 +764,63 @@ are recorded with Commit B, which carries the batch record.
   that reserve's own scope constraint.
 
 **Batch record:** lands with Commit B.
+
+---
+
+## Batch 3 — Commit B: extensions (2026-08-29)
+
+Fifteen extensions were appended in place to existing reserves. Each carries a named, dated
+section and a **"Why this belongs here and not in its own file"** subsection.
+
+**Evidence and independence**
+
+- `docs/reserve/independent-validation-capability-promotion.md` — Effective Evidence
+  Multiplicity. `N_effective ≤ N_raw`, **with no formula**: the Evidence Independence Graph
+  should inform the quantity from ancestry, not collapse it to a ratio.
+- `docs/reserve/extraordinary-claim-evidence-tree.md` — Correction-Induced Misconception.
+  *A correction is not a subtraction*; it can install a new misconception rather than
+  removing an old one.
+- `docs/reserve/invariant-precomputation.md` — Cognitive Artifacts as a Reuse Class.
+  Reusing a judgment is not reusing a computation: its inputs can be unchanged while its
+  warrant has expired.
+
+**Execution and runtime**
+
+- `docs/reserve/hanoi-planner.md` — Execution Bounds, Deficit Classification & Verification
+  Debt. `TERMINATED_ON_BOUND` is distinct from failure; deferred verification is a
+  Temporary State with an exit condition.
+- `docs/reserve/execution-economics.md` — Bounded Execution and the Cost of Stopping.
+  `TECHNICAL_FAILURE ≠ GOVERNED_TERMINATION` · `STOPPED ≠ FAILED`.
+- `docs/reserve/intelligence-resource-governance-layer.md` — Continuation Admission &
+  Self-Constructed Capabilities. A capability the agent builds is admitted by the same gate
+  as one the system exposed, or not at all.
+- `docs/reserve/helixshield-execution-governance.md` — Governance Distance. *A governance
+  mechanism that can only instruct has not governed.* The nine-level scale's intermediate
+  levels remain **UNKNOWN** and were not invented.
+
+**Providers, capability and instruments**
+
+- `docs/reserve/provider-qualification-and-routing.md` — Dependency Trust Degradation &
+  Obligation Preservation. `INFRASTRUCTURE FAILURE ≠ EVIDENCE OF PARTICIPANT FAILURE`.
+- `docs/reserve/protocol-independent-capability-envelope.md` — Observed Execution Cost.
+  Constraint cost and observed cost are different fields; no fourth cost accounting.
+- `docs/reserve/instrument-admissibility-envelope.md` — Opportunity-Cluster Identity. Seven
+  agents on one catalyst are one opportunity expressed seven times, not seven exposures.
+
+**Capital and markets**
+
+- `docs/reserve/capital-admissibility-framework.md` — Outcome Optionality as a sixth
+  admissibility dimension. *What futures become unreachable if this capital is accepted?*
+- `docs/reserve/domain-aware-capital-intelligence.md` — Capital Relationship Intelligence.
+  `DETECT ≠ SOLICIT`; diagnosis precedes matching.
+- `docs/reserve/transaction-gap-financing-primitive.md` — Boundary case: inventory demand is
+  not a transaction. **This extension narrows application and authorizes nothing new.**
+- `docs/reserve/commerce-sniper.md` — Belief-Commerce. *A commercially successful claim is
+  not necessarily an epistemically successful claim.*
+- `docs/reserve/demand-sovereign-market-infrastructure.md` — Demand-Induced Supply
+  Formation. `INTEREST ≠ COMMITMENT ≠ TRANSACTION`.
+
+**Deferred unwritten:** energy metering / ARAL · Regulatory Reconstruction Layer · forecast
+provenance. **Dissolved into existing owners:** six submissions, listed in the batch record.
+
+Batch record: `docs/reserve/staging/reserves-2026-08-29.md`

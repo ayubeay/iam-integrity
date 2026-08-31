@@ -161,3 +161,24 @@ reserve; those are recorded with Commit B.
 | `operational-sovereignty-dependency-independence.md` | Doctrine | common-control ancestry across dependency classes; consumes PQR, does not restate it |
 | `trust-graph-provenance-credibility-laundering.md` | Layer | endorsement-side sibling of `iam-external-identity-risk-signals.md`; no trust ratio |
 | `multi-embodiment-identity-authority-continuity.md` | Layer | execution leases; HMSB cross-link only, never host |
+
+## Batch 3 — Commit B: extensions (2026-08-29)
+
+Fifteen canonical extensions were appended in place to existing reserves. **They created no
+new index rows because they created no new reserves** — the same treatment the Batch 2
+extensions received above.
+
+Targets: `independent-validation-capability-promotion.md` ·
+`extraordinary-claim-evidence-tree.md` · `commerce-sniper.md` ·
+`demand-sovereign-market-infrastructure.md` · `capital-admissibility-framework.md` ·
+`domain-aware-capital-intelligence.md` · `hanoi-planner.md` · `execution-economics.md` ·
+`intelligence-resource-governance-layer.md` · `provider-qualification-and-routing.md` ·
+`protocol-independent-capability-envelope.md` · `instrument-admissibility-envelope.md` ·
+`helixshield-execution-governance.md` · `transaction-gap-financing-primitive.md` ·
+`invariant-precomputation.md`
+
+Six submissions dissolved into existing owners and three were deferred unwritten. The
+complete 27-item reconciliation, the corrections made during the batch, and the instrument
+defects found in the reconnaissance are recorded in the batch record.
+
+Batch record: `docs/reserve/staging/reserves-2026-08-29.md`

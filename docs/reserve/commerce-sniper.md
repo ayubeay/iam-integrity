@@ -190,3 +190,67 @@ reconciliation; multiple projects independently build inventory→listing→txn
 logic; or a real user validates the workflow. At activation, begin with the
 smallest canonical-asset + market-representation + reconciliation state machine
 — not a generalized marketplace platform. RESERVE ONLY.
+
+---
+
+## Extension 2026-08-29 — Belief-Commerce & Failure Reinterpretation
+
+Status: RESERVED / NOT ACTIVE BUILD. Refinement of the Demand Verifier within this
+reserve.
+
+### Why this belongs here and not in its own file
+
+The Demand Verifier above already asks the right question — *real buyer, or
+attractive-looking gap?* — and this reserve already requires verified demand before
+capital deployment. What it did not carry is that demand can be **real and measurable
+while remaining contingent on a claim that may not survive examination.** That is the same
+verification question one level deeper, so it is recorded here, following the pattern of
+the IMEP refinement above.
+
+### Two kinds of premium
+
+    MEANING PREMIUM          buyers pay more because the thing means something to them
+    CLAIM-DEPENDENT PREMIUM  buyers pay more because they believe a specific claim
+
+The first is durable and is ordinary commerce — provenance, craft, identity, aesthetics,
+belonging. The second survives only while the claim does. Both look identical in a price
+series, in sell-through, and in every demand signal the Opportunity Scanner observes.
+
+**Distinguishing them requires asking what the buyer believes, not what the buyer paid.**
+
+### Self-sealing commercial continuation
+
+The failure mode is not that a claim turns out false. It is that commerce built on the
+claim can reinterpret the falsification rather than absorb it:
+
+    claim → demand → revenue → contradicting evidence
+    → evidence reframed as attack, misunderstanding, or premature
+    → commerce continues → the reframing becomes part of the offer
+
+A system observing only commercial signals will read this as sustained demand, because
+that is what it is. The reinterpretation is invisible at the level of the transaction.
+
+**A commercially successful claim is not necessarily an epistemically successful claim.**
+Revenue is evidence about willingness to pay. It is not evidence that the proposition
+motivating the payment is true.
+
+### Consequence for admissibility
+
+Where a proposed opportunity's margin depends materially on a claim rather than on
+utility, scarcity, timing or logistics, the claim itself becomes part of the
+counterparty-risk assessment rather than background. Its evaluation belongs to
+`extraordinary-claim-evidence-tree.md` — claim atomization, evidence independence, and
+the option of terminating at UNKNOWN — and is not restated here.
+
+    verified demand      ≠ verified claim
+    sustained revenue    ≠ surviving falsification
+    buyer conviction     ≠ evidence
+
+### Boundary
+
+This is not a fraud detector and produces no judgment about any seller or product. It is a
+demand-quality distinction: knowing **what a buyer's willingness to pay is contingent on**
+changes how durable that demand should be assumed to be, and therefore what capital
+exposure against it is admissible.
+
+RESERVE ONLY.

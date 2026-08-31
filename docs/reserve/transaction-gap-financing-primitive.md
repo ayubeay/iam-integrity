@@ -61,3 +61,84 @@ than assertion, and when a compliant capital structure exists. Legal, regulatory
 licensing review precede any activation.
 
 RESERVED. NO CAPITAL DEPLOYMENT. DO NOT BUILD.
+
+---
+
+## Extension 2026-08-29 — Boundary case: inventory demand is not a transaction
+
+Status: RESERVED — DO NOT BUILD. NO CAPITAL DEPLOYMENT. Boundary refinement of this
+reserve. **This extension narrows application; it authorizes nothing new.**
+
+### Why this belongs here and not in its own file
+
+This reserve already states what it is not — *"not general lending, not working-capital
+provision, not a fund"* — and requires a **confirmed obligation** with a **verified
+repayment source**. What it did not carry is a worked negative case showing how a
+plausible-looking financing request fails that test. A boundary is easier to hold when
+the canon records something that sits just outside it.
+
+### The classification rule
+
+A measurable cash-conversion cycle does not by itself establish a transaction-gap case.
+**The transaction must exist independently of the financing request.**
+
+    HISTORICAL DEMAND            ≠ CONFIRMED OBLIGATION
+    APPROVED SALES CHANNEL       ≠ TRANSACTION
+    EXPECTED SELL-THROUGH        ≠ IDENTIFIED REPAYMENT SOURCE
+    INVENTORY REPLENISHMENT NEED ≠ TRANSACTION GAP
+    PRODUCT-FAMILY SIMILARITY    ≠ DEMAND TRANSFER
+
+The last one matters where a request bundles a proven line with adjacent untested ones:
+demonstrated demand for one product is evidence about that product, not about a
+neighbouring product that resembles it.
+
+### The negative case
+
+A founder sought production capital comprising a replenishment run of an existing product
+plus two adjacent product runs. The available evidence was **founder-reported historical
+sell-through, an intended replenishment, a reported multi-month cash-conversion cycle, and
+approved vendor status with a corporate gifting channel.** There was **no disclosed
+purchase order, no committed order, and no specific confirmed customer obligation**
+underlying the request.
+
+That is a working-capital and inventory-cycle problem. **It is not a transaction-gap case
+under this reserve's own definition**, and financing it would require exactly the general
+working-capital provision this reserve excludes. All reported figures remain **case signal,
+unverified**; no financing assessment is implied.
+
+### The useful question
+
+Rather than asking whether the request can be financed, ask what would change its class:
+
+    What additional evidence or event would convert this from general inventory
+    financing into a specific transaction-gap case?
+
+Illustrative only, and not a template for any actual party:
+
+    verified purchase order → exact production obligation → measurable shortfall
+    → identified buyer settlement → finance only the shortfall → fulfilment
+    → settlement → financing terminates
+
+The difference is not size or plausibility. It is whether an obligation exists that would
+still exist if the financing request were withdrawn.
+
+### Scope, held
+
+This case may indicate an adjacent research problem in inventory-cycle financing. **Batch 3
+does not create that architecture, and this reserve does not absorb it.** One encountered
+case is not evidence of a missing primitive. Use-of-funds decomposition for ordinary
+capital requests likewise remains unplaced — it is not authorized here, and relocating it
+to another capital owner requires its own collision analysis.
+
+The capital separation is unchanged:
+
+    Capital Admissibility  should additional resources enter this execution at all?
+    DACI                   who is competent to assess it?
+    GCE                    should this admissible execution receive support now?
+    TGFP                   is a verified transaction blocked only by a temporary
+                           measurable gap with identifiable repayment?
+
+**Classification precedes absorption.** A problem that resembles this primitive does not
+belong to it.
+
+RESERVED. NO CAPITAL DEPLOYMENT. DO NOT BUILD.

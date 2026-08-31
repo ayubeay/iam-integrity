@@ -139,3 +139,95 @@ product.
 
 Revisit when OROS requires multi-step autonomous planning across real
 production workflows rather than isolated execution decisions.
+
+---
+
+## Extension 2026-08-29 — Execution Bounds, Deficit Classification & Verification Debt
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+Four submissions proposed a new runtime layer for bounded autonomous execution. Most of
+what they described is already owned: `execution-economics.md` owns cost per verified
+successful execution, `intelligence-resource-governance-layer.md` owns resource admission
+and waste classification, `context-integrity.md` owns governed context state, and this
+reserve owns permitted state transitions, constraint-preserving paths and temporary
+states. What none of them carried was the **explicit form** of three things this planner
+already implies. A bound belongs with the planner that must respect it, so they are named
+here rather than in a new abstraction.
+
+### Execution bounds are Resource-class constraints
+
+The Resource constraint class above already covers "budget, compute, time windows, rate
+limits, staff." Where autonomous execution is planned, that class is enumerated:
+
+    STEP_BUDGET          how many transitions this plan may consume
+    LOOP_BUDGET          how many times a cycle may repeat before replanning
+    TIME_BUDGET          wall-clock ceiling for the plan or a segment
+    TOOL_BUDGET          how many distinct capabilities may be exercised
+    COST_BUDGET          defers to execution-economics for the unit
+    VERIFICATION_BUDGET  how much verification the plan can afford to defer
+
+These are **constraints, not targets.** A plan that consumes its full budget has not
+performed well; it has consumed its full budget. Optimization remains subordinate to
+admissibility, and the minimum VALID path may legitimately cost more than the shortest.
+
+### TERMINATION_REASON
+
+This reserve already enumerates the outcomes of a failed transition — retry from current
+state, return to last safe state, alternate valid route, human intervention, pause on
+missing dependency, or terminate because no admissible route remains. That enumeration is
+now named, so a receipt can carry it:
+
+    COMPLETED · RETRIED · REVERTED_TO_SAFE_STATE · REROUTED
+    · HUMAN_INTERVENTION · PAUSED_ON_DEPENDENCY
+    · TERMINATED_NO_ADMISSIBLE_ROUTE · TERMINATED_ON_BOUND
+
+`TERMINATED_ON_BOUND` is distinct from failure. **A plan stopped by its own budget did not
+fail; it was stopped.** Recording it as failure would corrupt both the planner's quality
+metrics and the economics that consume them. The receipt records **which bound fired**.
+
+`ESCALATION_THRESHOLD` names the point at which the planning receipt's existing *required
+approvals* become mandatory rather than advisory.
+
+### Deficit classification
+
+When no admissible route remains, the useful question is not *did this fail* but **which
+constraint could not be satisfied.** The five constraint classes above are already the
+taxonomy; a deficit is a named blocked class:
+
+    STRUCTURAL_DEFICIT   a prerequisite state cannot be reached
+    PERMISSION_DEFICIT   required authority does not exist or was not granted
+    RESOURCE_DEFICIT     a bound would be exceeded
+    SAFETY_DEFICIT       no route satisfies the safety constraints
+    DOCTRINE_DEFICIT     every remaining route violates a constitutional rule
+    EVIDENCE_DEFICIT     admissibility cannot be established either way
+
+The last is not one of the original five and is the reason this section exists: **a route
+may be blocked because we do not know whether it is admissible**, which is distinct from
+knowing it is not. That deficit terminates at UNKNOWN rather than DENY, and is resolved by
+obtaining evidence rather than by finding another route.
+
+This is deliberately not a waste taxonomy. `intelligence-resource-governance-layer.md`
+classifies what was **spent wastefully**; this classifies what was **missing**.
+
+### Verification debt
+
+The Temporary State Doctrine above already requires every temporary state to carry a
+reason, a permitted duration, an expected exit condition, a restoration path and a
+receipt, *preventing temporary exceptions from becoming permanent drift.* **Deferred
+verification is a temporary state of exactly that shape**, and is recorded as one:
+
+    what was not verified · why deferral was admissible · what is assumed in the interim
+    · what the verification would establish · permitted duration
+    · exit condition (verification performed, or the assumption invalidated)
+    · what must not proceed while the debt is outstanding
+
+Debt is not a failure; unacknowledged debt is. A plan may legitimately defer verification
+to reach a state where verification becomes possible. What it may not do is let the
+deferral expire silently, which is the drift the Temporary State Doctrine already forbids.
+
+**Verification debt outstanding is itself a constraint on the next transition.**
+
+RESERVED — DO NOT BUILD.

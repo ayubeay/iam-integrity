@@ -183,3 +183,101 @@ beyond its existing source; a candidate provider exposes an authorized integrati
 surface; sufficient receipts exist to evaluate incremental decision value; and provenance
 characteristics can be inspected rather than assumed. No provider integration, Momentum
 Sniper modification, new module or production dependency follows from this entry.
+
+---
+
+## Extension 2026-08-29 — Dependency Trust Degradation & Obligation Preservation
+
+Status: Reserved architectural refinement. Not a standalone project.
+
+### Why this belongs here and not in its own file
+
+This reserve already owns dependency trust and already states that *a fallback provider
+does not inherit another provider's trust or evidentiary status.* What it did not carry is
+what happens to **obligations already accepted** when a dependency degrades. That is a
+consequence of the dependency relationship this reserve governs, so it is recorded here.
+
+The graduated-degradation pattern itself is **not new and is not restated**. It exists in
+three domains already:
+
+    emaa-external-machine-action-admissibility.md   TRUSTED → STANDARD → FLAGGED
+                                                    → RESTRICTED → QUARANTINED
+    counterfactual-execution-governor.md            NORMAL → RESTRICTED → SAFE_MOTION_ONLY
+                                                    → LOCAL_CONTROL_ONLY
+                                                    → HUMAN_CONFIRMATION_REQUIRED
+                                                    → PROTECTIVE_STOP
+    iam-external-identity-risk-signals.md           NORMAL → WATCH → ELEVATED
+                                                    → RESTRICTED → COMPROMISED → RECOVERY
+
+What this extension adds is the same shape applied to a **consumed dependency**, plus the
+attribution rule below.
+
+### Three states that must not collapse
+
+    AVAILABLE  ≠  TRUSTED  ≠  ADMISSIBLE
+
+A dependency may respond and be untrustworthy. It may be trustworthy and inadmissible for
+this execution under current policy. Availability is the weakest of the three and the
+easiest to measure, which is why it is the one most often mistaken for the others.
+
+### Protective pause is not shutdown
+
+`counterfactual-execution-governor.md` already states the principle for embodied systems —
+*do not treat every anomaly as requiring total shutdown* — and it holds here. Reducing the
+affected execution surface, preserving reversible activity, resolving trust, then
+restoring or restricting is a different operation from stopping.
+
+    reduce affected surface → preserve reversible activity → resolve trust
+    → RESTORE / RESTRICT / TERMINATE
+
+A system that can only continue or halt will halt too much, and the cost of halting is
+borne by whoever depended on it.
+
+### Obligation preservation
+
+**A dependency failure is a state-transition attribution question, and the attribution is
+frequently made wrongly.**
+
+    provider outage
+    → execution unavailable
+    ≠ participant default
+    ≠ participant misconduct
+    ≠ participant abandonment
+
+**Do not convert infrastructure failure into participant failure.** Where an obligation was
+already accepted and the infrastructure that would discharge it becomes unavailable, **the
+obligation is not silently erased**, and our inability to execute must not by itself be
+interpreted as participant breach, misconduct or abandonment.
+
+    INFRASTRUCTURE FAILURE  ≠  EVIDENCE OF PARTICIPANT FAILURE
+
+This is deliberately narrower than a finding about the participant. A participant may hold
+independently assessable obligations under the governing policy or agreement. **Those are
+evaluated from their own evidence — neither inferred from our dependency failure, nor
+excused by it.** Two questions, separately answered:
+
+    failure attribution arising from our own dependency
+    any independent obligation the participant holds
+
+The distinction that carries the operational weight:
+
+    a new discretionary action    may be denied while trust is unresolved
+    an existing obligation        is not extinguished by our inability to execute it
+
+These are different decisions and a degraded posture should not silently apply the first
+rule to the second. Grace, deferral and eventual fulfilment are dispositions; treating our
+own outage as a mark against the counterparty is an attribution error.
+
+`computable-accountability.md` records the causal evidence — obligation, dependency
+failure, affected capability, inability to execute, attribution, disposition, eventual
+fulfilment — so that the reason a participant was **not** attributed our failure remains
+reconstructable. **The operational rule lives here; the causal record lives there. It is
+not written twice.**
+
+### Relationship to this reserve's invariants
+
+*Every connection must earn its edge.* A degraded dependency is an edge that has stopped
+earning it — but the participants on the other side of our obligations did not choose that
+edge, and must not pay for its failure.
+
+RESERVED. DO NOT BUILD.

@@ -147,3 +147,72 @@ warranted, produce a final evidence receipt.
 Experiment definition: `docs/research/EXPERIMENT_CANDIDATES_2026-08-27.md`.
 
 RESERVED. NO ACTIVE BUILD. NO CLAIM OF VALIDITY FOR THE ORIGINATING MATERIAL.
+
+---
+
+## Extension 2026-08-29 — Correction-Induced Misconception & the Claim Transformation Chain
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+This reserve already models a claim's passage through transformations —
+`original → repost → reaction → article citing reaction → thread citing article` — and
+already names the semantic-promotion failure that occurs along it. It also already names
+one direction of the error a correction produces: **`NOT VERIFIED` does not mean
+`PROVEN FALSE`.** What it did not carry is that a **correction is itself a transformation**
+which can install a new false belief rather than removing an old one. That is another edge
+on a chain this document owns, so it is recorded here rather than as a competing parent.
+
+### The mechanism
+
+A correction is not a subtraction. It is an event with its own reception, its own
+compression, and its own failure modes.
+
+    false or overstated claim
+    → correction issued
+    → correction compressed in transit
+    → correction received against different priors
+    → NEW misconception installed
+
+Common shapes:
+
+    "X is unverified"        received as  "X is false"
+    "X was overstated"       received as  "X never happened"
+    "the study was retracted" received as "the opposite is true"
+    "not proven"             received as  "disproven"
+
+The last is the inverse of the error this reserve already names, arriving from the
+opposite side. Both are the same defect: **absence of establishment treated as
+establishment of absence.**
+
+### Claim Transformation Chain
+
+Where a claim materially influences a decision, preserve the chain rather than only the
+current state: original assertion · each restatement and who made it · what was added ·
+what was dropped · each correction · what the correction actually asserted · how it was
+subsequently restated · the belief state after each step.
+
+**Compression loss is the mechanism, at every step.** A restatement that drops a
+qualifier, a scope, a date or an uncertainty produces a different claim wearing the
+original's provenance.
+
+### Sophistication bias
+
+A more fluent, more technical or more confidently worded correction is not a more
+accurate one, and is more likely to be adopted without evaluation. This is the same defect
+`computable-accountability.md` names as *fluence is not authority*, appearing in the
+correction channel:
+
+    presentation quality  ≠  evidence quality — for corrections as much as for claims
+
+### Consequence for evaluation
+
+A corrected claim must not inherit either the original's status or the correction's
+confidence automatically. It is a new claim requiring its own atomization, its own
+evidence and its own status — including the option of terminating at `UNKNOWN`, which
+remains a valid computational output here as everywhere in this reserve.
+
+**Do not assume a correction improved the epistemic state.** Establish it.
+
+RESERVED — DO NOT BUILD.

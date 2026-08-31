@@ -80,3 +80,61 @@ Eligibility (execution-side sibling) · Proof Before Promotion (evidence
 discipline) · staging/reserves-2026-07-24.md #2 (evaluator-domain
 compatibility seed) · Opportunity Intelligence & Evaluation Engine (shared
 evidence/verification primitives).
+
+---
+
+## Extension 2026-08-29 — Capital Relationship Intelligence & Condition Before Matching
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+This reserve already owns the evaluator side of the capital picture, already lists
+**observed investment behavior** among its candidate signals, and already refuses to be
+an investor directory or a matchmaking marketplace. What arrived was a sharper statement
+of the same mechanism plus an ordering constraint on when matching may occur. Both deepen
+this reserve's own hypothesis rather than founding a competing one.
+
+### Declared thesis versus observed behaviour
+
+A stated investment thesis is a claim about future behaviour. Observed allocation history
+is evidence about actual behaviour. They diverge routinely, and the divergence is itself
+information about how an evaluator will read an opportunity.
+
+    declared thesis  = a claim
+    observed behaviour = evidence
+    neither is a ranking
+
+### DETECT ≠ SOLICIT
+
+Identifying that an evaluator may be compatible is not permission to approach them, and
+this reserve authorizes no outreach. Detection is an analytical output; solicitation is an
+action with its own admissibility question.
+
+### Ordering — diagnosis precedes matching
+
+    economic condition → capital need classification → instrument alternatives
+    → counterfactual outcomes → optionality consequences → capital admissibility
+    → capital attention fit → appropriate capital relationship
+
+**Do not match people to investors merely because they need money. Diagnose the capital
+condition before selecting the capital relationship.**
+
+**Do not evaluate financing only by what the capital enables. Evaluate what accepting the
+capital makes economically difficult or impossible later** — governed by the Outcome
+Optionality dimension in `capital-admissibility-framework.md`.
+
+### Capital attention fit
+
+An evaluator's attention is finite and its allocation is not a function of opportunity
+quality alone. Fit is a joint property of the opportunity, the evaluator's domain
+competence, and the evaluator's current attention state — the same structure as
+`decision-leverage-attention-admissibility.md`, applied to capital.
+
+### Non-goals
+
+Unchanged from this reserve: not an investor directory, not a matchmaking marketplace, not
+a popularity ranking. Additionally: not an outreach tool, and not authorization to compile
+personal information about evaluators.
+
+RESERVED — DO NOT BUILD.

@@ -37,3 +37,73 @@ Everything may be connected, but connections can destroy independence: a mature 
 ## Activation
 
 Revisit when capabilities are promoted from agent-generated evaluations; multiple models act as validators; WIRE begins skill certification; autonomous financial execution needs heterogeneous validation; VERITY must reason about correlated evidence; repeated cases show evaluators agreeing via a shared faulty source; capability/robot-skill marketplaces need trustworthy certification; or EBGL needs independent evidence for high-consequence guardrail health. Until then: RESERVE ONLY.
+
+---
+
+## Extension 2026-08-29 — Effective Evidence Multiplicity
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+Seven separate submissions arrived restating one doctrine in seven domains — social trust,
+trading, forecasting, multi-agent validation, capital signals, opportunity detection and
+claim evaluation. This reserve already owns the underlying primitive and says so in its
+own scope section, and its core thesis is already `Agent count ≠ evidence independence`.
+What it did not carry is the **vocabulary** for the quantity every one of those domains
+was reaching for. Naming it once here keeps the doctrine horizontal instead of producing
+a seventh parallel parent.
+
+`extraordinary-claim-evidence-tree.md` supplies the plain-language form — *ten sources
+repeating one originating claim are not ten independent pieces of evidence* — and
+`computable-accountability.md` governs its consequential use: *false source multiplicity
+must not inflate confidence.* Neither is restated here.
+
+### The quantity
+
+    N_raw        the number of nominal observations, validators, reports, agents,
+                 executions, forecasts or endorsements
+    N_effective  independence-adjusted evidentiary multiplicity
+
+    N_effective ≤ N_raw
+
+The inequality is the whole content. `N_raw` is countable by construction; `N_effective`
+is not, and the gap between them is where confidence is usually manufactured.
+
+### No formula
+
+**Do not define a function that computes `N_effective`.** The Evidence Independence Graph
+should eventually *inform* it from ancestry and correlation structure, but reducing a
+dependency graph to a ratio before relationship semantics, common control, timing and
+genuine independence are understood would recreate the compression problem this reserve
+exists to name. This is the same restraint the Epistemic Independence Assessment already
+imposes: **do not prematurely lock to one number.**
+
+A defensible intermediate output is a graph plus a stated basis — or `UNRESOLVED` — not a
+number that looks precise because it is short.
+
+### Domain instances consume this; they do not restate it
+
+    social trust        endorsement count      ≠ independent trust roots
+    trading             execution count        ≠ independent opportunities
+    forecasting         forecast count         ≠ independent forecasts
+    multi-agent         agent count            ≠ independent evidence
+    capital             signal count           ≠ independent capital signals
+    claim evaluation    source count           ≠ independent evidence count
+
+`trust-graph-provenance-credibility-laundering.md` is the social-trust child and consumes
+this section rather than redefining an edge class. Where a domain child needs a distinct
+mechanism — exposure concentration, for instance — that mechanism belongs to the domain's
+own owner, not here.
+
+### Multi-agent propagation
+
+Agents in one orchestration typically share more than model lineage: the same objective
+framing, the same retrieved context, the same tool results, the same prior turns, and the
+same orchestrator's summary of what the others concluded. **A summary of peer conclusions
+is a correlation channel**, and an agent that sees it before concluding is no longer an
+independent failure opportunity. Independent Failure Discovery already requires that
+validators not see one another's conclusions first; effective multiplicity is the
+quantity that requirement protects.
+
+RESERVED — DO NOT BUILD.

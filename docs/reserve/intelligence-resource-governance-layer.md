@@ -114,3 +114,82 @@ escalate only when evidence justifies it, and preserve a receipt explaining ever
 consumed.*
 
 RESERVED. DO NOT BUILD.
+
+---
+
+## Extension 2026-08-29 — Continuation Admission & Self-Constructed Capabilities
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+Two mechanisms arrived attached to a proposed runtime layer. Both are admission decisions,
+which this reserve owns, and neither is a placement decision — the scope boundary above
+still holds, and **no `adaptive-inference-placement` is created or implied here.**
+
+### Continuation admission
+
+The policy vocabulary above already contains the stopping rule: *a task may stop when
+expected remaining intelligence cost exceeds expected objective value.* What was not named
+is that this is a **different decision from the per-call gate.**
+
+    per-call admission    should this inference happen at all?           (NO_MODEL gate)
+    continuation admission should this objective continue iterating?     (this section)
+
+They differ in what they observe. The per-call gate looks at one request. Continuation
+admission looks at the trajectory: progress made per iteration, whether recent iterations
+changed the objective's state, escalations already spent, and expected remaining value.
+
+    CONTINUE · CONTINUE_WITH_ESCALATION · REPLAN · DEFER · STOP_INSUFFICIENT_VALUE
+    · STOP_NO_PROGRESS
+
+**Repetition without state change is the signal.** An objective iterating without altering
+its own state is consuming budget to stay still, and `DUPLICATE_REASONING` in the waste
+classification above is what that looks like after the fact. Continuation admission is the
+gate that prevents it prospectively.
+
+The **bound** on iteration is not owned here — `hanoi-planner.md` owns `LOOP_BUDGET` as a
+Resource-class constraint, and `execution-economics.md` owns the economic consequence of
+stopping. This section owns only the admission decision at each continuation point.
+
+### Self-constructed capabilities
+
+Progressive capability admission above governs capabilities the system **exposes**:
+MCP tools, APIs, plugins, database schemas, workflow actions, long-term memories. It
+assumes capabilities pre-exist and are admitted into context.
+
+An agent that **constructs** a capability mid-objective — a generated script, a composed
+query, a derived helper, a chained tool wrapper — has created something that never passed
+that gate.
+
+**The governing invariant is not owned here.**
+
+    AUTHORIZED_TO_CREATE  ≠  AUTHORIZED_TO_EXECUTE_CREATED_CAPABILITY
+
+That is `ownership-proofs-vs-execution-rights.md`'s `possession ≠ permission`, applied to
+an artifact the agent authored rather than one it acquired — and that reserve already
+holds that ownership may persist while execution rights are withheld, conditional or
+expired. `helixshield-execution-governance.md` states the autonomous-execution form:
+capability, ownership and execution authority are separate layers, and a system may
+possess the capability to act without the right to execute. `adaptive-execution-layer.md`
+governs the construction itself — **"never allow silent behavioral mutation"** and
+**"adaptation is a governed execution event, not an autonomous privilege"** — since a
+capability built at runtime is exactly such a mutation.
+
+**What this reserve owns is narrower: the admission consequence.**
+
+    a capability the system exposed    → admitted
+    a capability the agent constructed → admitted by the same gate, or not at all
+
+Admission applies identically: the constructed capability declares what it does, what it
+touches, what authority it requires, and what it is admissible to influence. It is
+**bounded by the objective that created it** and does not survive into the next one. A
+constructed capability that outlives its objective has become permanently resident, which
+is the state this reserve's third principle exists to prevent.
+
+Where the construction is consequential — it mutates state, spends, or reaches outside the
+system — admissibility is vLOID's. Where it changes strategy, adaptation governance is the
+Adaptive Execution Layer's. This section governs only whether the constructed capability
+may enter the execution context.
+
+RESERVED. DO NOT BUILD.

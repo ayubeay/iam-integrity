@@ -84,3 +84,67 @@ capable of understanding what an execution actually obligates us to, before deci
 whether that execution is admissible."*
 
 RESERVED. NO CAPITAL DEPLOYMENT. DO NOT BUILD.
+
+---
+
+## Extension 2026-08-29 — Opportunity-Cluster Identity
+
+Status: RESERVED — research / future architecture. NOT an active build.
+**NOT authorization to deploy capital.**
+
+### Why this belongs here and not in its own file
+
+The envelope fields above already include **concentration** and **correlation**, and the
+pipeline already reaches portfolio exposure before admissibility. What was not stated is
+**what those fields range over.** A submission proposed a separate reserve for it; this is
+a definition of an existing field, so it is recorded here.
+
+### The unit of concentration is the opportunity, not the position
+
+Several positions entered independently, by different strategies or different automated
+agents, may express one underlying opportunity — the same catalyst, the same liquidity
+event, the same narrative, the same counterparty, the same settlement venue.
+
+    seven agents acting separately on one catalyst
+    = one opportunity expressed seven times
+    ≠ seven independent exposures
+
+Position count is countable by construction. **Opportunity count is not**, and the gap
+between them is where concentration hides from a system that measures the first.
+
+### Two distinct questions, deliberately separated
+
+    EVIDENCE   do 107 executions constitute 107 independent observations about an edge?
+    EXPOSURE   do 107 positions constitute 107 independent exposures to loss?
+
+The first is **not owned here.** It is
+`independent-validation-capability-promotion.md`'s effective evidence multiplicity —
+`N_effective ≤ N_raw` — and this reserve does not restate the edge classes or attempt a
+ratio.
+
+The second is this reserve's, because exposure concentration is an admissibility input
+under the defined-risk principle above: **transaction value ≠ economic exposure**, and
+seven positions sharing a cause have the loss profile of one position seven times larger,
+not of a diversified set.
+
+### The composition invariant
+
+`docs/research/tests/TEST-CONCENTRATION-001.md` and its governing reserve
+`ownership-proofs-vs-execution-rights.md` already state the general form:
+
+    for each element:   admissible(e) = TRUE
+    for the joined set: admissible(S) is evaluated independently, and may be FALSE
+
+That is the same structure here, in the exposure domain rather than the knowledge domain.
+Individually admissible positions can compose into an inadmissible portfolio state, and a
+set verdict derived from element verdicts — conjunction, maximum, or any aggregation
+incapable of returning FALSE when every input is TRUE — cannot detect it.
+
+### Practical consequence
+
+Where concentration and correlation are assessed, record what was treated as one
+opportunity and on what basis. An unexamined assumption of independence between positions
+is the same defect as an unexamined assumption of independence between evidence sources,
+and defaults the same wrong way.
+
+RESERVED. NO CAPITAL DEPLOYMENT. DO NOT BUILD.

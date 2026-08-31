@@ -75,3 +75,75 @@ Continuous Adversarial Security Graph · Continuous Security Receipts ·
 Universal Execution Timeline (general form of the reconstruction narrative) ·
 Ownership Proofs vs Execution Rights (capability vs authority) · HELIX
 Universal Execution Lifecycle (applies Verify/admissibility to cyber).
+
+---
+
+## Extension 2026-08-29 — Governance Distance
+
+Status: Reserved. Architecture/doctrine only — no execution authority here.
+
+### Why this belongs here and not in its own file
+
+This reserve already governs every autonomous action as an executable transaction with
+explicit authorization and policy evaluation — governance made executable at the point of
+action. What it did not carry is a way to **describe how far a given governance mechanism
+sits from that point.** That is a property of the enforcement surface this reserve owns, so
+it is recorded here.
+
+Enforcement stays upstream of the causal record:
+
+    policy / authority → HelixShield makes it executable at action time
+    → execution → computable-accountability.md preserves why and how it happened
+
+`computable-accountability.md` consumes the resulting receipt; it does not own the
+enforcement mechanism.
+
+### The axis
+
+**Governance Distance** measures the separation between where a constraint is expressed and
+where the action it constrains actually occurs. The doctrine it exists to state:
+
+    The closer an autonomous system gets to consequential execution, the less
+    sufficient policy-only governance becomes.
+
+At one end sits **PRINCIPLE** — a constraint expressed as intent, relying on
+interpretation and good faith. At the other sits **ADAPTIVE** — a constraint evaluated
+against live evidence at the moment of action, capable of changing as conditions change.
+Between them lie mechanisms that are progressively closer to execution and progressively
+less dependent on the acting system's cooperation.
+
+**The intermediate levels are not enumerated here.** The originating material specified a
+nine-level scale; only its endpoints were supplied, and naming the remaining seven from
+inference would fabricate a taxonomy rather than record one. Their enumeration is an open
+research question, not an omission to be filled by plausibility.
+
+### What the axis is for
+
+Distance is not a quality score. A principle expressed far from execution may be exactly
+right for a low-consequence action, and an adaptive gate at the point of action is
+expensive. The rule is proportional:
+
+    governance distance should shrink as consequence, irreversibility and
+    autonomy increase
+
+This is the same shape `counterfactual-execution-governor.md` states for physical systems —
+*the greater the physical power of an autonomous system, the less authority any single
+software component should possess over that power* — and the same shape
+`independent-validation-capability-promotion.md` states for evidence, where independence
+scales with consequence.
+
+### The distinction it protects
+
+    instruction  ≠  authorization
+
+An instruction describes what should happen. Authorization establishes that it may. A
+system that receives a valid instruction from a valid identity has established neither that
+the action is admissible nor that anyone accountable authorized it — which is why this
+reserve separates Intent, Authority, Execution and Verification into independent layers,
+and why `ownership-proofs-vs-execution-rights.md` holds that capability and execution right
+are separate.
+
+**A governance mechanism that can only instruct has not governed.** It has advised a system
+that remains free to do otherwise, and the receipt will record compliance either way.
+
+RESERVED — architecture/doctrine only.

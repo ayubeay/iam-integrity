@@ -106,3 +106,64 @@ is possible.** The first deployed vertical teaches what the reusable primitive a
 needs to be.
 
 RESERVED — DO NOT BUILD.
+
+---
+
+## Extension 2026-08-29 — Demand-Induced Supply Formation
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve.
+
+### Why this belongs here and not in its own file
+
+This reserve's own research questions ask *how should thin-leg shortages trigger pricing,
+**recruiting**, routing or deferral?* — and recruiting is supply formation. What follows
+answers that question rather than founding a parent for it. The thinnest-leg primitive
+remains owned by `executable-capacity-thinnest-leg.md` and is consumed, not restated.
+
+### Demand can instruct supply creation
+
+A market is usually modelled as matching existing supply to existing demand. Where the
+scarce leg is supply, sufficiently evidenced demand becomes an instruction to create it:
+
+    observed unmet demand → qualification of that demand
+    → marginal supply value → recruitment or capacity formation
+    → qualification of new supply → matching → execution → receipt
+
+**Marginal Supply Value** is what one additional qualified unit of the scarce leg is worth
+at this location, time and qualification level — not the average value of supply in the
+market. A market with abundant unqualified supply and one missing qualified provider has a
+high marginal supply value and a low average one, and only the first should drive
+recruitment.
+
+### The qualification ladder
+
+Demand evidence is not one state, and treating it as one is how synthetic demand becomes
+real capacity commitment:
+
+    INTEREST     ≠  COMMITMENT  ≠  TRANSACTION
+
+Interest is an observation. Commitment carries a cost of abandonment. A transaction has
+settled. Recruiting supply against interest, or pricing against it, converts an
+observation into an obligation someone else has to bear.
+
+### Synthetic Demand Attack
+
+Where demand signals induce supply formation, fabricating demand becomes a way to induce
+cost in the market or its participants — recruiting providers who then find nothing to
+serve, moving pricing, exhausting qualification capacity, or degrading the reputation of
+a market that appears unreliable.
+
+Defences belong to existing owners rather than here: VERITY for counterparty and signal
+trust, the Information Admissibility Governor for which signals may support a decision,
+and IVCP's effective-multiplicity extension for the specific case where **many demand
+signals share one origin.** Twenty enquiries traceable to one campaign are not twenty
+demand observations.
+
+### Doctrine
+
+**Do not create supply against demand you have not qualified.** The infrastructure's
+value to an operator is that it can tell the difference; a market that recruits against
+noise imposes the cost of that noise on its participants, who did not observe it and
+cannot audit it.
+
+RESERVED — DO NOT BUILD.

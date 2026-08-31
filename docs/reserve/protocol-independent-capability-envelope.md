@@ -151,3 +151,54 @@ A protocol can tell an agent *how* to invoke a capability. It cannot establish *
 the agent should be allowed to exercise that capability in the present context.
 
 RESERVED — DO NOT BUILD.
+
+---
+
+## Extension 2026-08-29 — Observed Execution Cost in the Envelope
+
+Status: RESERVED — architecture/research only. NOT an active build.
+
+### Why this belongs here and not in its own file
+
+A submission proposed that a capability layer should normalize not only what a capability
+returns but what it cost the system to execute. The envelope fields above already carry
+**rate and cost constraints**. What they do not carry is the observed counterpart. That is
+one field class added to an existing list, not a mechanism, so it is recorded here.
+
+### Constraint cost and observed cost are different fields
+
+    CONSTRAINT COST   what this capability is permitted to cost      (pre-execution, policy)
+    OBSERVED COST     what this invocation actually cost             (post-execution, evidence)
+
+The first governs admissibility. The second is evidence, and belongs in the envelope
+because the same semantic capability invoked through different bindings can cost
+materially different amounts — which is precisely the binding-specific difference this
+reserve exists to make visible.
+
+Candidate observed fields: invocation cost · provider cost · context overhead · retry
+count and retry cost · latency observed against the declared budget · verification cost ·
+which binding served it.
+
+### Three owners already share cost; do not become a fourth
+
+    execution-economics.md    owns the unit — COST PER VERIFIED SUCCESSFUL EXECUTION —
+                              and the outcome vocabulary including TERMINATED_ON_BOUND
+    provider-qualification-and-routing.md
+                              owns cost per workload unit as a qualification criterion
+    intelligence-resource-governance-layer.md
+                              owns total-objective-cost accounting
+
+**This extension defines no cost unit and computes no total.** It records what an
+invocation of a semantic capability cost, so that governance comparing two bindings of the
+same capability has evidence rather than an assumption. The accounting is consumed from
+the owners above.
+
+### Why it matters to admissibility
+
+`GOVERN THE ACTION, NOT THE ADAPTER` still holds — but where two bindings of one capability
+differ materially in cost, that is a binding-specific difference of exactly the kind this
+reserve already says must be surfaced rather than abstracted away. **Equivalent governance
+across bindings does not mean equivalent economics across bindings**, and a system that
+records only the former cannot explain the latter.
+
+RESERVED — DO NOT BUILD.
