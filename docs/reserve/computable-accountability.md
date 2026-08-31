@@ -271,4 +271,84 @@ and existing receipts that cannot reconstruct the recommendation-to-action chain
 > preserve the evidence, uncertainty, recommendation, authority and consequence chain
 > without confusing influence with authority, or human involvement with absolution.
 
+## Extension 2026-08-31 — Downstream Reconsideration on Upstream Invalidation
+
+Status: RESERVED — DO NOT BUILD. Architectural refinement of this reserve, not a separate
+product, module or implementation track.
+Scope: VERITY · Information Admissibility Governor · vLOID · execution receipts · the
+domain owners named below.
+
+### Why this belongs here and not in its own file
+
+This reserve already requires a receipt to preserve *whether later evidence contradicted
+the recommendation*. That field records the fact. What it does not carry is the obligation
+that follows from it: when a basis is later invalidated, something must establish what
+already depended on it. The record lives here, so the obligation belongs here.
+
+`invariant-precomputation.md` governs the adjacent case and is not extended by this
+section. A reusable artifact carries dependency information and invalidation conditions,
+and its warrant is checked **at the moment of reuse** — *where warrant cannot be
+established, the correct state is recompute, not reuse.* That is invalidation checked on
+the pull. A conclusion that has already authorized an action has no further reuse event at
+which to be checked, and that gap is what this section names.
+
+### The three boundaries
+
+    UPSTREAM INVALIDATION      ≠  AUTOMATIC DOWNSTREAM INVALIDATION
+    KNOWN MATERIAL DEPENDENCY  ≠  PERMISSION TO IGNORE LATER INVALIDATION
+    RECONSIDERATION REQUIRED   ≠  REVERSAL REQUIRED
+
+A downstream conclusion must not remain silently authoritative because the invalidation of
+its basis was never propagated. It must equally not be reversed merely because an ancestor
+moved: a descendant may have acquired independent support, the dependency may not have
+been material, the consequence may be irreversible, or later evidence may sustain it on
+other grounds.
+
+### The obligation
+
+    an upstream evidentiary, policy, authorization or execution basis is invalidated
+    → material downstream dependencies are identified from preserved lineage
+    → a reconsideration obligation is recorded for affected descendants
+    → the consequence is routed to whoever owns that domain
+    → what changed, why, and what followed is preserved in the receipt
+
+Reconsideration does not rewrite historical state. The earlier conclusion, authorization
+or execution remains recorded as what occurred under the evidence and authority available
+at that time; later invalidation and any resulting reconsideration are preserved as
+subsequent evidence and governance events.
+
+**Reconsideration is horizontal; consequence is domain-owned.** This section establishes
+only that affected descendants are identified and the obligation recorded. It does not
+decide what happens to them. `iam-external-identity-risk-signals.md` decides for identity
+risk, `evidence-backed-guardrail-lifecycle.md` for controls,
+`independent-validation-capability-promotion.md` for promoted capabilities, and
+`recalculation-doctrine.md` for objectives. No disposition vocabulary is defined here and
+those domain sets are not merged into one.
+
+### This is not a dependency engine
+
+The obligation applies where a material dependency is **known, or reconstructable from
+lineage this reserve already preserves.** It does not require discovering arbitrary causal
+dependencies across a system, and it authorizes no traversal machinery, no graph service,
+no propagation scoring and no dependency product.
+
+    NO RECORDED DOWNSTREAM DEPENDENCY  ≠  NO DOWNSTREAM DEPENDENCY
+
+The absence of a dependency in preserved lineage establishes only that the preserved
+lineage records no such dependency. Whether none existed depends on the coverage of the
+instrumentation that produced that lineage, which is a separate and currently unresolved
+question.
+**No dependency found is not a clearance.**
+
+### Research questions
+
+What makes a dependency material enough to oblige reconsideration? How is the coverage of
+preserved lineage itself established, so that an absence in it can be interpreted at all?
+Should a reconsideration obligation expire, and on what evidence? How does this
+interact with irreversible consequences, where reconsideration cannot restore a prior
+state? What distinguishes a descendant with genuinely independent support from one whose
+support is correlated with the invalidated basis — a question effective evidence
+multiplicity already governs in `independent-validation-capability-promotion.md` and which
+this section does not restate?
+
 RESERVED — DO NOT BUILD.
