@@ -169,6 +169,41 @@ necessarily about the reference.
 An unreadable object store and a broken reader produce identical silence. Run the same
 command against something known to work before concluding the subject is at fault.
 
+### 6.5 · Multiplicity and selection discipline
+
+A capable instrument can still produce misleading evidence when a system searches many
+hypotheses, parameters, sources, windows, transformations or candidate relationships and
+reports only the interesting result.
+
+**The number of reported results is not the number of opportunities to find one.** A
+finding selected from many chances to look does not carry the weight of the same finding
+from one pre-registered test. §5 fixes the hypothesis before observation; this rule
+governs how many hypotheses were entertained before one was reported.
+
+Where multiplicity could materially affect interpretation, preserve enough of the search
+process to establish the relevant comparison set: what was tested, what was selected, what
+was excluded, and what was generated after observation.
+
+**Evidence used to generate a hypothesis is not independent confirmation of it.** A
+pattern discovered in a body of data is not confirmed by that same data. This does not
+require a formal split for every exploratory pass. It requires that a receipt not present
+discovery evidence as though it were confirmation.
+
+A null, randomized, permutation, surrogate, holdout or other comparison may be appropriate
+depending on the domain. **This rule does not mandate a statistical technique.** Where no
+adequate comparison is available, that limitation belongs in the evidence boundary required
+by §4 rather than being silently treated as validation.
+
+**A valid individual test is not an admissible selected conclusion.** §6.1 asks whether the
+instrument could have produced a different answer. This asks whether the process that
+selected this answer from many could have produced it by chance.
+
+Named, as §6 requires: the reconciliation that produced this rule ran many lexical probes
+per pass, each carrying positive and negative controls, and never once accounted for how
+many chances a hit had to appear. That establishes the process lacked the rule. **It does**
+**not establish that any finding it produced was spurious** — absence of multiplicity control
+is not proof that a result was chance.
+
 ---
 
 ## 7 · Finding classification
