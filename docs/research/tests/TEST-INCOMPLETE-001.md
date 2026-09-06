@@ -1,6 +1,8 @@
 # TEST-INCOMPLETE-001 — Do Consumers Honour `INCOMPLETE`?
 
-Status: `RESERVED` · **BLOCKING candidate** — pre-Zircon
+Status: `SUPERSEDED` — premise rejected (scope mismatch), 2026-09-06 · was **BLOCKING candidate** — pre-Zircon.
+Adjudication: Phase-1.5 premise adjudication, 2026-09-06. Superseded by `TEST-INCOMPLETE-002`.
+The original question, procedure and pass/fail conditions below are preserved UNCHANGED as evidence of the design defect. This test was not wrong about its concern; it was wrong about its subject.
 Registered: 2026-08-29
 Migrated from: `docs/research/EXPERIMENT_LEDGER_2026-08-27.md` · Top-5 candidate 2
 

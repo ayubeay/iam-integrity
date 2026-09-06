@@ -15,6 +15,12 @@ This is a different question from the one an experiment asks. See
     PASS       the implementation satisfied the invariant under the stated procedure
     FAIL       it did not
     BLOCKED    cannot proceed; the blocker is named in the spec
+    SUPERSEDED the test's premise was adjudicated invalid; preserved as evidence
+    INCONCLUSIVE the run could not discriminate; not a PASS
+
+**Status may apply per invariant, not only per test.** A test carrying independently
+concluding invariants records each on its own line; forcing one global verdict
+destroys information. This mirrors the claim-level rule in `../experiments/INDEX.md`.
 
 ## Register
 
@@ -24,9 +30,10 @@ This is a different question from the one an experiment asks. See
 | [TEST-RESTRAINT-001](./TEST-RESTRAINT-001.md) | `PRESERVE_UNKNOWN` survives classification pressure and stays distinct from `UNKNOWN` | `RESERVED` |
 | [TEST-DEFAULT-001](./TEST-DEFAULT-001.md) | An inherited default must stay distinguishable from a deliberate selection, all the way to the consumer | `RESERVED` |
 | [TEST-ATOMIZATION-001](./TEST-ATOMIZATION-001.md) | A narrative is evaluated as its constituent propositions; no verdict is manufactured under insufficient evidence | `RESERVED` |
-| [TEST-STALE-ARTIFACT-001](./TEST-STALE-ARTIFACT-001.md) | **BLOCKING** — a stale artifact is distinguishable from a current one, and a receipt's cited source is its actual source | `RESERVED` |
-| [TEST-INCOMPLETE-001](./TEST-INCOMPLETE-001.md) | **BLOCKING** — every downstream consumer gates on `score_status: INCOMPLETE` | `RESERVED` |
-| [TEST-REPLAY-001](./TEST-REPLAY-001.md) | The replay runner reproduces its own recorded baselines | `RESERVED` |
+| [TEST-STALE-ARTIFACT-001](./TEST-STALE-ARTIFACT-001.md) | a stale artifact is distinguishable from a current one, and a receipt's cited source is its actual source — *was BLOCKING candidate*; **gate SATISFIED 2026-09-06**, requirement owned by `temporal-evidence-admissibility` + ELSPE | A `FAIL` · B `PASS` |
+| [TEST-INCOMPLETE-001](./TEST-INCOMPLETE-001.md) | every downstream consumer gates on `score_status: INCOMPLETE` — **premise rejected, scope mismatch** | `SUPERSEDED` |
+| [TEST-INCOMPLETE-002](./TEST-INCOMPLETE-002.md) | surface instance of `default-state-admissibility` — a failed measurement must not become an indistinguishable default inside a signed verdict | A `PASS` · B `INCONCLUSIVE` |
+| [TEST-REPLAY-001](./TEST-REPLAY-001.md) | The replay runner reproduces its own recorded baselines — **pre-Zircon gating purpose DISSOLVED 2026-09-06**; the test itself is unrun and no result is implied | `RESERVED` |
 
 ## The boundary that must not be crossed
 
